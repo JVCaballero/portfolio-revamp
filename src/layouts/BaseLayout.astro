@@ -12,6 +12,7 @@
   page-top/page-bottom padding is introduced.
 */
 import FontFaces from '../components/FontFaces.astro';
+import NewsstandNavigation from '../components/NewsstandNavigation.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -34,6 +35,7 @@ const { title, description, noindex = false } = Astro.props;
     <FontFaces />
   </head>
   <body class="site-frame">
+    <NewsstandNavigation />
     <main class="site-main">
       <slot />
     </main>

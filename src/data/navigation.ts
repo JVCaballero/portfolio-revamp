@@ -1,4 +1,4 @@
-export const navigation = [
+export const primaryNavigation = [
   { label: 'Cover', href: '/' },
   { label: 'Feature', href: '/feature/' },
   { label: 'Reviews', href: '/reviews/' },
@@ -7,6 +7,10 @@ export const navigation = [
   { label: 'B-Sides', href: '/b-sides/' },
   { label: 'Rotation', href: '/rotation/' },
   { label: 'Letters', href: '/letters/' },
+] as const;
+
+export const navigation = [
+  ...primaryNavigation,
   { label: 'Resume', href: '/resume/' },
 ] as const;
 

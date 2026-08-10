@@ -1,5 +1,16 @@
 import { expect, test } from '@playwright/test';
 
+const primaryNavigation = [
+  { label: 'Cover', href: '/' },
+  { label: 'Feature', href: '/feature/' },
+  { label: 'Reviews', href: '/reviews/' },
+  { label: 'The Interview', href: '/interview/' },
+  { label: 'Columns', href: '/columns/' },
+  { label: 'B-Sides', href: '/b-sides/' },
+  { label: 'Rotation', href: '/rotation/' },
+  { label: 'Letters', href: '/letters/' },
+] as const;
+
 test('Sprint 0 root route is deployable without console errors', async ({
   page,
 }) => {
@@ -17,6 +28,34 @@ test('Sprint 0 root route is deployable without console errors', async ({
   ).toBeVisible();
   await expect(page.locator('[data-sprint="0"]')).toBeVisible();
   expect(consoleErrors).toEqual([]);
+});
+
+test('Shared Newsstand navigation matches the approved primary chrome', async ({
+  page,
+}) => {
+  await page.goto('/');
+
+  const brand = page.getByRole('link', { name: 'CABALLERO!', exact: true });
+  await expect(brand).toHaveAttribute('href', '/');
+  await expect(page.getByText('Issue 05 · Aug 2026')).toBeVisible();
+  await expect(page.getByText('Open to work · Nov 2026')).toBeVisible();
+
+  const nav = page.getByRole('navigation', { name: 'Primary' });
+  await expect(nav.getByRole('link')).toHaveCount(primaryNavigation.length);
+
+  for (const item of primaryNavigation) {
+    await expect(
+      nav.getByRole('link', { name: item.label, exact: true }),
+    ).toHaveAttribute('href', item.href);
+  }
+
+  await expect(
+    nav.getByRole('link', { name: 'Cover', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+  await expect(
+    nav.getByRole('link', { name: 'Resume', exact: true }),
+  ).toHaveCount(0);
+  await expect(page.locator('[data-sprint="0"]')).toBeVisible();
 });
 
 test('Unknown routes resolve through the custom 404 page', async ({ page }) => {
