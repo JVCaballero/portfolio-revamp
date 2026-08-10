@@ -1,0 +1,21 @@
+/*
+  Semantic font-role aliases around the CSS variables Astro's Fonts API
+  generates for each configured family (see astro.config.mjs). Components
+  should reach for --font-display / --font-heading / etc., never the
+  provider-specific family name directly.
+
+  Space Mono 600 quirk: the golden master's own Google Fonts request only
+  ever provides Space Mono 400 and 700 (see astro.config.mjs), yet one
+  folio-style label asks for font-weight 600. That is preserved source
+  behavior, not a bug — the browser substitutes the nearest available
+  weight. --font-mono still resolves to the same family; the weight number
+  is set at the point of use, same as the original export.
+*/
+
+:root {
+  --font-display: var(--font-archivo-black), sans-serif;
+  --font-heading: var(--font-barlow-condensed), sans-serif;
+  --font-body: var(--font-source-serif-4), serif;
+  --font-mono: var(--font-space-mono), monospace;
+  --font-hand: var(--font-architects-daughter), cursive;
+}

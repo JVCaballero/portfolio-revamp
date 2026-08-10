@@ -1,0 +1,286 @@
+/*
+  Newsstand design tokens.
+
+  Every value below is extracted from reference/newsstand-original (the
+  locked golden master), not invented. Values that recur only once or twice
+  in a single context are deliberately left OUT of this file and stay
+  literal at the point of use in future components — tokenizing a one-off
+  does not create reuse, it just moves the number.
+*/
+
+:root {
+  /* ---------------------------------------------------------------------
+     Color roles — verified source hex values. Kept distinct on purpose:
+     the design uses many close browns/grays for different jobs (secondary
+     copy vs. handwriting vs. muted metadata vs. rule lines). Collapsing
+     them into one "neutral" would erase intentional differentiation.
+     --------------------------------------------------------------------- */
+  --color-ink: #17130f;
+  --color-paper: #efe9dc;
+  --color-red: #e2231a;
+  --color-yellow: #ffe600;
+  --color-white: #ffffff;
+
+  --color-muted-metadata: #6f6656;
+  --color-copy-secondary: #544a3d;
+  --color-handwriting: #4a4034;
+  --color-handwriting-dark: #3f372c;
+  --color-rule-soft: #c3b9a4;
+  --color-rule-muted: #b3a992;
+  --color-copy-inverse-muted: #bdb5a4;
+  --color-utility-neutral: #5e5648;
+
+  --color-paper-hover: #e5ddcc;
+  --color-paper-active: #ded5c2;
+
+  --color-stripe-a: #ded7c6;
+  --color-stripe-b: #e7e0d0;
+
+  --color-yellow-active: #f2d900;
+  --color-handwriting-on-red: #ffd9d6;
+
+  /* Semantic aliases for the roles components will reach for most often. */
+  --color-surface: var(--color-paper);
+  --color-surface-hover: var(--color-paper-hover);
+  --color-surface-active: var(--color-paper-active);
+  --color-text: var(--color-ink);
+  --color-text-secondary: var(--color-copy-secondary);
+  --color-text-muted: var(--color-muted-metadata);
+  --color-accent: var(--color-red);
+  --color-highlight: var(--color-yellow);
+  --color-highlight-active: var(--color-yellow-active);
+
+  /* ---------------------------------------------------------------------
+     Font weights — the only three the design vocabulary uses.
+     --------------------------------------------------------------------- */
+  --weight-normal: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---------------------------------------------------------------------
+     Typography — display / heading / body / mono scales.
+     Sizes are tokenized only where the exact same value recurs across
+     multiple, unrelated contexts in the source. Many contextual clamp()
+     values (e.g. one-off pull quotes) are intentionally NOT listed here;
+     they remain literal at their call site.
+     --------------------------------------------------------------------- */
+
+  /* Archivo Black — display. Only the cover masthead recurs as a role;
+     other Archivo Black sizes (rank numerals, stat callouts) are one-off
+     display moments and stay contextual. */
+  --font-size-display-masthead: clamp(46px, 12.4vw, 144px);
+
+  /* Barlow Condensed — editorial headings, always weight 600. Roles below
+     are the exact clamp() values that repeat 3+ times across the source. */
+  --font-size-heading-quote: clamp(28px, 4.6vw, 42px); /* line-height .98 */
+  --font-size-heading-md: clamp(26px, 3.6vw, 34px); /* line-height 1 */
+  --font-size-heading-section: clamp(26px, 3.2vw, 30px); /* line-height .94 */
+  --font-size-heading-card: clamp(26px, 3.4vw, 30px); /* line-height .96 */
+  --font-size-heading-item: clamp(22px, 2.9vw, 26px); /* line-height .98 */
+  --font-size-heading-sm: clamp(21px, 2.6vw, 24px); /* line-height 1 */
+  --font-size-heading-xs: clamp(19px, 2.2vw, 22px); /* line-height 1.02 */
+
+  /* Source Serif 4 — body copy. Fixed sizes recur across many contexts. */
+  --font-size-body: 14px; /* line-height 1.5 most common */
+  --font-size-body-sm: 13px;
+  --font-size-body-compact: 13.5px;
+  --font-size-caption: 12.5px;
+
+  /* Source Serif 4 — fluid editorial roles. */
+  --font-size-dek-fluid: clamp(14px, 1.6vw, 14.5px); /* deck under headlines */
+  --font-size-lede-fluid: clamp(14.5px, 1.6vw, 15.5px); /* two-column body */
+  --font-size-intro-fluid: clamp(15px, 2vw, 17px);
+  --font-size-feature-lede-fluid: clamp(16px, 2.2vw, 20px);
+
+  /* Space Mono — the full recurring fixed-size vocabulary. */
+  --font-size-mono-9: 9px;
+  --font-size-mono-9-5: 9.5px;
+  --font-size-mono-10: 10px;
+  --font-size-mono-10-5: 10.5px;
+  --font-size-mono-11: 11px;
+  --font-size-mono-13: 13px;
+  --font-size-mono-15: 15px;
+
+  /* Space Mono — fluid label/utility roles that recur 2+ times. */
+  --font-size-mono-fluid-tag: clamp(10px, 1.6vw, 11px);
+  --font-size-mono-fluid-address: clamp(11.5px, 2.4vw, 14px);
+  --font-size-mono-fluid-kicker: clamp(9.5px, 2vw, 11px);
+  /* Folio bar. Source asks for weight 600 here; see fonts.css for the
+     Space Mono 600 availability quirk this size is paired with. */
+  --font-size-mono-fluid-folio: clamp(9px, 2.2vw, 11px);
+
+  /* Line-height — reusable editorial roles. The source's full vocabulary
+     (.72 .8 .82 .84 .85 .86 .9 .94 .96 .98 1 1.02 1.05 1.1 1.2 1.25 1.3
+     1.35 1.4 1.45 1.5 1.6) is intentionally not fully tokenized: only the
+     values that anchor a named role below are promoted. Nearby contextual
+     values remain literal and available where a component needs them.
+     --------------------------------------------------------------------- */
+  --leading-display: 0.82;
+  --leading-display-page: 0.86; /* Archivo Black page-level display headings */
+  --leading-heading-tight: 0.94;
+  --leading-heading: 0.96;
+  --leading-heading-relaxed: 0.98; /* Barlow Condensed editorial headings */
+  --leading-heading-loose: 1.02;
+  --leading-display-compact: 0.9; /* Archivo Black compact display/numerals */
+  --leading-normal: 1;
+  --leading-label: 1.05;
+  --leading-hand: 1.3; /* Architects Daughter handwriting default */
+  --leading-copy-compact: 1.35;
+  --leading-body: 1.4;
+  --leading-copy-loose: 1.45;
+  --leading-body-relaxed: 1.5;
+  --leading-copy: 1.6;
+
+  /* Letter-spacing — every recurring role, mapped to where it's used in
+     the source rather than averaged or renamed to something generic.
+     --------------------------------------------------------------------- */
+  --tracking-display: -0.035em; /* masthead / large Archivo Black headlines */
+  --tracking-brand-compact: -0.03em; /* small clickable wordmark in nav */
+  --tracking-address: 0.06em; /* email / handle links */
+  --tracking-strong: 0.08em; /* bold statement lines */
+  --tracking-metadata: 0.1em; /* byline / utility metadata */
+  --tracking-utility: 0.12em; /* date / read-time utility text */
+  --tracking-folio: 0.13em; /* folio bar (issue / date / price row) */
+  --tracking-tag: 0.14em; /* sticker-style tag & badge text */
+  --tracking-label: 0.16em; /* label chips ("Cover Story", CTAs) */
+  --tracking-nav: 0.18em; /* primary navigation links */
+  --tracking-kicker: 0.2em; /* section kickers ("The Spec") */
+  --tracking-section: 0.24em; /* loudest section kicker ("In This Issue") */
+
+  /* ---------------------------------------------------------------------
+     Borders & radii. The design has no rounded-card language — the only
+     recurring radius is a full circle used for dot/ripple indicators.
+     --------------------------------------------------------------------- */
+  --border-width-hairline: 1px;
+  --border-width-standard: 2px;
+  --border-width-heavy: 3px;
+
+  /* The two verified recurring border treatments — no dashed/other. */
+  --border-style-solid: solid;
+  --border-style-dotted: dotted;
+
+  --radius-none: 0;
+  --radius-circle: 50%;
+
+  /* ---------------------------------------------------------------------
+     Shadows — hard, zero-blur offset shadows only. No blur-based
+     elevation scale exists in the source; do not add one.
+     --------------------------------------------------------------------- */
+  --shadow-hard-xs: 1px 1px 0 var(--color-red);
+  --shadow-hard-sm: 2px 2px 0 var(--color-ink);
+  --shadow-hard-sm-red: 2px 2px 0 var(--color-red);
+  --shadow-hard-sm-yellow: 2px 2px 0 var(--color-yellow);
+  --shadow-hard-md: 3px 3px 0 var(--color-ink);
+  --shadow-hard-lg-red: 5px 5px 0 var(--color-red);
+  --shadow-hard-lg-red-alt: 6px 6px 0 var(--color-red);
+  --shadow-hard-lg-yellow: 6px 6px 0 var(--color-yellow);
+  --shadow-hard-xl: 7px 7px 0 var(--color-ink);
+  --shadow-hard-2xl: 8px 8px 0 var(--color-ink);
+  --shadow-hard-2xl-red: 8px 8px 0 var(--color-red);
+
+  --text-shadow-sm: 2px 2px 0 var(--color-ink);
+  --text-shadow-md: 4px 4px 0 var(--color-ink);
+  --text-shadow-display: clamp(3px, 0.9vw, 7px) clamp(3px, 0.9vw, 7px) 0
+    var(--color-ink);
+
+  /* ---------------------------------------------------------------------
+     Spacing — the near-neighbor scale exists on purpose in the source;
+     it is not a rounding error. Preserve it rather than snapping every
+     value to a conventional 4/8/16 grid.
+     --------------------------------------------------------------------- */
+  --space-6: 6px;
+  --space-7: 7px;
+  --space-8: 8px;
+  --space-9: 9px;
+  --space-10: 10px;
+  --space-11: 11px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-15: 15px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-22: 22px;
+  --space-24: 24px;
+  --space-26: 26px;
+  --space-28: 28px;
+  --space-30: 30px;
+  --space-34: 34px;
+  --space-48: 48px;
+
+  /* Fluid layout spacing (page rhythm, not component padding). */
+  --space-fluid-sm: clamp(22px, 4vw, 34px);
+  --space-fluid-md: clamp(34px, 5vw, 48px);
+  --space-shell-xs: clamp(16px, 3vw, 26px);
+  --space-shell-sm: clamp(20px, 3vw, 30px);
+
+  /* ---------------------------------------------------------------------
+     Layout / content measurements.
+     Grid-minmax() values from the source (120/230/240/250/260/290/300px)
+     are deliberately NOT included here — each is scoped to a specific,
+     not-yet-built layout and does not represent one interchangeable card
+     width. Promote a specific one to a token only once a Sprint 1B
+     component actually reuses it across contexts.
+     --------------------------------------------------------------------- */
+  --content-max-width: 1220px;
+  --space-gutter: clamp(14px, 3.5vw, 26px); /* primary page gutter */
+  --columns-width: 330px; /* editorial two-column layout */
+  --columns-gap: 28px;
+  --measure-60: 60ch;
+  --measure-62: 62ch;
+
+  /* ---------------------------------------------------------------------
+     Interaction threshold. This is NOT a CSS breakpoint — it is the exact
+     `window.innerWidth > 900` check the golden master's runtime uses to
+     gate desktop-only cursor-preview behavior. QA viewports (1440/768/390)
+     are comparison targets, not evidence of a breakpoint system.
+     --------------------------------------------------------------------- */
+  --interaction-cursor-min-width: 900px;
+
+  /* ---------------------------------------------------------------------
+     Z-index roles — every semantic layer verified in the source. No
+     arbitrary 100/999/9999 values.
+     --------------------------------------------------------------------- */
+  --z-sticky-nav: 30;
+  --z-floating-control: 40;
+  --z-cursor-preview: 45;
+  --z-transition-overlay: 60;
+  --z-pointer-ripple: 70;
+
+  /* ---------------------------------------------------------------------
+     Motion — durations and easing. Deliberately keeps .32/.34/.36 (and
+     other close neighbors) distinct rather than collapsing them into one
+     "300ms" token; each maps to a different interaction weight.
+     --------------------------------------------------------------------- */
+  --ease-editorial: cubic-bezier(
+    0.2,
+    0.7,
+    0.2,
+    1
+  ); /* dominant editorial ease */
+  --ease-standard: ease;
+  --ease-linear: linear;
+  --ease-stamp: cubic-bezier(0.2, 0.9, 0.3, 1);
+  --ease-wipe: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --duration-xs: 0.25s;
+  --duration-sm: 0.26s;
+  --duration-control: 0.3s; /* generic hover/active feedback */
+  --duration-hover: 0.32s; /* color/background/shadow hover feedback */
+  --duration-transform: 0.34s; /* row translate hover/active */
+  --duration-card: 0.36s; /* card hover shadow/transform */
+  --duration-badge: 0.45s; /* badge stamp-in animation */
+  --duration-scrawl-fade: 0.5s; /* handwriting fade-in feedback */
+  --duration-lift: 0.62s;
+  --duration-lg: 0.65s;
+  --duration-wipe: 0.72s; /* page-transition wipe (Sprint 1B) */
+  --duration-xl: 0.75s;
+  --duration-scrawl: 0.8s; /* handwriting scrawl-in reveal */
+  --duration-2xl: 0.85s;
+  --duration-loop: 34s; /* slow background/marquee-style loop */
+
+  /* Runtime-only durations, exposed as roles for the modules that will
+     consume them in a later sprint. Not implemented in Sprint 1A. */
+  --duration-count-up: 1250ms;
+  --duration-wipe-timeout: 760ms;
+}

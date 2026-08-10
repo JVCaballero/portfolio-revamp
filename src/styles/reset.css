@@ -1,0 +1,12 @@
+/*
+  Minimal, source-backed normalization only. This is deliberately not a
+  conventional CSS reset: the Newsstand golden master does not establish
+  box-sizing:border-box, margin/list normalization, generic media display,
+  form font inheritance, or table border-collapse anywhere in its own
+  stylesheet, so none of those are added here. Only the golden master's
+  own text-size-adjust rule is preserved.
+*/
+
+html {
+  -webkit-text-size-adjust: 100%;
+}

@@ -1,0 +1,87 @@
+/*
+  Global CSS foundation. Assembles the cascade (reset -> tokens -> base ->
+  utilities) and establishes only golden-master global behavior: paper
+  background, ink foreground, default font, source-compatible body
+  overflow, focus treatment, and the reduced-motion foundation. No
+  component or page styling belongs here.
+*/
+
+@layer reset, tokens, base, utilities;
+
+@import './reset.css' layer(reset);
+@import './tokens.css' layer(tokens);
+@import './fonts.css' layer(tokens);
+@import './utilities.css' layer(utilities);
+
+@layer base {
+  body {
+    margin: 0;
+    overflow-x: hidden;
+    background: var(--color-surface);
+    color: var(--color-text);
+    /* Matches the golden master's root wrapper, which sets Barlow
+       Condensed as the inherited default; most text then overrides its
+       own font-family explicitly (Source Serif 4 body copy, Space Mono
+       labels, Archivo Black display). */
+    font-family: var(--font-heading);
+  }
+
+  /* Verbatim golden-master global anchor behavior. */
+  a {
+    color: var(--color-red);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-ink);
+  }
+
+  /* Verbatim golden-master global image rule. */
+  img {
+    max-width: 100%;
+  }
+
+  /* Approved, narrow keyboard-focus treatment (RDR-permitted accessibility
+     addition). Uses only existing visual vocabulary: ink/red, no new
+     accent colors, no glows or rounded halos. */
+  :focus-visible {
+    outline: 2px solid var(--color-red);
+    outline-offset: 3px;
+  }
+
+  /* Reference-compatible global fallback, matching the golden master's own
+     `@media (prefers-reduced-motion:reduce)` rule verbatim. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    /* Also collapse the reusable duration tokens themselves, so any
+       future component reading --duration-* directly (rather than via a
+       plain `transition`/`animation` shorthand already caught above)
+       still respects reduced motion. */
+    :root {
+      --duration-xs: 0.01ms;
+      --duration-sm: 0.01ms;
+      --duration-control: 0.01ms;
+      --duration-hover: 0.01ms;
+      --duration-transform: 0.01ms;
+      --duration-card: 0.01ms;
+      --duration-badge: 0.01ms;
+      --duration-scrawl-fade: 0.01ms;
+      --duration-lift: 0.01ms;
+      --duration-lg: 0.01ms;
+      --duration-wipe: 0.01ms;
+      --duration-xl: 0.01ms;
+      --duration-scrawl: 0.01ms;
+      --duration-2xl: 0.01ms;
+      --duration-loop: 0.01ms;
+      --duration-count-up: 0.01ms;
+      --duration-wipe-timeout: 0.01ms;
+    }
+  }
+}
