@@ -1,0 +1,5 @@
+# Preserve the immutable exported Newsstand reference byte-for-byte across platforms.
+reference/newsstand-original/** -text
+
+# Immutable exported design reference; preserve bytes exactly.
+reference/newsstand-original/** -whitespace

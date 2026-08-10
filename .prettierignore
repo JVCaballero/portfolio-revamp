@@ -1,0 +1,9 @@
+.astro/
+dist/
+node_modules/
+playwright-report/
+reference/newsstand-original/
+test-results/
+tests/baselines/
+
+pnpm-lock.yaml

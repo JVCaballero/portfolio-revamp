@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Archivo+Black&family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;1,600&family=Space+Mono:wght@400;700&family=Architects+Daughter&display=swap" rel="stylesheet">
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#efe9dc;overflow-x:hidden}
+a{color:#e2231a;text-decoration:none}a:hover{color:#17130f}
+img{max-width:100%}
+@keyframes dv-marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes dv-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes dv-pop{from{opacity:0;transform:rotate(-8deg) scale(.82)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
+@keyframes dv-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes dv-line{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes dv-stamp{from{opacity:0;transform:rotate(-6deg) scale(1.3)}to{opacity:1;transform:rotate(-6deg) scale(1)}}
+@keyframes dv-wipe{0%{transform:scaleX(0);opacity:1}62%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
+@keyframes dv-scrawl{from{opacity:0;transform:rotate(-2deg) translateY(5px)}to{opacity:1;transform:rotate(-2deg) translateY(0)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+</style>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#efe9dc"/><rect x="14" y="40" width="72" height="20" fill="#e2231a"/><text x="50" y="55" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="bold" fill="#17130f" text-anchor="middle">C!</text><rect x="14" y="66" width="72" height="4" fill="#17130f"/><rect x="14" y="30" width="40" height="4" fill="#17130f"/></svg></template>
+</helmet>
+
+<div style="background:#efe9dc;color:#17130f;font-family:'Barlow Condensed',sans-serif;min-height:100vh;display:flex;flex-direction:column">
+
+<div style="position:sticky;top:0;z-index:30;background:#efe9dc;border-bottom:2px solid #17130f">
+<div style="max-width:1220px;margin:0 auto;padding:10px clamp(14px,3.5vw,26px) 8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+<span onClick="{{ goCover }}" style="cursor:pointer;font:400 clamp(22px,5.4vw,30px)/1 'Archivo Black',sans-serif;color:#e2231a;letter-spacing:-.03em;text-shadow:2px 2px 0 #17130f;transition:text-shadow .32s ease,transform .32s ease" style-hover="text-shadow:4px 4px 0 #17130f;transform:translate(-1px,-1px)">CABALLERO!</span>
+<span style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#6f6656">Issue 05 · Aug 2026</span>
+</div>
+<span style="font:700 clamp(8.5px,2.2vw,10px) 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;background:#ffe600;padding:4px 8px;border:1px solid #17130f;transition:transform .32s ease,box-shadow .32s ease" style-hover="transform:translate(-1px,-1px);box-shadow:3px 3px 0 #17130f">Open to work · Nov 2026</span>
+</div>
+<div style="background:#17130f;color:#efe9dc;position:relative">
+<div style="max-width:1220px;margin:0 auto;padding:0 clamp(14px,3.5vw,26px);display:flex;gap:clamp(16px,3.4vw,30px);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+<div onClick="{{ goCover }}" data-magnet="1" style="flex:0 0 auto;cursor:pointer;padding:11px 0;display:flex;align-items:center;gap:6px;font:700 11px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;transition:color .3s ease,transform .3s ease" style-hover="color:#ffe600;transform:translateY(-1px)" style-active="color:#e2231a;transform:translateY(2px) scale(.94)"><sc-if value="{{ isCover }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;background:#ffe600;border-radius:50%;animation:dv-fade .3s ease both"></span></sc-if>Cover</div>
+<div onClick="{{ goFeature }}" data-magnet="1" style="flex:0 0 auto;cursor:pointer;padding:11px 0;display:flex;align-items:center;gap:6px;font:700 11px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;transition:color .3s ease,transform .3s ease" style-hover="color:#ffe600;transform:translateY(-1px)" style-active="color:#e2231a;transform:translateY(2px) scale(.94)"><sc-if value="{{ isFeature }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;background:#ffe600;border-radius:50%;animation:dv-fade .3s ease both"></span></sc-if>Feature</div>
+<div onClick="{{ goWork }}" data-magnet="1" style="flex:0 0 auto;cursor:pointer;padding:11px 0;display:flex;align-items:center;gap:6px;font:700 11px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;transition:color .3s ease,transform .3s ease" style-hover="color:#ffe600;transform:translateY(-1px)" style-active="color:#e2231a;transform:translateY(2px) scale(.94)"><sc-if value="{{ isWork }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;background:#ffe600;border-radius:50%;animation:dv-fade .3s ease both"></span></sc-if>Reviews</div>
+<div onClick="{{ goInterview }}" data-magnet="1" style="flex:0 0 auto;cursor:pointer;padding:11px 0;display:flex;align-items:center;gap:6px;font:700 11px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;transition:color .3s ease,transform .3s ease" style-hover="color:#ffe600;transform:translateY(-1px)" style-active="color:#e2231a;transform:translateY(2px) scale(.94)"><sc-if value="{{ isInterview }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;background:#ffe600;border-radius:50%;animation:dv-fade .3s ease both"></span></sc-if>The Interview</div>
+<div onClick="{{ goColumns }}" data-magnet="1" style="flex:0 0 auto;cursor:pointer;padding:11px 0;display:flex;align-items:center;gap:6px;font:700 11px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;transition:color .3s ease,transform .3s ease" style-hover="color:#ffe600;transform:translateY(-1px)" style-active="color:#e2231a;transform:translateY(2px) scale(.94)"><sc-if value="{{ isColumns }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;background:#ffe600;border-radius:50%;animation:dv-fade .3s ease both"></span></sc-if>Columns</div>
+<div onClick="{{ goBsides }}" data-magnet="1" style="flex:0 0 auto;cursor:pointer;padding:11px 0;display:flex;align-items:center;gap:6px;font:700 11px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;transition:color .3s ease,transform .3s ease" style-hover="color:#ffe600;transform:translateY(-1px)" style-active="color:#e2231a;transform:translateY(2px) scale(.94)"><sc-if value="{{ isBsides }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;background:#ffe600;border-radius:50%;animation:dv-fade .3s ease both"></span></sc-if>B-Sides</div>
+<div onClick="{{ goRotation }}" data-magnet="1" style="flex:0 0 auto;cursor:pointer;padding:11px 0;display:flex;align-items:center;gap:6px;font:700 11px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;transition:color .3s ease,transform .3s ease" style-hover="color:#ffe600;transform:translateY(-1px)" style-active="color:#e2231a;transform:translateY(2px) scale(.94)"><sc-if value="{{ isRotation }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;background:#ffe600;border-radius:50%;animation:dv-fade .3s ease both"></span></sc-if>Rotation</div>
+<div onClick="{{ goLetters }}" data-magnet="1" style="flex:0 0 auto;cursor:pointer;padding:11px 0;display:flex;align-items:center;gap:6px;font:700 11px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;transition:color .3s ease,transform .3s ease" style-hover="color:#ffe600;transform:translateY(-1px)" style-active="color:#e2231a;transform:translateY(2px) scale(.94)"><sc-if value="{{ isLetters }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;background:#ffe600;border-radius:50%;animation:dv-fade .3s ease both"></span></sc-if>Letters</div>
+</div>
+<div data-progress="1" style="position:absolute;left:0;bottom:0;height:2px;width:0;background:#e2231a"></div>
+</div>
+</div>
+
+<div style="flex:1 0 auto;min-width:0">
+
+<sc-if value="{{ isCover }}" hint-placeholder-val="{{ true }}">
+<div style="animation:dv-in .62s cubic-bezier(.2,.7,.2,1) both">
+
+<div style="max-width:1220px;margin:0 auto;padding:clamp(16px,3vw,26px) clamp(14px,3.5vw,26px) clamp(20px,3vw,30px);border-bottom:2px solid #17130f">
+<div style="display:flex;justify-content:space-between;gap:10px 20px;flex-wrap:wrap;align-items:flex-end;border-bottom:2px solid #17130f;padding-bottom:6px;margin-bottom:10px;font:600 clamp(9px,2.2vw,11px) 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase">
+<span>Issue 05</span><span>August 2026</span><span>The engineering &amp; noise quarterly</span><span>₱250 / $5</span>
+</div>
+<div style="display:flex;align-items:baseline;gap:clamp(10px,2.5vw,18px);flex-wrap:wrap;margin-bottom:clamp(18px,3vw,26px)">
+<h1 style="font:400 clamp(46px,12.4vw,144px)/.82 'Archivo Black',sans-serif;margin:0;color:#e2231a;letter-spacing:-.035em;text-shadow:clamp(3px,.9vw,7px) clamp(3px,.9vw,7px) 0 #17130f">CABALLERO!</h1>
+<span style="font:600 clamp(13px,2.6vw,16px)/1.05 'Barlow Condensed',sans-serif;letter-spacing:.14em;text-transform:uppercase;background:#17130f;color:#ffe600;padding:6px 9px">The<br>Portfolio<br>Issue</span>
+</div>
+
+<div style="display:flex;gap:clamp(18px,3vw,28px);flex-wrap:wrap;align-items:flex-start">
+<div style="flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:clamp(16px,2.4vw,22px)">
+<div onClick="{{ goFeature }}" style="cursor:pointer;transition:transform .34s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateX(4px)" style-active="transform:translateX(7px) scale(.99)">
+<div style="display:inline-block;background:#e2231a;color:#fff;font:700 10.5px 'Space Mono',monospace;letter-spacing:.16em;padding:3px 7px;margin-bottom:7px">COVER STORY</div>
+<div style="font:600 clamp(30px,4.4vw,40px)/.94 'Barlow Condensed',sans-serif;text-transform:uppercase">The inbox that learned to answer itself</div>
+<div style="font:400 clamp(13.5px,1.5vw,15px)/1.3 'Source Serif 4',serif;font-style:italic;margin-top:7px;max-width:34ch">900 emails a week, three tired staff, one n8n canvas — and the four routes that never touched a model.</div>
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2231a;margin-top:9px">Read the case file →</div>
+</div>
+<div onClick="{{ goWork }}" style="cursor:pointer;border-top:2px solid #17130f;padding-top:11px;transition:transform .34s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateX(4px)" style-active="transform:translateX(7px) scale(.99)">
+<div style="font:600 clamp(24px,3.2vw,30px)/.96 'Barlow Condensed',sans-serif;text-transform:uppercase">Figma to paying customers in <span style="background:#ffe600;padding:0 4px">eleven weeks</span></div>
+<div style="font:400 12.5px/1.25 'Source Serif 4',serif;margin-top:6px">Two founders, no backend team. p. 22</div>
+</div>
+</div>
+
+<div style="flex:1 1 300px;min-width:0;position:relative">
+<div style="aspect-ratio:3/4;border:2px solid #17130f;overflow:hidden;background:repeating-linear-gradient(45deg,#ded7c6 0 10px,#e7e0d0 10px 20px)">
+<img data-parallax="10" src="https://picsum.photos/seed/caballero-portrait/900/1200" alt="Cover portrait" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.08);transition:filter .72s ease,transform .8s cubic-bezier(.2,.7,.2,1)" style-hover="filter:none;transform:scale(1.035)">
+</div>
+<div style="position:absolute;right:-8px;top:-14px;transform:rotate(-8deg);background:#ffe600;border:2px solid #17130f;padding:9px 11px;text-align:center;animation:dv-pop .5s .3s ease both;transition:transform .25s cubic-bezier(.2,.7,.2,1)" style-hover="transform:rotate(-3deg) scale(1.07)">
+<div style="font:400 clamp(20px,3vw,26px)/.9 'Archivo Black',sans-serif;text-transform:uppercase">5 yrs</div>
+<div style="font:700 9px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;margin-top:3px">full-stack<br>&amp; AI</div>
+</div>
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 clamp(16px,2.1vw,19px)/1.25 'Architects Daughter',cursive;color:#4a4034;transform:rotate(-2deg);margin-top:12px;animation:dv-scrawl .8s .45s ease both">yes, that's a real baton in the other photo →</div>
+</sc-if>
+</div>
+
+<div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:clamp(14px,2.2vw,18px)">
+<div onClick="{{ goInterview }}" style="cursor:pointer;transition:transform .34s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateX(-4px)" style-active="transform:translateX(-7px) scale(.99)">
+<div style="font:600 clamp(26px,3.4vw,32px)/.94 'Barlow Condensed',sans-serif;text-transform:uppercase">“Conducting is just standup with a baton”</div>
+<div style="font:400 12.5px/1.3 'Source Serif 4',serif;font-style:italic;margin-top:6px">Five years of code, one marching band, and a bar-gig setlist that saved a launch. p. 12</div>
+</div>
+<div onClick="{{ goBsides }}" style="cursor:pointer;border-top:2px solid #17130f;padding-top:10px;transition:transform .34s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateX(-4px)" style-active="transform:translateX(-7px) scale(.99)">
+<div style="font:700 13px/1.35 'Space Mono',monospace;letter-spacing:.08em;text-transform:uppercase">Plus! Four side projects rated out of five</div>
+</div>
+<div style="display:flex;align-items:flex-end;gap:10px;margin-top:4px">
+<div style="width:88px;height:44px;background:repeating-linear-gradient(90deg,#17130f 0 2px,transparent 2px 4px,#17130f 4px 5px,transparent 5px 9px)"></div>
+<span style="font:400 9px 'Space Mono',monospace;letter-spacing:.1em;color:#5e5648">HIRE-ME-2026</span>
+</div>
+</div>
+</div>
+</div>
+
+<div style="max-width:1220px;margin:0 auto;padding:clamp(24px,4vw,34px) clamp(14px,3.5vw,26px) clamp(30px,5vw,46px)">
+<div data-reveal="1" style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#e2231a;border-bottom:2px solid #17130f;padding-bottom:7px;margin-bottom:18px">In this issue</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px">
+<div data-reveal="1" onClick="{{ goFeature }}" style="cursor:pointer;border:2px solid #17130f;padding:15px;background:#efe9dc;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease,background .36s ease,color .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:7px 7px 0 #17130f;background:#17130f;color:#efe9dc" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2231a">p.04 — Feature</div>
+<div style="font:600 clamp(26px,3.2vw,30px)/.94 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:6px">The Cover Story</div>
+<div style="font:400 12.5px/1.4 'Source Serif 4',serif;margin-top:6px">One case file, told long: research, routes, evals, what shipped.</div>
+</div>
+<div data-reveal="1" onClick="{{ goWork }}" style="cursor:pointer;border:2px solid #17130f;padding:15px;background:#efe9dc;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease,background .36s ease,color .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:7px 7px 0 #17130f;background:#17130f;color:#efe9dc" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2231a">p.18 — Reviews</div>
+<div style="font:600 clamp(26px,3.2vw,30px)/.94 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:6px">All The Work</div>
+<div style="font:400 12.5px/1.4 'Source Serif 4',serif;margin-top:6px">Six builds, rated and reviewed — web, mobile and automation.</div>
+</div>
+<div data-reveal="1" onClick="{{ goInterview }}" style="cursor:pointer;border:2px solid #17130f;padding:15px;background:#efe9dc;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease,background .36s ease,color .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:7px 7px 0 #17130f;background:#17130f;color:#efe9dc" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2231a">p.12 — Interview</div>
+<div style="font:600 clamp(26px,3.2vw,30px)/.94 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:6px">Who I Am</div>
+<div style="font:400 12.5px/1.4 'Source Serif 4',serif;margin-top:6px">The band, the bar gigs, the manga, the résumé at the back.</div>
+</div>
+<div data-reveal="1" onClick="{{ goRotation }}" style="cursor:pointer;border:2px solid #17130f;padding:15px;background:#ffe600;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease,background .36s ease,color .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:7px 7px 0 #17130f;background:#17130f;color:#ffe600" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase">p.30 — Now</div>
+<div style="font:600 clamp(26px,3.2vw,30px)/.94 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:6px">This Month's Rotation</div>
+<div style="font:400 12.5px/1.4 'Source Serif 4',serif;margin-top:6px">What I'm building, playing, reading and rehearsing right now.</div>
+</div>
+</div>
+</div>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ isFeature }}" hint-placeholder-val="{{ false }}">
+<div style="animation:dv-in .62s cubic-bezier(.2,.7,.2,1) both;max-width:1220px;margin:0 auto;padding:clamp(22px,4vw,34px) clamp(14px,3.5vw,26px) clamp(34px,5vw,48px)">
+
+<div style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#e2231a;margin-bottom:10px">Feature / p.04 · AI &amp; Automation</div>
+<h1 style="font:400 clamp(38px,8.4vw,94px)/.84 'Archivo Black',sans-serif;margin:0 0 14px;letter-spacing:-.035em;text-transform:uppercase;max-width:17ch;text-wrap:balance">The inbox that learned to answer itself</h1>
+<div style="font:400 clamp(16px,2.2vw,20px)/1.4 'Source Serif 4',serif;font-style:italic;max-width:62ch;margin-bottom:16px">Nine hundred customer emails a week, three overworked staff, and a brief that just said “add AI.” What we did instead — and why the boring version is the one still running.</div>
+<div style="display:flex;justify-content:space-between;gap:8px 22px;flex-wrap:wrap;border-top:2px solid #17130f;border-bottom:2px solid #17130f;padding:9px 0;font:400 clamp(9.5px,2vw,11px) 'Space Mono',monospace;letter-spacing:.13em;text-transform:uppercase;margin-bottom:22px">
+<span>Words &amp; build: John Vincent Caballero</span><span>Role: solo — research to deploy</span><span>7 weeks · 2026</span><span>Stack: n8n · TypeScript · Postgres · LLM</span>
+</div>
+
+<div data-reveal="1" style="aspect-ratio:21/9;min-height:200px;border:2px solid #17130f;overflow:hidden;background:repeating-linear-gradient(45deg,#ded7c6 0 10px,#e7e0d0 10px 20px)">
+<img data-parallax="14" src="https://picsum.photos/seed/caballero-hero/1600/700" alt="The workflow canvas" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.06);transition:filter .72s ease,transform .8s cubic-bezier(.2,.7,.2,1)" style-hover="filter:none;transform:scale(1.03)">
+</div>
+<div style="font:400 clamp(15px,1.9vw,18px)/1.3 'Architects Daughter',cursive;color:#4a4034;margin:10px 0 26px;transform:rotate(-.6deg)">Fig. 1 — the finished routing canvas. It was not this tidy in week two.</div>
+
+<div style="display:flex;gap:clamp(20px,3vw,34px);flex-wrap:wrap;align-items:flex-start">
+<div style="flex:1 1 min(100%,520px);min-width:0">
+
+<div data-reveal="1" style="columns:330px 2;column-gap:28px;column-rule:1px solid #c3b9a4;font:400 clamp(14.5px,1.6vw,15.5px)/1.6 'Source Serif 4',serif;text-wrap:pretty">
+<p style="margin:0 0 12px"><span style="float:left;font:400 62px/.72 'Archivo Black',sans-serif;padding:6px 9px 0 0;color:#e2231a">L</span>orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+<p style="margin:0 0 12px">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum, sed ut perspiciatis unde omnis iste natus error.</p>
+<p style="margin:0 0 12px">Sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</p>
+<p style="margin:0 0 12px">Sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore.</p>
+<p style="margin:0 0 12px">Et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.</p>
+<p style="margin:0">Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.</p>
+</div>
+
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:12px;align-items:flex-start;margin:18px 0 0;padding-left:2px">
+<span style="font:400 22px/1 'Architects Daughter',cursive;color:#e2231a">↳</span>
+<span style="font:400 clamp(15px,1.9vw,18px)/1.35 'Architects Daughter',cursive;color:#4a4034;max-width:46ch;transform:rotate(-.5deg)">note to self: this is the paragraph clients always quote back at me</span>
+</div>
+</sc-if>
+
+<div data-reveal="1" style="border-top:3px solid #17130f;border-bottom:3px solid #17130f;padding:18px 0;margin:26px 0">
+<div style="font:600 clamp(28px,4.6vw,42px)/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;max-width:22ch">“Neque porro quisquam est qui dolorem ipsum quia dolor sit amet — find that eighty per cent first.”</div>
+</div>
+
+<h2 data-reveal="1" style="font:400 clamp(26px,3.8vw,34px)/.94 'Archivo Black',sans-serif;text-transform:uppercase;margin:0 0 14px">Lorem ipsum, in five movements</h2>
+<div data-reveal="1" style="columns:330px 2;column-gap:28px;column-rule:1px solid #c3b9a4;font:400 clamp(14.5px,1.6vw,15.5px)/1.6 'Source Serif 4',serif;text-wrap:pretty;margin-bottom:26px">
+<p style="margin:0 0 12px">At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.</p>
+<p style="margin:0 0 12px">Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio.</p>
+<p style="margin:0 0 12px">Cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet.</p>
+<p style="margin:0 0 12px">Ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.</p>
+<p style="margin:0 0 12px">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.</p>
+<p style="margin:0">Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:8px">
+<div data-reveal="1" style="aspect-ratio:4/3;border:2px solid #17130f;overflow:hidden;background:repeating-linear-gradient(45deg,#ded7c6 0 9px,#e7e0d0 9px 18px)"><img src="https://picsum.photos/seed/caballero-fig1/900/700" alt="Review queue UI" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05);transition:filter .65s ease,transform .75s cubic-bezier(.2,.7,.2,1)" style-hover="filter:none;transform:scale(1.04)"></div>
+<div data-reveal="1" style="aspect-ratio:4/3;border:2px solid #17130f;overflow:hidden;background:repeating-linear-gradient(45deg,#ded7c6 0 9px,#e7e0d0 9px 18px)"><img src="https://picsum.photos/seed/caballero-fig2/900/700" alt="Evaluation spreadsheet" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05);transition:filter .65s ease,transform .75s cubic-bezier(.2,.7,.2,1)" style-hover="filter:none;transform:scale(1.04)"></div>
+</div>
+<div style="font:400 clamp(15px,1.9vw,18px)/1.3 'Architects Daughter',cursive;color:#4a4034;margin:0 0 26px;transform:rotate(-.5deg)">Figs. 2 &amp; 3 — the review queue, and the spreadsheet that outlived three rewrites.</div>
+
+<h2 data-reveal="1" style="font:400 clamp(26px,3.8vw,34px)/.94 'Archivo Black',sans-serif;text-transform:uppercase;margin:0 0 12px">How it was built</h2>
+<div style="display:flex;flex-direction:column;gap:16px;margin-bottom:26px">
+<div data-reveal="1" style="display:grid;grid-template-columns:clamp(40px,7vw,52px) 1fr;gap:clamp(10px,2vw,16px);border-bottom:1px solid #c3b9a4;padding-bottom:16px;transition:transform .34s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateX(5px)" style-active="transform:translateX(8px) scale(.99)"><div style="font:400 clamp(30px,5vw,40px)/.8 'Archivo Black',sans-serif;color:#e2231a">01</div><div><div style="font:600 clamp(21px,2.6vw,24px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Lorem ipsum dolor, not the roadmap</div><div style="font:400 14px/1.5 'Source Serif 4',serif;margin-top:5px">Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua enim ad minim veniam.</div></div></div>
+<div data-reveal="1" style="display:grid;grid-template-columns:clamp(40px,7vw,52px) 1fr;gap:clamp(10px,2vw,16px);border-bottom:1px solid #c3b9a4;padding-bottom:16px;transition:transform .34s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateX(5px)" style-active="transform:translateX(8px) scale(.99)"><div style="font:400 clamp(30px,5vw,40px)/.8 'Archivo Black',sans-serif;color:#e2231a">02</div><div><div style="font:600 clamp(21px,2.6vw,24px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Quis nostrud exercitation before you prompt</div><div style="font:400 14px/1.5 'Source Serif 4',serif;margin-top:5px">Ullamco laboris nisi ut aliquip ex ea commodo consequat, duis aute irure dolor in reprehenderit in voluptate.</div></div></div>
+<div data-reveal="1" style="display:grid;grid-template-columns:clamp(40px,7vw,52px) 1fr;gap:clamp(10px,2vw,16px);border-bottom:1px solid #c3b9a4;padding-bottom:16px;transition:transform .34s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateX(5px)" style-active="transform:translateX(8px) scale(.99)"><div style="font:400 clamp(30px,5vw,40px)/.8 'Archivo Black',sans-serif;color:#e2231a">03</div><div><div style="font:600 clamp(21px,2.6vw,24px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Velit esse cillum, never send</div><div style="font:400 14px/1.5 'Source Serif 4',serif;margin-top:5px">Dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt.</div></div></div>
+<div data-reveal="1" style="display:grid;grid-template-columns:clamp(40px,7vw,52px) 1fr;gap:clamp(10px,2vw,16px);transition:transform .34s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateX(5px)" style-active="transform:translateX(8px) scale(.99)"><div style="font:400 clamp(30px,5vw,40px)/.8 'Archivo Black',sans-serif;color:#e2231a">04</div><div><div style="font:600 clamp(21px,2.6vw,24px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Mollit anim id est laborum, every Friday</div><div style="font:400 14px/1.5 'Source Serif 4',serif;margin-top:5px">Totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</div></div></div>
+</div>
+
+<div data-reveal="1" style="background:#17130f;color:#efe9dc;padding:clamp(18px,3vw,24px)">
+<div style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#ffe600;margin-bottom:14px">The verdict</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:18px">
+<div><div data-count="82" data-suffix="%" style="font:400 clamp(34px,5vw,46px)/.9 'Archivo Black',sans-serif">82%</div><div style="font:400 12.5px/1.35 'Source Serif 4',serif;color:#bdb5a4;margin-top:5px">of volume handled by six intents</div></div>
+<div><div data-count="4" style="font:400 clamp(34px,5vw,46px)/.9 'Archivo Black',sans-serif">4</div><div style="font:400 12.5px/1.35 'Source Serif 4',serif;color:#bdb5a4;margin-top:5px">of those needed no model at all</div></div>
+<div><div data-count="11" data-suffix="h" style="font:400 clamp(34px,5vw,46px)/.9 'Archivo Black',sans-serif">11h</div><div style="font:400 12.5px/1.35 'Source Serif 4',serif;color:#bdb5a4;margin-top:5px">per week returned to the team</div></div>
+<div><div data-count="0" style="font:400 clamp(34px,5vw,46px)/.9 'Archivo Black',sans-serif">0</div><div style="font:400 12.5px/1.35 'Source Serif 4',serif;color:#bdb5a4;margin-top:5px">replies sent without a human</div></div>
+</div>
+</div>
+</div>
+
+<div style="flex:1 1 min(100%,260px);min-width:0">
+<div style="border:2px solid #17130f;padding:16px;margin-bottom:18px;position:sticky;top:118px;background:#efe9dc">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;border-bottom:2px solid #17130f;padding-bottom:7px;margin-bottom:11px">The spec</div>
+<div style="display:flex;flex-direction:column;gap:10px;font:400 13px/1.4 'Source Serif 4',serif">
+<div><span style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6f6656;display:block">Client</span>Regional retail ops team</div>
+<div><span style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6f6656;display:block">Role</span>Solo — research, build, deploy, handover</div>
+<div><span style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6f6656;display:block">Stack</span>n8n · TypeScript · Postgres · pgvector · OpenAI</div>
+<div><span style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6f6656;display:block">Timeline</span>7 weeks, two of them off-keyboard</div>
+<div><span style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6f6656;display:block">Still running</span>Yes — 14 months and counting</div>
+</div>
+<div style="border-top:2px solid #17130f;margin-top:14px;padding-top:12px">
+<div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6f6656;margin-bottom:6px">What I'd do differently</div>
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 clamp(16px,2vw,18.5px)/1.35 'Architects Daughter',cursive;color:#3f372c">build the eval sheet in week one, not week four. everything before that was vibes.</div>
+</sc-if>
+</div>
+</div>
+<div onClick="{{ goWork }}" data-magnet="1" style="cursor:pointer;background:#e2231a;color:#fff;padding:16px;transition:background .34s ease,transform .34s cubic-bezier(.2,.7,.2,1),box-shadow .34s ease" style-hover="background:#17130f;box-shadow:6px 6px 0 #ffe600" style-active="transform:translate(2px,2px);box-shadow:2px 2px 0 #ffe600">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;opacity:.85">Next</div>
+<div style="font:600 clamp(24px,3vw,28px)/.96 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:5px">See all six builds, rated →</div>
+</div>
+</div>
+</div>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ isWork }}" hint-placeholder-val="{{ false }}">
+<div style="animation:dv-in .62s cubic-bezier(.2,.7,.2,1) both;max-width:1220px;margin:0 auto;padding:clamp(22px,4vw,34px) clamp(14px,3.5vw,26px) clamp(34px,5vw,48px)">
+<div style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#e2231a;margin-bottom:8px">Reviews / p.18</div>
+<h1 style="font:400 clamp(34px,7.4vw,82px)/.86 'Archivo Black',sans-serif;margin:0 0 12px;letter-spacing:-.035em;text-transform:uppercase;text-wrap:balance">All the work, rated and reviewed</h1>
+<div style="font:400 clamp(15px,2vw,17px)/1.4 'Source Serif 4',serif;font-style:italic;max-width:60ch;margin-bottom:20px">Six things I built end to end. Star ratings are mine, and I am a harsh critic of my own past decisions.</div>
+<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+<span style="font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;background:#17130f;color:#efe9dc;padding:7px 12px;cursor:pointer;transition:transform .32s ease" style-hover="transform:translateY(-2px)" style-active="transform:translateY(2px) scale(.96)">All</span>
+<span style="font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;border:2px solid #17130f;padding:5px 11px;cursor:pointer;transition:background .32s ease,transform .32s ease" style-hover="background:#ffe600;transform:translateY(-2px)" style-active="background:#f2d900;transform:translateY(2px) scale(.96)">AI &amp; automation</span>
+<span style="font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;border:2px solid #17130f;padding:5px 11px;cursor:pointer;transition:background .32s ease,transform .32s ease" style-hover="background:#ffe600;transform:translateY(-2px)" style-active="background:#f2d900;transform:translateY(2px) scale(.96)">Web</span>
+<span style="font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;border:2px solid #17130f;padding:5px 11px;cursor:pointer;transition:background .32s ease,transform .32s ease" style-hover="background:#ffe600;transform:translateY(-2px)" style-active="background:#f2d900;transform:translateY(2px) scale(.96)">Mobile</span>
+</div>
+
+<div style="border-top:3px solid #17130f">
+
+<div data-reveal="1" data-preview="https://picsum.photos/seed/caballero-rev1/600/400" onClick="{{ goFeature }}" style="cursor:pointer;display:flex;gap:clamp(14px,2.4vw,22px);flex-wrap:wrap;padding:18px 10px;border-bottom:1px solid #c3b9a4;transition:background .34s ease,padding-left .34s cubic-bezier(.2,.7,.2,1)" style-hover="background:#e5ddcc;padding-left:20px" style-active="background:#ded5c2;padding-left:26px">
+<div style="flex:0 0 clamp(130px,20vw,210px);aspect-ratio:4/3;border:2px solid #17130f;overflow:hidden"><img src="https://picsum.photos/seed/caballero-rev1/600/400" alt="Support Autopilot" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05)"></div>
+<div style="flex:1 1 300px;min-width:0">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 clamp(26px,3.6vw,34px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Support Autopilot</span><sc-if value="{{ showRatings }}" hint-placeholder-val="{{ true }}"><span style="font:700 15px 'Space Mono',monospace;color:#e2231a">★★★★★</span></sc-if></div>
+<div style="font:400 clamp(10px,1.6vw,11px) 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#6f6656;margin:5px 0 8px">2026 · n8n + LLM · solo build · 7 weeks</div>
+<div style="font:400 clamp(14px,1.6vw,14.5px)/1.5 'Source Serif 4',serif;max-width:60ch">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Routes first, model second, human presses send — sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, deliberately boring, which is why it survived the year.</div>
+</div>
+<div style="flex:1 1 170px;min-width:0;border-left:2px solid #17130f;padding-left:14px"><div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#6f6656">Verdict</div><div style="font:600 clamp(19px,2.2vw,22px)/1.02 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:5px">The one I'd show first</div><div style="font:700 10px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#e2231a;margin-top:10px">Read the feature →</div></div>
+</div>
+
+<div data-reveal="1" data-preview="https://picsum.photos/seed/caballero-rev2/600/400" onClick="{{ goFeature }}" style="cursor:pointer;display:flex;gap:clamp(14px,2.4vw,22px);flex-wrap:wrap;padding:18px 10px;border-bottom:1px solid #c3b9a4;transition:background .34s ease,padding-left .34s cubic-bezier(.2,.7,.2,1)" style-hover="background:#e5ddcc;padding-left:20px" style-active="background:#ded5c2;padding-left:26px">
+<div style="flex:0 0 clamp(130px,20vw,210px);aspect-ratio:4/3;border:2px solid #17130f;overflow:hidden"><img src="https://picsum.photos/seed/caballero-rev2/600/400" alt="Clinic Booking" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05)"></div>
+<div style="flex:1 1 300px;min-width:0">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 clamp(26px,3.6vw,34px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Clinic Booking, Offline</span><sc-if value="{{ showRatings }}" hint-placeholder-val="{{ true }}"><span style="font:700 15px 'Space Mono',monospace;color:#e2231a">★★★★☆</span></sc-if></div>
+<div style="font:400 clamp(10px,1.6vw,11px) 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#6f6656;margin:5px 0 8px">2025 · React Native · lead engineer · 4 months</div>
+<div style="font:400 clamp(14px,1.6vw,14.5px)/1.5 'Source Serif 4',serif;max-width:60ch">Ut enim ad minim veniam, quis nostrud exercitation ullamco. Everything writes locally and reconciles later; laboris nisi ut aliquip ex ea commodo consequat, so the reception desk never waits on a spinner.</div>
+</div>
+<div style="flex:1 1 170px;min-width:0;border-left:2px solid #17130f;padding-left:14px"><div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#6f6656">Verdict</div><div style="font:600 clamp(19px,2.2vw,22px)/1.02 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:5px">Docked half a star for the sync bug of March</div></div>
+</div>
+
+<div data-reveal="1" data-preview="https://picsum.photos/seed/caballero-rev3/600/400" onClick="{{ goFeature }}" style="cursor:pointer;display:flex;gap:clamp(14px,2.4vw,22px);flex-wrap:wrap;padding:18px 10px;border-bottom:1px solid #c3b9a4;transition:background .34s ease,padding-left .34s cubic-bezier(.2,.7,.2,1)" style-hover="background:#e5ddcc;padding-left:20px" style-active="background:#ded5c2;padding-left:26px">
+<div style="flex:0 0 clamp(130px,20vw,210px);aspect-ratio:4/3;border:2px solid #17130f;overflow:hidden"><img src="https://picsum.photos/seed/caballero-rev3/600/400" alt="Marketplace" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05)"></div>
+<div style="flex:1 1 300px;min-width:0">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 clamp(26px,3.6vw,34px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Marketplace, Zero to Live</span><sc-if value="{{ showRatings }}" hint-placeholder-val="{{ true }}"><span style="font:700 15px 'Space Mono',monospace;color:#e2231a">★★★★☆</span></sc-if></div>
+<div style="font:400 clamp(10px,1.6vw,11px) 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#6f6656;margin:5px 0 8px">2024 · Next.js + Postgres · sole engineer · 11 weeks</div>
+<div style="font:400 clamp(14px,1.6vw,14.5px)/1.5 'Source Serif 4',serif;max-width:60ch">Duis aute irure dolor in reprehenderit — payments, listings, moderation and a deploy pipeline they could run themselves, in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</div>
+</div>
+<div style="flex:1 1 170px;min-width:0;border-left:2px solid #17130f;padding-left:14px"><div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#6f6656">Verdict</div><div style="font:600 clamp(19px,2.2vw,22px)/1.02 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:5px">Fast, honest, slightly over-engineered</div></div>
+</div>
+
+<div data-reveal="1" data-preview="https://picsum.photos/seed/caballero-rev4/600/400" onClick="{{ goFeature }}" style="cursor:pointer;display:flex;gap:clamp(14px,2.4vw,22px);flex-wrap:wrap;padding:18px 10px;border-bottom:1px solid #c3b9a4;transition:background .34s ease,padding-left .34s cubic-bezier(.2,.7,.2,1)" style-hover="background:#e5ddcc;padding-left:20px" style-active="background:#ded5c2;padding-left:26px">
+<div style="flex:0 0 clamp(130px,20vw,210px);aspect-ratio:4/3;border:2px solid #17130f;overflow:hidden"><img src="https://picsum.photos/seed/caballero-rev4/600/400" alt="Bot that says I don't know" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05)"></div>
+<div style="flex:1 1 300px;min-width:0">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 clamp(26px,3.6vw,34px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">A Bot That Says “I Don't Know”</span><sc-if value="{{ showRatings }}" hint-placeholder-val="{{ true }}"><span style="font:700 15px 'Space Mono',monospace;color:#e2231a">★★★★☆</span></sc-if></div>
+<div style="font:400 clamp(10px,1.6vw,11px) 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#6f6656;margin:5px 0 8px">2024 · RAG + guardrails · 6 weeks</div>
+<div style="font:400 clamp(14px,1.6vw,14.5px)/1.5 'Source Serif 4',serif;max-width:60ch">Excepteur sint occaecat cupidatat non proident. The interesting artefact isn't the bot, it's the 200-row evaluation sheet behind it — sunt in culpa qui officia deserunt mollit anim.</div>
+</div>
+<div style="flex:1 1 170px;min-width:0;border-left:2px solid #17130f;padding-left:14px"><div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#6f6656">Verdict</div><div style="font:600 clamp(19px,2.2vw,22px)/1.02 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:5px">Refusal is a feature</div></div>
+</div>
+
+<div data-reveal="1" data-preview="https://picsum.photos/seed/caballero-rev5/600/400" onClick="{{ goFeature }}" style="cursor:pointer;display:flex;gap:clamp(14px,2.4vw,22px);flex-wrap:wrap;padding:18px 10px;border-bottom:1px solid #c3b9a4;transition:background .34s ease,padding-left .34s cubic-bezier(.2,.7,.2,1)" style-hover="background:#e5ddcc;padding-left:20px" style-active="background:#ded5c2;padding-left:26px">
+<div style="flex:0 0 clamp(130px,20vw,210px);aspect-ratio:4/3;border:2px solid #17130f;overflow:hidden"><img src="https://picsum.photos/seed/caballero-rev5/600/400" alt="Ops dashboard" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05)"></div>
+<div style="flex:1 1 300px;min-width:0">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 clamp(26px,3.6vw,34px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Ops Dashboard Rebuild</span><sc-if value="{{ showRatings }}" hint-placeholder-val="{{ true }}"><span style="font:700 15px 'Space Mono',monospace;color:#e2231a">★★★☆☆</span></sc-if></div>
+<div style="font:400 clamp(10px,1.6vw,11px) 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#6f6656;margin:5px 0 8px">2023 · React + charts · team of three</div>
+<div style="font:400 clamp(14px,1.6vw,14.5px)/1.5 'Source Serif 4',serif;max-width:60ch">Nine spreadsheets replaced by one screen. Shipped on time; three stars because we designed for the manager who asked, not the eight people who used it daily — id est laborum.</div>
+</div>
+<div style="flex:1 1 170px;min-width:0;border-left:2px solid #17130f;padding-left:14px"><div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#6f6656">Verdict</div><div style="font:600 clamp(19px,2.2vw,22px)/1.02 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:5px">A lesson, kept on the shelf on purpose</div></div>
+</div>
+
+<div data-reveal="1" data-preview="https://picsum.photos/seed/caballero-rev6/600/400" onClick="{{ goFeature }}" style="cursor:pointer;display:flex;gap:clamp(14px,2.4vw,22px);flex-wrap:wrap;padding:18px 10px;border-bottom:3px solid #17130f;transition:background .34s ease,padding-left .34s cubic-bezier(.2,.7,.2,1)" style-hover="background:#e5ddcc;padding-left:20px" style-active="background:#ded5c2;padding-left:26px">
+<div style="flex:0 0 clamp(130px,20vw,210px);aspect-ratio:4/3;border:2px solid #17130f;overflow:hidden"><img src="https://picsum.photos/seed/caballero-rev6/600/400" alt="Bandstand" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05)"></div>
+<div style="flex:1 1 300px;min-width:0">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 clamp(26px,3.6vw,34px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Bandstand</span><sc-if value="{{ showRatings }}" hint-placeholder-val="{{ true }}"><span style="font:700 15px 'Space Mono',monospace;color:#e2231a">★★★★☆</span></sc-if></div>
+<div style="font:400 clamp(10px,1.6vw,11px) 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#6f6656;margin:5px 0 8px">Ongoing · side project · scores &amp; rehearsal calls</div>
+<div style="font:400 clamp(14px,1.6vw,14.5px)/1.5 'Source Serif 4',serif;max-width:60ch">Sheet music, parts and call times for forty musicians, built because I was the one maintaining the group chat. Real users, real complaints, no roadmap — quis nostrum exercitationem.</div>
+</div>
+<div style="flex:1 1 170px;min-width:0;border-left:2px solid #17130f;padding-left:14px"><div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#6f6656">Verdict</div><div style="font:600 clamp(19px,2.2vw,22px)/1.02 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:5px">The group chat is, of course, still going</div></div>
+</div>
+
+</div>
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 clamp(16px,2vw,19px)/1.35 'Architects Daughter',cursive;color:#4a4034;margin-top:16px;transform:rotate(-.6deg)">every row opens the same case-file layout — click any of them.</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isInterview }}" hint-placeholder-val="{{ false }}">
+<div style="animation:dv-in .62s cubic-bezier(.2,.7,.2,1) both;max-width:1220px;margin:0 auto;padding:clamp(22px,4vw,34px) clamp(14px,3.5vw,26px) clamp(34px,5vw,48px)">
+<div style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#e2231a;margin-bottom:8px">The Interview / p.12</div>
+<h1 style="font:400 clamp(34px,7.6vw,90px)/.85 'Archivo Black',sans-serif;margin:0 0 10px;letter-spacing:-.035em;text-transform:uppercase;text-wrap:balance">Forty players, one tempo, and a deploy on Sunday</h1>
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 clamp(17px,2.3vw,22px)/1.3 'Architects Daughter',cursive;color:#4a4034;margin:0 0 22px;transform:rotate(-.8deg);max-width:52ch">recorded over two long blacks, twice interrupted by a rehearsal call</div>
+</sc-if>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:clamp(16px,2.6vw,28px);margin-bottom:30px">
+<div data-reveal="1" style="aspect-ratio:4/5;border:2px solid #17130f;overflow:hidden;background:repeating-linear-gradient(45deg,#ded7c6 0 10px,#e7e0d0 10px 20px)"><img src="https://picsum.photos/seed/caballero-desk/900/1100" alt="At the desk" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.06);transition:filter .72s ease,transform .8s cubic-bezier(.2,.7,.2,1)" style-hover="filter:none;transform:scale(1.035)"></div>
+<div data-reveal="1" style="aspect-ratio:4/5;border:2px solid #17130f;overflow:hidden;background:repeating-linear-gradient(45deg,#ded7c6 0 10px,#e7e0d0 10px 20px)"><img src="https://picsum.photos/seed/caballero-stage/900/1100" alt="On stage" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.06);transition:filter .72s ease,transform .8s cubic-bezier(.2,.7,.2,1)" style-hover="filter:none;transform:scale(1.035)"></div>
+</div>
+
+<div style="display:flex;gap:clamp(20px,3vw,34px);flex-wrap:wrap;align-items:flex-start">
+<div style="flex:1 1 min(100%,520px);min-width:0">
+<div style="font:400 clamp(10px,1.8vw,12px) 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;border-top:2px solid #17130f;border-bottom:2px solid #17130f;padding:8px 0;margin-bottom:18px">John Vincent Caballero · Cebu, Philippines · five years in · answers lightly edited</div>
+<div data-reveal="1" style="columns:330px 2;column-gap:28px;column-rule:1px solid #c3b9a4;font:400 clamp(14.5px,1.6vw,15.5px)/1.6 'Source Serif 4',serif;text-wrap:pretty">
+<p style="margin:0 0 12px"><strong style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#e2231a">Q</strong> &nbsp;You direct a marching band and you ship software. Which is harder?</p>
+<p style="margin:0 0 12px">The band, easily. You cannot hotfix a field show at halftime. But they teach each other — both are forty small decisions that only work if everyone hits the same beat, and both fall apart the moment you stop rehearsing.</p>
+<p style="margin:0 0 12px"><strong style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#e2231a">Q</strong> &nbsp;Everyone wants AI in their product. What do you tell them?</p>
+<p style="margin:0 0 12px">That most of what they want is an if-statement with good manners. I'll happily build the model part — after we've found the boring 80% that doesn't need one. Clients think that's me talking them out of work. It's the opposite: it's what makes the model part survive contact with reality.</p>
+<p style="margin:0 0 12px"><strong style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#e2231a">Q</strong> &nbsp;Full-stack, mobile, automation — isn't that spread thin?</p>
+<p style="margin:0 0 12px">It's one skill wearing three coats: I like owning the thing from the first conversation to the deploy. Small teams don't need a specialist for each layer, they need someone who won't hand off the awkward middle.</p>
+<p style="margin:0 0 12px"><strong style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#e2231a">Q</strong> &nbsp;A bar-gig setlist saved a launch?</p>
+<p style="margin:0 0 12px">Sort of. I built Setlist between two acoustic sets because I kept forgetting capo positions. The offline sync pattern I hacked together that night is exactly what shipped in the clinic app six months later.</p>
+<p style="margin:0 0 12px"><strong style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#e2231a">Q</strong> &nbsp;Gacha games, manga, gadget reviews. Do those show up in the work?</p>
+<p style="margin:0">Constantly. Gacha UI is the most ruthlessly optimised interface design on earth — every tap is measured, every reward is paced. I've stolen more from a pull animation than from most dashboards. And reviewing gadgets keeps me writing about things I use, which is the same muscle as writing a case study.</p>
+</div>
+
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:12px;align-items:flex-start;margin:20px 0 0">
+<span style="font:400 24px/1 'Architects Daughter',cursive;color:#e2231a">*</span>
+<span style="font:400 clamp(16px,2vw,19px)/1.35 'Architects Daughter',cursive;color:#4a4034;max-width:48ch;transform:rotate(-.6deg)">he did in fact check his phone for the pull rates mid-answer. twice.</span>
+</div>
+</sc-if>
+
+<div data-reveal="1" style="border-top:3px solid #17130f;border-bottom:3px solid #17130f;padding:18px 0;margin:26px 0">
+<div style="font:600 clamp(28px,4.6vw,42px)/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;max-width:24ch">“Conducting is standup with a baton. Same tempo problem, better hats.”</div>
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 clamp(20px,3vw,28px)/1.1 'Architects Daughter',cursive;color:#3f372c;margin-top:14px;transform:rotate(-2deg)">— J. V. Caballero</div>
+</sc-if>
+</div>
+
+<div style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#e2231a;margin-bottom:10px">Tour dates / the résumé</div>
+<div style="border-top:3px solid #17130f">
+<div data-reveal="1" style="display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center;padding:13px 6px;border-bottom:1px solid #c3b9a4;transition:background .32s ease,padding-left .32s ease" style-hover="background:#e5ddcc;padding-left:14px" style-active="background:#ded5c2;padding-left:19px"><span style="flex:0 0 90px;font:700 13px 'Space Mono',monospace">2024—26</span><div style="flex:1 1 240px;min-width:0"><div style="font:600 clamp(21px,2.6vw,24px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Full-Stack Product Engineer · AI &amp; Automation</div><div style="font:400 13px/1.4 'Source Serif 4',serif;color:#544a3d;margin-top:3px">End-to-end web and mobile builds, plus workflow automation for ops teams.</div></div><span style="flex:0 0 auto;font:700 10px 'Space Mono',monospace;background:#17130f;color:#ffe600;padding:4px 6px">ON NOW</span></div>
+<div data-reveal="1" style="display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center;padding:13px 6px;border-bottom:1px solid #c3b9a4;transition:background .32s ease,padding-left .32s ease" style-hover="background:#e5ddcc;padding-left:14px" style-active="background:#ded5c2;padding-left:19px"><span style="flex:0 0 90px;font:700 13px 'Space Mono',monospace">2022—24</span><div style="flex:1 1 240px;min-width:0"><div style="font:600 clamp(21px,2.6vw,24px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Software Engineer · Product Team</div><div style="font:400 13px/1.4 'Source Serif 4',serif;color:#544a3d;margin-top:3px">Front to back on a shipping product, plus the deploys nobody volunteered for.</div></div><span style="flex:0 0 auto;font:700 10px 'Space Mono',monospace;color:#6f6656">SOLD OUT</span></div>
+<div data-reveal="1" style="display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center;padding:13px 6px;border-bottom:3px solid #17130f;transition:background .32s ease,padding-left .32s ease" style-hover="background:#e5ddcc;padding-left:14px" style-active="background:#ded5c2;padding-left:19px"><span style="flex:0 0 90px;font:700 13px 'Space Mono',monospace">2021—22</span><div style="flex:1 1 240px;min-width:0"><div style="font:600 clamp(21px,2.6vw,24px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase">Freelance Developer · Cebu</div><div style="font:400 13px/1.4 'Source Serif 4',serif;color:#544a3d;margin-top:3px">Small businesses, smaller budgets, excellent stories.</div></div><span style="flex:0 0 auto;font:700 10px 'Space Mono',monospace;color:#6f6656">ARCHIVE</span></div>
+</div>
+</div>
+
+<div style="flex:1 1 min(100%,260px);min-width:0">
+<div data-reveal="1" style="border:2px solid #17130f;padding:16px;margin-bottom:18px">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;border-bottom:2px solid #17130f;padding-bottom:7px;margin-bottom:11px">The rider</div>
+<div style="font:400 13.5px/1.5 'Source Serif 4',serif;margin-bottom:10px">What I need to do good work:</div>
+<div style="display:flex;flex-direction:column;gap:9px;font:400 clamp(16px,2vw,19px)/1.3 'Architects Daughter',cursive;color:#3f372c">
+<div>✓ access to the people who'll actually use it</div>
+<div>✓ permission to delete things</div>
+<div>✓ one decision-maker, not a committee</div>
+<div>✓ two weeks before anyone asks for a demo</div>
+<div>✓ coffee, and a wall I can tape paper to</div>
+</div>
+</div>
+<div data-reveal="1" style="background:#ffe600;border:2px solid #17130f;padding:16px;margin-bottom:18px">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px">Instruments</div>
+<div style="font:400 13px/1.6 'Source Serif 4',serif">TypeScript · React · Next.js · React Native · Node · Postgres · n8n · LLM orchestration &amp; evals · Tailwind · Docker · a baton · an acoustic guitar</div>
+</div>
+<div onClick="{{ goRotation }}" data-magnet="1" style="cursor:pointer;border:2px solid #17130f;padding:16px;transition:background .34s ease,color .34s ease,box-shadow .34s ease" style-hover="background:#17130f;color:#efe9dc;box-shadow:6px 6px 0 #e2231a" style-active="transform:translate(2px,2px);box-shadow:2px 2px 0 #e2231a">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#e2231a">Also</div>
+<div style="font:600 clamp(22px,2.8vw,26px)/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:5px">What I'm doing right now →</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isColumns }}" hint-placeholder-val="{{ false }}">
+
+<sc-if value="{{ readingColumn }}" hint-placeholder-val="{{ false }}">
+<div style="animation:dv-in .62s cubic-bezier(.2,.7,.2,1) both;max-width:1220px;margin:0 auto;padding:clamp(22px,4vw,34px) clamp(14px,3.5vw,26px) clamp(34px,5vw,48px)">
+
+<div style="display:flex;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;align-items:center;border-bottom:2px solid #17130f;padding-bottom:10px;margin-bottom:clamp(16px,3vw,24px)">
+<div onClick="{{ closeColumn }}" style="cursor:pointer;font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#e2231a;transition:transform .34s cubic-bezier(.2,.7,.2,1),color .3s ease" style-hover="transform:translateX(-4px);color:#17130f" style-active="transform:translateX(-7px) scale(.96)">← All columns</div>
+<div style="display:flex;gap:14px;align-items:center;font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#6f6656">
+<span onClick="{{ prevColumn }}" style="cursor:pointer;transition:color .3s ease,transform .34s cubic-bezier(.2,.7,.2,1)" style-hover="color:#17130f;transform:translateX(-3px)" style-active="transform:translateX(-6px) scale(.94)">← Previous</span>
+<span style="width:1px;height:13px;background:#b3a992"></span>
+<span onClick="{{ nextColumn }}" style="cursor:pointer;transition:color .3s ease,transform .34s cubic-bezier(.2,.7,.2,1)" style-hover="color:#17130f;transform:translateX(3px)" style-active="transform:translateX(6px) scale(.94)">Next →</span>
+</div>
+</div>
+
+<div style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#e2231a;margin-bottom:10px">{{ colKicker }} / p.26</div>
+<h1 style="font:400 clamp(32px,6.6vw,74px)/.86 'Archivo Black',sans-serif;margin:0 0 14px;letter-spacing:-.035em;text-transform:uppercase;max-width:26ch;text-wrap:balance">{{ colTitle }}</h1>
+<div style="font:400 clamp(15px,2.1vw,19px)/1.45 'Source Serif 4',serif;font-style:italic;max-width:62ch;margin-bottom:16px">{{ colStandfirst }}</div>
+<div style="display:flex;gap:8px 22px;flex-wrap:wrap;border-top:2px solid #17130f;border-bottom:2px solid #17130f;padding:9px 0;font:400 clamp(9.5px,2vw,11px) 'Space Mono',monospace;letter-spacing:.13em;text-transform:uppercase;margin-bottom:22px">
+<span>{{ colDate }}</span><span>{{ colRead }}</span><span>Words: John Vincent Caballero</span><span>Caballero! Issue 05</span>
+</div>
+
+<div data-reveal="1" style="aspect-ratio:16/7;min-height:170px;border:2px solid #17130f;overflow:hidden;background:repeating-linear-gradient(45deg,#ded7c6 0 10px,#e7e0d0 10px 20px)">
+<div style="width:100%;height:100%;background-image:{{ colImgCss }};background-size:cover;background-position:center;filter:grayscale(1) contrast(1.06);transition:filter .72s ease,transform .8s cubic-bezier(.2,.7,.2,1)" style-hover="filter:none;transform:scale(1.03)"></div>
+</div>
+<div style="font:400 clamp(15px,1.9vw,18px)/1.3 'Architects Daughter',cursive;color:#4a4034;margin:10px 0 26px;transform:rotate(-.6deg)">{{ colCaption }}</div>
+
+<div style="display:flex;gap:clamp(20px,3vw,34px);flex-wrap:wrap;align-items:flex-start">
+<div style="flex:1 1 min(100%,520px);min-width:0">
+
+<div data-reveal="1" style="columns:330px 2;column-gap:28px;column-rule:1px solid #c3b9a4;font:400 clamp(14.5px,1.6vw,15.5px)/1.6 'Source Serif 4',serif;text-wrap:pretty">
+<sc-for list="{{ colParas1 }}" as="para" hint-placeholder-count="4"><p style="margin:0 0 12px">{{ para }}</p></sc-for>
+</div>
+
+<div data-reveal="1" style="border-top:3px solid #17130f;border-bottom:3px solid #17130f;padding:18px 0;margin:26px 0">
+<div style="font:600 clamp(26px,4.2vw,40px)/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;max-width:24ch">{{ colQuote }}</div>
+</div>
+
+<h2 data-reveal="1" style="font:400 clamp(24px,3.6vw,34px)/.94 'Archivo Black',sans-serif;text-transform:uppercase;margin:0 0 14px">{{ colSection }}</h2>
+<div data-reveal="1" style="columns:330px 2;column-gap:28px;column-rule:1px solid #c3b9a4;font:400 clamp(14.5px,1.6vw,15.5px)/1.6 'Source Serif 4',serif;text-wrap:pretty">
+<sc-for list="{{ colParas2 }}" as="para" hint-placeholder-count="5"><p style="margin:0 0 12px">{{ para }}</p></sc-for>
+</div>
+
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 clamp(19px,2.8vw,26px)/1.1 'Architects Daughter',cursive;color:#3f372c;margin-top:22px;transform:rotate(-2deg)">— J. V. Caballero</div>
+</sc-if>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:16px;margin-top:30px;border-top:3px solid #17130f;padding-top:20px">
+<div onClick="{{ prevColumn }}" data-cue="Read the column →" style="cursor:pointer;border:2px solid #17130f;padding:14px;transition:transform .34s cubic-bezier(.2,.7,.2,1),box-shadow .34s ease" style-hover="transform:translate(-3px,-3px);box-shadow:7px 7px 0 #17130f" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f">
+<div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#e2231a">← Previous column</div>
+<div style="font:600 clamp(20px,2.6vw,24px)/1.02 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:6px">{{ prevTitle }}</div>
+</div>
+<div onClick="{{ nextColumn }}" data-cue="Read the column →" style="cursor:pointer;border:2px solid #17130f;padding:14px;text-align:right;transition:transform .34s cubic-bezier(.2,.7,.2,1),box-shadow .34s ease" style-hover="transform:translate(-3px,-3px);box-shadow:7px 7px 0 #17130f" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f">
+<div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#e2231a">Next column →</div>
+<div style="font:600 clamp(20px,2.6vw,24px)/1.02 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:6px">{{ nextTitle }}</div>
+</div>
+</div>
+</div>
+
+<div style="flex:1 1 min(100%,250px);min-width:0">
+<div style="border:2px solid #17130f;padding:16px;position:sticky;top:118px;background:#efe9dc">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;border-bottom:2px solid #17130f;padding-bottom:7px;margin-bottom:2px">More columns</div>
+<sc-for list="{{ otherColumns }}" as="item" hint-placeholder-count="4">
+<div onClick="{{ item.open }}" data-cue="Read the column →" style="cursor:pointer;padding:12px 0;border-bottom:1px solid #c3b9a4;transition:transform .34s cubic-bezier(.2,.7,.2,1),opacity .3s ease" style-hover="transform:translateX(5px);opacity:.72" style-active="transform:translateX(8px) scale(.99)">
+<div style="font:700 9px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2231a">{{ item.kicker }}</div>
+<div style="font:600 clamp(19px,2.4vw,22px)/1.02 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:4px">{{ item.title }}</div>
+<div style="font:400 9.5px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#6f6656;margin-top:4px">{{ item.date }} · {{ item.read }}</div>
+</div>
+</sc-for>
+<div onClick="{{ closeColumn }}" style="cursor:pointer;margin-top:14px;font:700 10px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#e2231a;transition:transform .34s cubic-bezier(.2,.7,.2,1),color .3s ease" style-hover="transform:translateX(4px);color:#17130f" style-active="transform:translateX(7px) scale(.97)">Back to all columns →</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ listingColumns }}" hint-placeholder-val="{{ true }}">
+<div style="animation:dv-in .62s cubic-bezier(.2,.7,.2,1) both;max-width:1220px;margin:0 auto;padding:clamp(22px,4vw,34px) clamp(14px,3.5vw,26px) clamp(34px,5vw,48px)">
+<div style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#e2231a;margin-bottom:8px">Columns / p.26</div>
+<h1 style="font:400 clamp(34px,7.4vw,82px)/.86 'Archivo Black',sans-serif;margin:0 0 20px;letter-spacing:-.035em;text-transform:uppercase;text-wrap:balance">Words, rants and gadget reviews</h1>
+
+<div style="display:flex;gap:clamp(20px,3vw,30px);flex-wrap:wrap;border-top:3px solid #17130f;padding-top:22px;align-items:flex-start">
+<div onClick="{{ openCol0 }}" data-cue="Read the essay →" style="flex:1 1 min(100%,420px);min-width:0;cursor:pointer">
+<div data-reveal="1" style="aspect-ratio:16/9;border:2px solid #17130f;overflow:hidden;margin-bottom:14px;background:repeating-linear-gradient(45deg,#ded7c6 0 10px,#e7e0d0 10px 20px)"><img src="https://picsum.photos/seed/caballero-column/1200/675" alt="Lead column image" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05);transition:filter .72s ease,transform .8s cubic-bezier(.2,.7,.2,1)" style-hover="filter:none;transform:scale(1.03)"></div>
+<div style="display:inline-block;background:#e2231a;color:#fff;font:700 10px 'Space Mono',monospace;letter-spacing:.16em;padding:3px 7px;margin-bottom:8px">LATEST · ESSAY</div>
+<h2 style="font:400 clamp(30px,5vw,46px)/.9 'Archivo Black',sans-serif;margin:0 0 10px;text-transform:uppercase">Your automation doesn't need a model</h2>
+<div style="font:400 clamp(15px,1.8vw,16px)/1.5 'Source Serif 4',serif;max-width:56ch">Lorem ipsum dolor sit amet, four of the six things your team does every day are lookups wearing a costume. Consectetur adipiscing elit — here's how I find them before anybody writes a prompt, and why the client who hears this first ends up paying for less software and getting more.</div>
+<div style="display:flex;gap:14px;align-items:center;margin-top:12px;flex-wrap:wrap">
+<span style="font:400 11px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6f6656">July 2026 · 6 min read</span>
+<span style="font:700 10px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2231a">Read the essay →</span>
+</div>
+</div>
+<div style="flex:1 1 min(100%,280px);min-width:0">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;border-bottom:2px solid #17130f;padding-bottom:7px;margin-bottom:4px">More columns</div>
+<div style="display:flex;flex-direction:column">
+<div data-reveal="1" onClick="{{ openCol1 }}" data-cue="Read the review →" style="padding:14px 0;border-bottom:1px solid #c3b9a4;cursor:pointer;transition:transform .34s cubic-bezier(.2,.7,.2,1),opacity .3s ease" style-hover="transform:translateX(6px);opacity:.72" style-active="transform:translateX(9px) scale(.99)" style-active="transform:translateX(9px) scale(.99)"><div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2231a">Gadget review</div><div style="font:600 clamp(22px,2.9vw,26px)/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:4px">Six months with a mechanical keyboard I regret</div><div style="font:400 13px/1.4 'Source Serif 4',serif;color:#544a3d;margin-top:4px">Beautiful, loud, and a genuine liability on client calls.</div><div style="font:400 10px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#6f6656;margin-top:5px">June 2026 · 4 min</div></div>
+<div data-reveal="1" onClick="{{ openCol2 }}" data-cue="Read the column →" style="padding:14px 0;border-bottom:1px solid #c3b9a4;cursor:pointer;transition:transform .34s cubic-bezier(.2,.7,.2,1),opacity .3s ease" style-hover="transform:translateX(6px);opacity:.72" style-active="transform:translateX(9px) scale(.99)" style-active="transform:translateX(9px) scale(.99)"><div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2231a">Column</div><div style="font:600 clamp(22px,2.9vw,26px)/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:4px">What conducting taught me about standups</div><div style="font:400 13px/1.4 'Source Serif 4',serif;color:#544a3d;margin-top:4px">Nobody needs the whole score. Everybody needs the downbeat.</div><div style="font:400 10px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#6f6656;margin-top:5px">May 2026 · 5 min</div></div>
+<div data-reveal="1" onClick="{{ openCol3 }}" data-cue="Read the rant →" style="padding:14px 0;border-bottom:1px solid #c3b9a4;cursor:pointer;transition:transform .34s cubic-bezier(.2,.7,.2,1),opacity .3s ease" style-hover="transform:translateX(6px);opacity:.72" style-active="transform:translateX(9px) scale(.99)" style-active="transform:translateX(9px) scale(.99)"><div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2231a">Rant</div><div style="font:600 clamp(22px,2.9vw,26px)/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:4px">Gacha UI is better than your product's UI</div><div style="font:400 13px/1.4 'Source Serif 4',serif;color:#544a3d;margin-top:4px">Ruthlessly paced, obsessively measured, and shameless about it.</div><div style="font:400 10px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#6f6656;margin-top:5px">April 2026 · 7 min</div></div>
+<div data-reveal="1" onClick="{{ openCol4 }}" data-cue="Read the notebook →" style="padding:14px 0;cursor:pointer;transition:transform .34s cubic-bezier(.2,.7,.2,1),opacity .3s ease" style-hover="transform:translateX(6px);opacity:.72" style-active="transform:translateX(9px) scale(.99)" style-active="transform:translateX(9px) scale(.99)"><div style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2231a">Notebook</div><div style="font:600 clamp(22px,2.9vw,26px)/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:4px">The eval sheet is the deliverable</div><div style="font:400 13px/1.4 'Source Serif 4',serif;color:#544a3d;margin-top:4px">Two hundred rows that outlived three prompt rewrites.</div><div style="font:400 10px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#6f6656;margin-top:5px">March 2026 · 5 min</div></div>
+</div>
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 clamp(16px,2vw,19px)/1.35 'Architects Daughter',cursive;color:#4a4034;margin-top:16px;transform:rotate(-1deg)">every headline here opens — the essay is the one worth your five minutes.</div>
+</sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+</sc-if>
+
+<sc-if value="{{ isBsides }}" hint-placeholder-val="{{ false }}">
+<div style="animation:dv-in .62s cubic-bezier(.2,.7,.2,1) both;max-width:1220px;margin:0 auto;padding:clamp(22px,4vw,34px) clamp(14px,3.5vw,26px) clamp(34px,5vw,48px)">
+<div style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#e2231a;margin-bottom:8px">B-Sides / p.28</div>
+<h1 style="font:400 clamp(34px,7.4vw,82px)/.86 'Archivo Black',sans-serif;margin:0 0 10px;letter-spacing:-.035em;text-transform:uppercase">The playground</h1>
+<div style="font:400 clamp(15px,2vw,17px)/1.4 'Source Serif 4',serif;font-style:italic;max-width:60ch;margin-bottom:24px">Things built for an audience of one — me — which is how most of my best patterns start.</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:18px">
+<div data-reveal="1" style="border:2px solid #17130f;background:#17130f;color:#efe9dc;padding:18px;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:8px 8px 0 #e2231a" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #e2231a">
+<div style="aspect-ratio:16/10;border:1px solid #6f6656;overflow:hidden;margin-bottom:14px"><img src="https://picsum.photos/seed/caballero-bs1/800/500" alt="Bandstand" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.1) brightness(.9)"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><div style="font:400 clamp(28px,4vw,38px)/.9 'Archivo Black',sans-serif;text-transform:uppercase">Bandstand</div><span style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;background:#ffe600;color:#17130f;padding:3px 6px">IN USE</span></div>
+<div style="font:400 14px/1.5 'Source Serif 4',serif;margin-top:8px">Sheet music, parts and call times for forty musicians. Built because I was the one maintaining the group chat, and the group chat was losing.</div>
+<div style="font:400 10.5px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;margin-top:10px;opacity:.75">Next.js · Postgres · PDF wrangling</div>
+</div>
+<div data-reveal="1" style="border:2px solid #17130f;padding:18px;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease,background .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:8px 8px 0 #17130f;background:#ffe600" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f">
+<div style="aspect-ratio:16/10;border:1px solid #b3a992;overflow:hidden;margin-bottom:14px"><img src="https://picsum.photos/seed/caballero-bs2/800/500" alt="Pity Counter" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05)"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><div style="font:400 clamp(28px,4vw,38px)/.9 'Archivo Black',sans-serif;text-transform:uppercase">Pity Counter</div><span style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;background:#e2231a;color:#fff;padding:3px 6px">LIVE</span></div>
+<div style="font:400 14px/1.5 'Source Serif 4',serif;margin-top:8px">Four gacha games, one dashboard that tells the truth about my pull history. Wuthering Waves, Zenless Zone Zero, Genshin, Endfield. The numbers are not kind.</div>
+<div style="font:400 10.5px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;margin-top:10px;color:#6f6656">React · charts · denial</div>
+</div>
+<div data-reveal="1" style="border:2px solid #17130f;padding:18px;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease,background .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:8px 8px 0 #17130f;background:#ffe600" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f">
+<div style="aspect-ratio:16/10;border:1px solid #b3a992;overflow:hidden;margin-bottom:14px"><img src="https://picsum.photos/seed/caballero-bs3/800/500" alt="Setlist" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05)"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><div style="font:400 clamp(28px,4vw,38px)/.9 'Archivo Black',sans-serif;text-transform:uppercase">Setlist</div><span style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;background:#e2231a;color:#fff;padding:3px 6px">LIVE</span></div>
+<div style="font:400 14px/1.5 'Source Serif 4',serif;margin-top:8px">Keys, capos and audience requests for acoustic bar nights. Written between two sets; its offline sync pattern ended up in a production clinic app.</div>
+<div style="font:400 10.5px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;margin-top:10px;color:#6f6656">React Native · offline-first</div>
+</div>
+<div data-reveal="1" style="border:2px solid #17130f;padding:18px;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease,background .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:8px 8px 0 #17130f;background:#ffe600" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f">
+<div style="aspect-ratio:16/10;border:1px solid #b3a992;overflow:hidden;margin-bottom:14px"><img src="https://picsum.photos/seed/caballero-bs4/800/500" alt="Shelf" style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05)"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><div style="font:400 clamp(28px,4vw,38px)/.9 'Archivo Black',sans-serif;text-transform:uppercase">Shelf</div><span style="font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;border:1px solid #17130f;padding:3px 6px">WIP</span></div>
+<div style="font:400 14px/1.5 'Source Serif 4',serif;margin-top:8px">Manga backlog tracker with a working guilt meter. Currently telling me I am three volumes behind on four series.</div>
+<div style="font:400 10.5px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;margin-top:10px;color:#6f6656">Svelte · scraping · shame</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRotation }}" hint-placeholder-val="{{ false }}">
+<div style="animation:dv-in .62s cubic-bezier(.2,.7,.2,1) both;max-width:1220px;margin:0 auto;padding:clamp(22px,4vw,34px) clamp(14px,3.5vw,26px) clamp(34px,5vw,48px)">
+<div style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#e2231a;margin-bottom:8px">Rotation / p.30 · updated 4 August 2026</div>
+<h1 style="font:400 clamp(34px,7.4vw,82px)/.86 'Archivo Black',sans-serif;margin:0 0 24px;letter-spacing:-.035em;text-transform:uppercase">This month's rotation</h1>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:18px;margin-bottom:20px">
+<div data-reveal="1" style="border:2px solid #17130f;padding:18px;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:7px 7px 0 #17130f" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f"><div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#e2231a;margin-bottom:8px">Building</div><div style="font:600 clamp(26px,3.4vw,30px)/.96 'Barlow Condensed',sans-serif;text-transform:uppercase">This site, third attempt</div><div style="font:400 13.5px/1.45 'Source Serif 4',serif;margin-top:7px">Last one was built during the pandemic and it shows. Also: a fresh eval harness I keep meaning to open-source.</div></div>
+<div data-reveal="1" style="border:2px solid #17130f;padding:18px;background:#ffe600;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:7px 7px 0 #17130f" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f"><div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px">Rehearsing</div><div style="font:600 clamp(26px,3.4vw,30px)/.96 'Barlow Condensed',sans-serif;text-transform:uppercase">Field show, season opens October</div><div style="font:400 13.5px/1.45 'Source Serif 4',serif;margin-top:7px">Forty musicians, one baton, Saturdays gone until November.</div></div>
+<div data-reveal="1" style="border:2px solid #17130f;padding:18px;transition:transform .36s cubic-bezier(.2,.7,.2,1),box-shadow .36s ease" style-hover="transform:translate(-3px,-3px);box-shadow:7px 7px 0 #17130f" style-active="transform:translate(1px,1px);box-shadow:2px 2px 0 #17130f"><div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#e2231a;margin-bottom:8px">Gigging</div><div style="font:600 clamp(26px,3.4vw,30px)/.96 'Barlow Condensed',sans-serif;text-transform:uppercase">Acoustic sets, Fri &amp; Sat</div><div style="font:400 13.5px/1.45 'Source Serif 4',serif;margin-top:7px">Same four bars, same six requests, no complaints.</div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px">
+<div data-reveal="1" style="border:2px solid #17130f;padding:18px">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#e2231a;border-bottom:2px solid #17130f;padding-bottom:7px;margin-bottom:10px">On heavy rotation · games</div>
+<div style="display:flex;flex-direction:column;gap:9px;font:400 14px/1.35 'Source Serif 4',serif">
+<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted #b3a992;padding-bottom:8px"><span><strong>Wuthering Waves</strong> — main rotation</span><span style="font:700 11px 'Space Mono',monospace;color:#e2231a">★★★★★</span></div>
+<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted #b3a992;padding-bottom:8px"><span><strong>Arknights: Endfield</strong> — new, dangerous</span><span style="font:700 11px 'Space Mono',monospace;color:#e2231a">★★★★☆</span></div>
+<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted #b3a992;padding-bottom:8px"><span><strong>Zenless Zone Zero</strong> — daily, briefly</span><span style="font:700 11px 'Space Mono',monospace;color:#e2231a">★★★★☆</span></div>
+<div style="display:flex;justify-content:space-between;gap:10px"><span><strong>Genshin Impact</strong> — logging in out of loyalty</span><span style="font:700 11px 'Space Mono',monospace;color:#e2231a">★★★☆☆</span></div>
+</div>
+</div>
+<div data-reveal="1" style="border:2px solid #17130f;padding:18px">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#e2231a;border-bottom:2px solid #17130f;padding-bottom:7px;margin-bottom:10px">On the shelf · manga &amp; gear</div>
+<div style="display:flex;flex-direction:column;gap:9px;font:400 14px/1.4 'Source Serif 4',serif">
+<div style="border-bottom:1px dotted #b3a992;padding-bottom:8px">Three volumes behind on four series. The guilt meter is at 61%.</div>
+<div style="border-bottom:1px dotted #b3a992;padding-bottom:8px">Reviewing: a split keyboard I already regret buying, and a very good USB-C dock nobody asked about.</div>
+<div>Open to contract work from November. Say hello before the field show eats October.</div>
+</div>
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 clamp(16px,2vw,19px)/1.3 'Architects Daughter',cursive;color:#4a4034;margin-top:12px;transform:rotate(-1deg)">the guilt meter is, regrettably, a real feature</div>
+</sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLetters }}" hint-placeholder-val="{{ false }}">
+<div style="animation:dv-in .62s cubic-bezier(.2,.7,.2,1) both;max-width:1220px;margin:0 auto;padding:clamp(22px,4vw,34px) clamp(14px,3.5vw,26px) clamp(34px,5vw,48px)">
+<div style="font:700 11px 'Space Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#e2231a;margin-bottom:8px">Letters / p.34</div>
+<h1 style="font:400 clamp(36px,8vw,94px)/.85 'Archivo Black',sans-serif;margin:0 0 18px;letter-spacing:-.035em;text-transform:uppercase;text-wrap:balance">Write to the editor</h1>
+
+<div style="display:flex;gap:clamp(18px,3vw,30px);flex-wrap:wrap;align-items:flex-start">
+<div style="flex:1 1 min(100%,380px);min-width:0;background:#e2231a;color:#fff;padding:clamp(18px,3vw,26px)">
+<div style="font:600 clamp(26px,4vw,34px)/1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:16px">Got a weird problem in an unglamorous industry? That's the good stuff.</div>
+<div style="font:400 clamp(14px,1.8vw,15px)/1.5 'Source Serif 4',serif;margin-bottom:20px">Contract or full-time, web or mobile, greenfield or a decade-old mess someone is embarrassed about. I read everything and reply within two days — faster if you lead with the actual problem instead of the tech stack.</div>
+<div style="display:flex;flex-direction:column;gap:10px;border-top:2px solid #fff;padding-top:16px">
+<span onClick="{{ copyEmail }}" style="cursor:pointer;font:700 clamp(11.5px,2.4vw,14px) 'Space Mono',monospace;letter-spacing:.06em;transition:transform .32s ease,color .32s ease;word-break:break-all" style-hover="transform:translateX(4px);color:#ffe600" style-active="transform:translateX(8px) scale(.98);color:#17130f">HELLO@JVCABALLERO.DEV</span>
+<span style="cursor:pointer;font:700 clamp(11.5px,2.4vw,14px) 'Space Mono',monospace;letter-spacing:.06em;transition:transform .32s ease,color .32s ease;word-break:break-all" style-hover="transform:translateX(4px);color:#ffe600" style-active="transform:translateX(8px) scale(.98);color:#17130f">GITHUB.COM/JVCABALLERO</span>
+<span style="cursor:pointer;font:700 clamp(11.5px,2.4vw,14px) 'Space Mono',monospace;letter-spacing:.06em;transition:transform .32s ease,color .32s ease;word-break:break-all" style-hover="transform:translateX(4px);color:#ffe600" style-active="transform:translateX(8px) scale(.98);color:#17130f">LINKEDIN.COM/IN/JVCABALLERO</span>
+</div>
+<sc-if value="{{ copied }}" hint-placeholder-val="{{ false }}">
+<div style="font:400 clamp(18px,2.4vw,22px)/1.2 'Architects Daughter',cursive;color:#ffe600;margin-top:14px;animation:dv-scrawl .5s ease both">copied! now tell me the actual problem →</div>
+</sc-if>
+<sc-if value="{{ handNotes }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 clamp(16px,2vw,19px)/1.3 'Architects Daughter',cursive;color:#ffd9d6;margin-top:14px;transform:rotate(-1deg)">tap the address — it copies itself</div>
+</sc-if>
+</div>
+<div style="flex:1 1 min(100%,300px);min-width:0">
+<div data-reveal="1" style="border:2px solid #17130f;padding:20px;margin-bottom:18px">
+<div style="font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;border-bottom:2px solid #17130f;padding-bottom:7px;margin-bottom:12px">Currently taking</div>
+<div style="display:flex;flex-direction:column;gap:8px;font:400 14px/1.4 'Source Serif 4',serif">
+<div>▸ Contract builds from <strong>November 2026</strong></div>
+<div>▸ AI workflow audits (2–3 weeks)</div>
+<div>▸ Rescue jobs on stalled products</div>
+<div style="color:#6f6656">✗ Unpaid “quick logo tweaks”, respectfully</div>
+</div>
+</div>
+<div data-reveal="1" style="background:#ffe600;border:2px solid #17130f;padding:20px">
+<div style="font:600 clamp(24px,3.2vw,28px)/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:8px">Also accepting</div>
+<div style="font:400 14px/1.5 'Source Serif 4',serif">Gig bookings, band arrangement requests, and strong opinions about which gacha banner I should have skipped.</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+
+<sc-if value="{{ dispatchMode }}" hint-placeholder-val="{{ true }}">
+<div style="background:#17130f;color:#efe9dc;border-top:2px solid #17130f;position:relative;overflow:hidden">
+<div style="max-width:1220px;margin:0 auto;padding:11px clamp(14px,3.5vw,26px);display:flex;align-items:center;gap:clamp(10px,2.5vw,18px);min-height:20px">
+<span style="flex:0 0 auto;font:700 10px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#ffe600">Dispatch</span>
+<span style="flex:0 0 auto;width:5px;height:5px;background:#e2231a;border-radius:50%"></span>
+<div style="flex:1 1 auto;min-width:0;overflow:hidden">{{ dispatchNow }}</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ marqueeMode }}" hint-placeholder-val="{{ false }}">
+<div style="background:#17130f;color:#efe9dc;overflow:hidden;padding:9px 0;border-top:2px solid #17130f">
+<div style="display:flex;gap:28px;white-space:nowrap;width:max-content;animation:dv-marq 34s linear infinite;font:700 11px 'Space Mono',monospace;letter-spacing:.18em;text-transform:uppercase" style-hover="animation-play-state:paused">
+<span style="color:#ffe600">Next issue</span><span>Case file: teaching a bot to say “I don't know”</span><span>·</span><span>New in the playground: Shelf</span><span>·</span><span>Field show season opens October</span><span>·</span><span>Open to contract work from November</span><span>·</span>
+<span style="color:#ffe600">Next issue</span><span>Case file: teaching a bot to say “I don't know”</span><span>·</span><span>New in the playground: Shelf</span><span>·</span><span>Field show season opens October</span><span>·</span><span>Open to contract work from November</span><span>·</span>
+</div>
+</div>
+</sc-if>
+
+<div style="background:#efe9dc;border-top:2px solid #17130f">
+<div style="max-width:1220px;margin:0 auto;padding:18px clamp(14px,3.5vw,26px);display:flex;justify-content:space-between;gap:8px 20px;flex-wrap:wrap;font:700 clamp(9px,1.8vw,10px) 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#6f6656">
+<span>Caballero! Issue 05 · printed in Cebu</span><span>Set in Archivo Black, Barlow Condensed &amp; Source Serif</span><span>© 2026 John Vincent Caballero</span>
+</div>
+</div>
+
+<sc-if value="{{ scrolled }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ toTop }}" style="position:fixed;right:clamp(12px,2.5vw,22px);bottom:clamp(56px,8vw,72px);z-index:40;cursor:pointer;background:#ffe600;border:2px solid #17130f;padding:9px 11px;text-align:center;transform:rotate(-6deg);animation:dv-stamp .45s cubic-bezier(.2,.9,.3,1) both;font:700 9.5px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;box-shadow:3px 3px 0 #17130f;transition:box-shadow .32s ease" style-hover="box-shadow:5px 5px 0 #e2231a" style-active="box-shadow:1px 1px 0 #e2231a;transform:rotate(-6deg) scale(.94)">Back to<br>the cover</div>
+</sc-if>
+
+<sc-if value="{{ wiping }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;left:0;top:0;height:3px;width:100%;background:#e2231a;z-index:60;transform-origin:left;pointer-events:none;animation:dv-wipe .72s cubic-bezier(.4,0,.2,1) both"></div>
+</sc-if>
+
+<div data-cursorpreview="1" style="position:fixed;left:0;top:0;z-index:45;pointer-events:none;opacity:0;transform:translate(14px,14px) rotate(-4deg);transition:opacity .26s ease;background:#ffe600;border:2px solid #17130f;padding:6px 9px;box-shadow:3px 3px 0 #17130f;font:700 9.5px 'Space Mono',monospace;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap">Read the case file →</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startPage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;cover&quot;,&quot;feature&quot;,&quot;work&quot;,&quot;interview&quot;,&quot;columns&quot;,&quot;bsides&quot;,&quot;rotation&quot;,&quot;letters&quot;],&quot;default&quot;:&quot;cover&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;bottomStrip&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dispatch&quot;,&quot;marquee&quot;,&quot;off&quot;],&quot;default&quot;:&quot;dispatch&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;revealOnScroll&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;handNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;showRatings&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { page: props.startPage || 'cover', beat: 0, copied: false, scrolled: false, article: null, wiping: false };
+    const L = [
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
+      'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt neque porro quisquam est.',
+      'Qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.',
+      'Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.',
+      'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.',
+      'Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore cum soluta nobis est eligendi optio.',
+      'Cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus temporibus autem quibusdam et aut officiis debitis.',
+      'Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat, ut et voluptates repudiandae sint.'
+    ];
+    this.articles = [
+      { id: 0, kicker: 'Essay', title: "Your automation doesn't need a model",
+        standfirst: 'Four of the six things your team does every day are lookups wearing a costume. Lorem ipsum dolor sit amet, here is how I find them before anybody writes a prompt.',
+        date: 'July 2026', read: '6 min read', img: 'https://picsum.photos/seed/caballero-column/1400/700',
+        caption: 'Fig. 1 — the wall of printed emails, week one. Consectetur adipiscing elit.',
+        quote: '“Neque porro quisquam est qui dolorem ipsum quia dolor sit amet — find the boring eighty per cent first.”',
+        section: 'The boring eighty per cent', paras1: L.slice(0, 4), paras2: L.slice(4, 9) },
+      { id: 1, kicker: 'Gadget review', title: 'Six months with a mechanical keyboard I regret',
+        standfirst: 'Beautiful, loud, and a genuine liability on client calls. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+        date: 'June 2026', read: '4 min read', img: 'https://picsum.photos/seed/caballero-keys/1400/700',
+        caption: 'Fig. 1 — the culprit, photographed the day before the first client complaint.',
+        quote: '“Ut enim ad minim veniam — the switches are lovely and everyone on the call can hear all of them.”',
+        section: 'Duis aute irure dolor', paras1: L.slice(2, 5), paras2: L.slice(5, 10) },
+      { id: 2, kicker: 'Column', title: 'What conducting taught me about standups',
+        standfirst: 'Nobody needs the whole score. Everybody needs the downbeat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.',
+        date: 'May 2026', read: '5 min read', img: 'https://picsum.photos/seed/caballero-band/1400/700',
+        caption: 'Fig. 1 — forty players, one tempo, zero opportunities for a hotfix.',
+        quote: '“Sed ut perspiciatis unde omnis iste natus error — the downbeat is the whole meeting.”',
+        section: 'Totam rem aperiam', paras1: L.slice(1, 5), paras2: L.slice(4, 8) },
+      { id: 3, kicker: 'Rant', title: "Gacha UI is better than your product's UI",
+        standfirst: 'Ruthlessly paced, obsessively measured, and shameless about it. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit.',
+        date: 'April 2026', read: '7 min read', img: 'https://picsum.photos/seed/caballero-gacha/1400/700',
+        caption: 'Fig. 1 — a pull animation with better easing than most checkout flows.',
+        quote: '“Qui dolorem ipsum quia dolor sit amet — every tap in that screen was measured. Was yours?”',
+        section: 'Adipisci velit, sed quia', paras1: L.slice(3, 7), paras2: L.slice(0, 5) },
+      { id: 4, kicker: 'Notebook', title: 'The eval sheet is the deliverable',
+        standfirst: 'Two hundred rows that outlived three prompt rewrites. At vero eos et accusamus et iusto odio dignissimos ducimus.',
+        date: 'March 2026', read: '5 min read', img: 'https://picsum.photos/seed/caballero-eval/1400/700',
+        caption: 'Fig. 1 — the spreadsheet nobody asked for and everybody now uses.',
+        quote: '“Similique sunt in culpa — the prompt is disposable, the rubric is the asset.”',
+        section: 'Et harum quidem rerum', paras1: L.slice(5, 9), paras2: L.slice(1, 6) }
+    ];
+    this.dispatches = [
+      'Case file: teaching a bot to say “I don\u2019t know”',
+      'New in the playground \u2014 Shelf, a manga backlog tracker',
+      'Field show season opens October \u2014 Saturdays are gone',
+      'Open to contract work from November 2026',
+      'Now reviewing: a split keyboard I already regret'
+    ];
+  }
+
+  componentDidMount() {
+    this.reduce = typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+
+    if (typeof IntersectionObserver !== 'undefined') {
+      this.io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting || e.boundingClientRect.bottom < 0) {
+            this.reveal(e.target);
+            this.io.unobserve(e.target);
+          }
+        });
+      }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+    }
+
+    this.onScroll = () => {
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - window.innerHeight;
+      const y = window.scrollY || doc.scrollTop || 0;
+      const bar = document.querySelector('[data-progress]');
+      if (bar) bar.style.width = (max > 0 ? Math.min(100, (y / max) * 100) : 0) + '%';
+      const want = y > 560;
+      if (want !== this.state.scrolled) this.setState({ scrolled: want });
+      document.querySelectorAll('[data-swept="1"]').forEach(n => {
+        if (n.style.opacity !== '0') return;
+        if (n.getBoundingClientRect().top < window.innerHeight) {
+          this.reveal(n);
+          if (this.io) this.io.unobserve(n);
+        }
+      });
+      if (!this.reduce) {
+        document.querySelectorAll('[data-parallax]').forEach(el => {
+          const r = el.parentElement.getBoundingClientRect();
+          if (r.bottom < -200 || r.top > window.innerHeight + 200) return;
+          const amt = parseFloat(el.getAttribute('data-parallax')) || 8;
+          const p = (r.top + r.height / 2 - window.innerHeight / 2) / window.innerHeight;
+          el.style.transform = 'scale(1.06) translateY(' + (-p * amt).toFixed(2) + 'px)';
+        });
+      }
+    };
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    window.addEventListener('resize', this.onScroll, { passive: true });
+
+    this.onMove = e => {
+      if (!this.reduce) {
+        document.querySelectorAll('[data-magnet]').forEach(el => {
+          const r = el.getBoundingClientRect();
+          const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+          const dx = e.clientX - cx, dy = e.clientY - cy;
+          const near = Math.abs(dx) < r.width / 2 + 70 && Math.abs(dy) < r.height / 2 + 50;
+          const t = near ? 'translate(' + (dx * 0.07).toFixed(2) + 'px,' + (dy * 0.09).toFixed(2) + 'px)' : '';
+          if (el.getAttribute('data-magnet-t') !== t) {
+            el.style.transform = t;
+            el.setAttribute('data-magnet-t', t);
+          }
+        });
+      }
+      const box = document.querySelector('[data-cursorpreview]');
+      if (!box) return;
+      const row = e.target && e.target.closest ? e.target.closest('[data-cue],[data-preview]') : null;
+      if (row && window.innerWidth > 900 && !this.reduce) {
+        const label = row.getAttribute('data-cue') || 'Read the case file →';
+        if (box.textContent !== label) box.textContent = label;
+        box.style.left = e.clientX + 'px';
+        box.style.top = e.clientY - 14 + 'px';
+        box.style.opacity = '1';
+      } else {
+        box.style.opacity = '0';
+      }
+    };
+    window.addEventListener('mousemove', this.onMove, { passive: true });
+
+    this.onDown = e => {
+      if (this.reduce) return;
+      let el = e.target, hit = null, hops = 0;
+      while (el && hops < 6) {
+        if (el.nodeType === 1 && getComputedStyle(el).cursor === 'pointer') { hit = el; break; }
+        el = el.parentElement; hops++;
+      }
+      if (!hit) return;
+      const dot = document.createElement('div');
+      dot.style.cssText = 'position:fixed;left:' + e.clientX + 'px;top:' + e.clientY +
+        'px;width:16px;height:16px;margin:-8px 0 0 -8px;border:2px solid #e2231a;border-radius:50%;z-index:70;pointer-events:none';
+      document.body.appendChild(dot);
+      if (dot.animate) {
+        const a = dot.animate(
+          [{ transform: 'scale(.35)', opacity: 1 }, { transform: 'scale(3.6)', opacity: 0 }],
+          { duration: 620, easing: 'cubic-bezier(.2,.7,.2,1)' });
+        a.onfinish = () => dot.remove();
+      }
+      setTimeout(() => dot.remove(), 900);
+    };
+    window.addEventListener('pointerdown', this.onDown, { passive: true });
+
+    this.beatTimer = setInterval(() => this.setState(s => ({ beat: s.beat + 1 })), 4800);
+
+    if (typeof MutationObserver !== 'undefined') {
+      this.mo = new MutationObserver(() => {
+        clearTimeout(this.sweepTimer);
+        this.sweepTimer = setTimeout(() => this.sweep(), 40);
+      });
+      this.mo.observe(document.body, { childList: true, subtree: true });
+    }
+    this.pollTimer = setInterval(() => this.sweep(), 700);
+    this.sweep();
+    this.onScroll();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.page !== this.state.page) requestAnimationFrame(() => this.sweep());
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.onScroll);
+    window.removeEventListener('resize', this.onScroll);
+    window.removeEventListener('mousemove', this.onMove);
+    window.removeEventListener('pointerdown', this.onDown);
+    clearTimeout(this.wipeTimer);
+    clearInterval(this.beatTimer);
+    clearInterval(this.pollTimer);
+    clearTimeout(this.sweepTimer);
+    if (this.mo) this.mo.disconnect();
+    if (this.io) this.io.disconnect();
+  }
+
+  sweep() {
+    try {
+      const on = (this.props.revealOnScroll !== false) && !this.reduce && !!this.io;
+      const fresh = document.querySelectorAll('[data-reveal]:not([data-swept])');
+      fresh.forEach((n, i) => {
+        n.setAttribute('data-swept', '1');
+        if (!on) return;
+        if (n.getBoundingClientRect().top <= window.innerHeight * 0.9) { this.reveal(n); return; }
+        const d = (i % 5) * 0.09;
+        n.style.opacity = '0';
+        n.style.transform = 'translateY(16px)';
+        n.style.transition = 'opacity .85s cubic-bezier(.2,.7,.2,1) ' + d + 's, transform .85s cubic-bezier(.2,.7,.2,1) ' + d + 's';
+        this.io.observe(n);
+      });
+      if (!on) document.querySelectorAll('[data-count]:not([data-counted])').forEach(el => this.count(el));
+    } catch (err) {
+      console.warn('sweep skipped', err);
+    }
+  }
+
+  reveal(el) {
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+    if (el.hasAttribute('data-count')) this.count(el);
+    el.querySelectorAll('[data-count]').forEach(c => this.count(c));
+  }
+
+  count(el) {
+    if (el.hasAttribute('data-counted')) return;
+    el.setAttribute('data-counted', '1');
+    const to = parseFloat(el.getAttribute('data-count')) || 0;
+    const suffix = el.getAttribute('data-suffix') || '';
+    if (this.reduce || to === 0) { el.textContent = to + suffix; return; }
+    const t0 = performance.now(), dur = 1250;
+    const step = now => {
+      const p = Math.min(1, (now - t0) / dur);
+      const e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(to * e) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  pingWipe() {
+    clearTimeout(this.wipeTimer);
+    if (this.reduce) return;
+    this.setState({ wiping: true });
+    this.wipeTimer = setTimeout(() => this.setState({ wiping: false }), 760);
+  }
+
+  openColumn(i) {
+    this.setState({ page: 'columns', article: i });
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'auto' });
+    this.pingWipe();
+  }
+
+  renderVals() {
+    const keys = ['cover', 'feature', 'work', 'interview', 'columns', 'bsides', 'rotation', 'letters'];
+    const mode = this.props.bottomStrip || 'dispatch';
+    const idx = this.state.beat % this.dispatches.length;
+    const arts = this.articles;
+    const ai = this.state.article;
+    const cur = (ai === null || ai === undefined) ? null : arts[ai];
+    const onColumns = this.state.page === 'columns';
+    const v = {
+      readingColumn: onColumns && !!cur,
+      listingColumns: onColumns && !cur,
+      wiping: this.state.wiping,
+      closeColumn: () => {
+        this.setState({ article: null });
+        if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'auto' });
+        this.pingWipe();
+      },
+      showRatings: this.props.showRatings ?? true,
+      handNotes: this.props.handNotes ?? true,
+      dispatchMode: mode === 'dispatch',
+      marqueeMode: mode === 'marquee',
+      copied: this.state.copied,
+      scrolled: this.state.scrolled,
+      toTop: () => window.scrollTo({ top: 0, behavior: this.reduce ? 'auto' : 'smooth' }),
+      copyEmail: () => {
+        const addr = 'hello@jvcaballero.dev';
+        if (navigator.clipboard) navigator.clipboard.writeText(addr).catch(() => {});
+        clearTimeout(this.copyTimer);
+        this.setState({ copied: true });
+        this.copyTimer = setTimeout(() => this.setState({ copied: false }), 2600);
+      },
+      dispatchNow: React.createElement('div', {
+        key: idx,
+        style: {
+          animation: 'dv-fade .5s ease both',
+          font: "700 clamp(9.5px,2.1vw,11px) 'Space Mono',monospace",
+          letterSpacing: '.16em',
+          textTransform: 'uppercase',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
+        }
+      }, this.dispatches[idx])
+    };
+    arts.forEach(a => { v['openCol' + a.id] = () => this.openColumn(a.id); });
+
+    if (cur) {
+      const p = (ai - 1 + arts.length) % arts.length;
+      const n = (ai + 1) % arts.length;
+      v.colKicker = cur.kicker;
+      v.colTitle = cur.title;
+      v.colStandfirst = cur.standfirst;
+      v.colDate = cur.date;
+      v.colRead = cur.read;
+      v.colImg = cur.img;
+      v.colImgCss = 'url("' + cur.img + '")';
+      v.colCaption = cur.caption;
+      v.colQuote = cur.quote;
+      v.colSection = cur.section;
+      v.colParas1 = cur.paras1;
+      v.colParas2 = cur.paras2;
+      v.prevTitle = arts[p].title;
+      v.nextTitle = arts[n].title;
+      v.prevColumn = () => this.openColumn(p);
+      v.nextColumn = () => this.openColumn(n);
+      v.otherColumns = arts.filter(a => a.id !== cur.id).map(a => ({
+        kicker: a.kicker, title: a.title, date: a.date, read: a.read,
+        open: () => this.openColumn(a.id)
+      }));
+    }
+
+    keys.forEach(k => {
+      const cap = k.charAt(0).toUpperCase() + k.slice(1);
+      v['is' + cap] = this.state.page === k;
+      v['go' + cap] = () => {
+        this.setState({ page: k, article: null });
+        if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'auto' });
+        this.pingWipe();
+      };
+    });
+    return v;
+  }
+}
+</script>
+</body>
+</html>
