@@ -1,0 +1,2 @@
+# Repository structure markers must never become public site assets.
+**/.gitkeep
