@@ -1,0 +1,54 @@
+---
+/*
+  Shared document shell. Owns only the universal Newsstand document/frame
+  structure: the doctype/html/head skeleton, the shared font declarations,
+  and the full-height flex frame the golden master's root wrapper and
+  content host establish (Newsstand - Full Site.dc.html, ~lines 31 & 56).
+
+  Background, foreground, default font, container width, and gutter are
+  already owned by Sprint 1A (global.css / .container) and are
+  intentionally not repeated here. Pages own their own vertical spacing —
+  Cover's cadence differs from other editorial pages, so no universal
+  page-top/page-bottom padding is introduced.
+*/
+import FontFaces from '../components/FontFaces.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    {description && <meta name="description" content={description} />}
+    {noindex && <meta name="robots" content="noindex" />}
+    <title>{title}</title>
+    <FontFaces />
+  </head>
+  <body class="site-frame">
+    <main class="site-main">
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style>
+  .site-frame {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .site-main {
+    flex: 1 0 auto;
+    min-width: 0;
+  }
+</style>
