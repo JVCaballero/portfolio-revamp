@@ -13,7 +13,11 @@ const primaryNavigation = [
 
 const routes = [
   { href: '/', heading: 'CABALLERO!', activeLabel: 'Cover' },
-  { href: '/feature/', heading: 'Feature', activeLabel: 'Feature' },
+  {
+    href: '/feature/',
+    heading: 'The inbox that learned to answer itself',
+    activeLabel: 'Feature',
+  },
   { href: '/reviews/', heading: 'Reviews', activeLabel: 'Reviews' },
   {
     href: '/interview/',
@@ -155,7 +159,10 @@ test.describe('Sprint 1H Cover shell', () => {
     await expect(wipe).toHaveClass(/is-active/);
     await expect(page).toHaveURL(/\/feature\/$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Feature' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
     ).toBeVisible();
     await expect(wipe).not.toHaveClass(/is-active/, { timeout: 2000 });
 
@@ -168,7 +175,10 @@ test.describe('Sprint 1H Cover shell', () => {
     await page.goForward();
     await expect(page).toHaveURL(/\/feature\/$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Feature' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
     ).toBeVisible();
 
     const reloadResponse = await page.reload();
@@ -362,7 +372,10 @@ test('Client-side navigation activates the wipe and the same persisted node stay
 
   await expect(page).toHaveURL(/\/feature\/$/);
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Feature' }),
+    page.getByRole('heading', {
+      level: 1,
+      name: 'The inbox that learned to answer itself',
+    }),
   ).toBeVisible();
   await expect(
     nav.getByRole('link', { name: 'Feature', exact: true }),
@@ -440,7 +453,10 @@ test('Browser back navigation triggers the custom wipe and resolves the correct 
 
   await expect(page).toHaveURL(/\/feature\/$/);
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Feature' }),
+    page.getByRole('heading', {
+      level: 1,
+      name: 'The inbox that learned to answer itself',
+    }),
   ).toBeVisible();
   await expect(
     nav.getByRole('link', { name: 'Feature', exact: true }),
@@ -518,7 +534,10 @@ test('prefers-reduced-motion navigation works without a visible animated wipe', 
   await expect(wipe).not.toHaveClass(/is-active/);
   await expect(page).toHaveURL(/\/feature\/$/);
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Feature' }),
+    page.getByRole('heading', {
+      level: 1,
+      name: 'The inbox that learned to answer itself',
+    }),
   ).toBeVisible();
   await expect(wipe).not.toHaveClass(/is-active/);
 
@@ -574,7 +593,10 @@ test.describe('Sprint 1G reduced-motion journey', () => {
     await nav.getByRole('link', { name: 'Feature', exact: true }).click();
     await expect(page).toHaveURL(/\/feature\/$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Feature' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
     ).toBeVisible();
     await expect(
       nav.getByRole('link', { name: 'Feature', exact: true }),
@@ -592,7 +614,10 @@ test.describe('Sprint 1G reduced-motion journey', () => {
     await page.goBack();
     await expect(page).toHaveURL(/\/feature\/$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Feature' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
     ).toBeVisible();
     await expect(
       nav.getByRole('link', { name: 'Feature', exact: true }),
@@ -860,7 +885,10 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
     await page.goBack();
     await expect(page).toHaveURL(/\/feature\/$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Feature' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
     ).toBeVisible();
     await waitForFireCount(page, beforeBack + 2);
 
@@ -977,7 +1005,11 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
     expect(registrationCount(afterReload.fires, 'astro:before-swap')).toBe(0);
   });
 
-  test('Routes with an empty interaction registry navigate cleanly with no console errors', async ({
+  // Feature is excluded here since Sprint 2A gives it a non-populated (but
+  // no longer literally empty) registry: all four modules run their
+  // pathname gate on every route and no-op off /feature/. See "Sprint 2A
+  // Feature interaction lifecycle" below for its own dedicated coverage.
+  test('Routes with no active interaction work navigate cleanly with no console errors', async ({
     page,
   }) => {
     const consoleErrors: string[] = [];
@@ -1003,5 +1035,522 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
 
     await expect(page).toHaveURL(/\/letters\/$/);
     expect(consoleErrors).toEqual([]);
+  });
+});
+
+test.describe('Sprint 2A Feature page', () => {
+  test('Feature renders the golden-master anatomy: folio, headline, dek, meta, hero, narrative, build sequence, verdict, spec, and Next CTA', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    const response = await page.goto('/feature/');
+    expect(response?.ok()).toBeTruthy();
+
+    await expect(page.locator('.feature-kicker')).toHaveText(
+      'Feature / p.04 · AI & Automation',
+    );
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
+    ).toBeVisible();
+    await expect(page.locator('.feature-dek')).toBeVisible();
+    await expect(page.locator('.feature-meta')).toBeVisible();
+
+    const hero = page.locator('figure.feature-hero');
+    await expect(hero).toBeVisible();
+    await expect(hero.locator('img')).toBeVisible();
+
+    await expect(page.locator('.feature-columns').first()).toBeVisible();
+    await expect(page.getByRole('blockquote')).toBeVisible();
+
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'How it was built' }),
+    ).toBeVisible();
+    const buildRows = page.locator('.feature-build__row');
+    await expect(buildRows).toHaveCount(4);
+
+    const verdict = page.locator('.feature-verdict');
+    await expect(verdict).toBeVisible();
+    await expect(verdict.getByText('The verdict')).toBeVisible();
+
+    const spec = page.locator('aside.feature-sidebar .feature-spec');
+    await expect(spec).toBeVisible();
+    await expect(spec.getByText('The spec')).toBeVisible();
+
+    const nextCta = page.getByRole('link', { name: /See all six builds/ });
+    await expect(nextCta).toBeVisible();
+    await expect(nextCta).toHaveAttribute('href', '/reviews/');
+
+    await expect(page.locator('footer.newsstand-bottom-chrome')).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Primary' })
+        .getByRole('link', { name: 'Feature', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Feature images declare explicit dimensions and meaningful placeholder-aware alt text', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+
+    const images = page.locator('article.feature-page img');
+    await expect(images).toHaveCount(3);
+
+    const count = await images.count();
+    for (let i = 0; i < count; i++) {
+      const image = images.nth(i);
+      await expect(image).toHaveAttribute('width', /.+/);
+      await expect(image).toHaveAttribute('height', /.+/);
+      const alt = await image.getAttribute('alt');
+      expect(alt).toBeTruthy();
+      expect(alt?.toLowerCase()).toMatch(/placeholder/);
+    }
+  });
+
+  test('Feature has no positive tabindex anywhere on the page', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+
+    const positiveTabindexCount = await page
+      .locator('[tabindex]')
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+            .length,
+      );
+
+    expect(positiveTabindexCount).toBe(0);
+  });
+
+  test('Feature Next CTA is keyboard reachable, shows a visible focus ring, and behaves as a native link', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+
+    const nextCta = page.getByRole('link', { name: /See all six builds/ });
+    await expect(nextCta).toHaveAttribute('href', '/reviews/');
+
+    await nextCta.focus();
+    await expect(nextCta).toBeFocused();
+
+    const outlineStyle = await nextCta.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        outlineStyle: style.outlineStyle,
+        outlineWidth: style.outlineWidth,
+      };
+    });
+    expect(outlineStyle.outlineStyle).toBe('solid');
+    expect(parseFloat(outlineStyle.outlineWidth)).toBeGreaterThan(0);
+
+    await nextCta.press('Enter');
+    await expect(page).toHaveURL(/\/reviews\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+    ).toBeVisible();
+  });
+
+  test('Feature -> Reviews navigation via the Next CTA works, and Back returns to Feature', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+    const nextCta = page.getByRole('link', { name: /See all six builds/ });
+
+    await nextCta.click();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+    ).toBeVisible();
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
+    ).toBeVisible();
+  });
+});
+
+test.describe('Sprint 2A Feature interaction lifecycle', () => {
+  test('Feature interaction modules initialize exactly once on direct load and resolve visible/understandable content', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/feature/');
+
+    await expect(page.locator('.feature-kicker')).toBeVisible();
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
+    ).toBeVisible();
+
+    // Above-the-fold [data-reveal] content (the hero) must never be stuck
+    // hidden, whether or not the reveal module has run yet.
+    await expect(page.locator('figure.feature-hero')).toBeVisible();
+
+    // Verdict statistics resolve to real, understandable final values.
+    await expect(async () => {
+      const text = await page.locator('.feature-stats').innerText();
+      expect(text).toContain('82%');
+      expect(text).toContain('11h');
+    }).toPass({ timeout: 2000 });
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  // The generic Sprint 1F controller-lifecycle tests above already prove,
+  // for any registered module, that each navigation performs exactly one
+  // teardown (`astro:before-swap`) followed by one reinitialization
+  // (`astro:page-load`) without accumulating controller-level listeners.
+  // This test adds the Feature-specific half: that repeated round trips
+  // through a route with real, non-empty module work stay stable and
+  // console-clean, reusing the same instrumentation.
+  test('Repeated ClientRouter navigation into and out of Feature stays console-clean and performs exactly one teardown/reinit pair per hop', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    const baselineFires = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleFires: string[] }).__lifecycleFires
+          .length,
+    );
+
+    for (let visit = 0; visit < 3; visit++) {
+      await nav.getByRole('link', { name: 'Feature', exact: true }).click();
+      await expect(page).toHaveURL(/\/feature\/$/);
+      await expect(
+        page.getByRole('heading', {
+          level: 1,
+          name: 'The inbox that learned to answer itself',
+        }),
+      ).toBeVisible();
+      await waitForFireCount(page, baselineFires + visit * 4 + 2);
+
+      await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+      await expect(page).toHaveURL(/\/reviews\/$/);
+      await waitForFireCount(page, baselineFires + visit * 4 + 4);
+    }
+
+    const registrations = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleRegistrations: string[] })
+          .__lifecycleRegistrations,
+    );
+    expect(registrationCount(registrations, 'astro:before-swap')).toBe(1);
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Feature interaction cleanup runs on page exit and reinitializes correctly on return', async ({
+    page,
+  }) => {
+    async function parallaxValue() {
+      return page
+        .locator('.feature-hero__image')
+        .evaluate((el) =>
+          getComputedStyle(el).getPropertyValue('--feature-parallax-y'),
+        );
+    }
+
+    await page.goto('/feature/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    const beforeScroll = await parallaxValue();
+    await page.mouse.wheel(0, 300);
+    await expect(async () => {
+      expect(await parallaxValue()).not.toBe(beforeScroll);
+    }).toPass({ timeout: 2000 });
+
+    await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+
+    await nav.getByRole('link', { name: 'Feature', exact: true }).click();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
+    ).toBeVisible();
+
+    // Reinitialized cleanly: the hero responds to scroll again on the fresh
+    // mount rather than being stuck on whatever value survived teardown.
+    const afterReturn = await parallaxValue();
+    await page.mouse.wheel(0, 300);
+    await expect(async () => {
+      expect(await parallaxValue()).not.toBe(afterReturn);
+    }).toPass({ timeout: 2000 });
+  });
+
+  test('Feature content stays fully visible and understandable under reduced motion, including resolved count-up values', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/feature/');
+
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
+    ).toBeVisible();
+
+    for (const el of [
+      '.feature-kicker',
+      '.feature-hero__frame',
+      '.feature-columns',
+      '.feature-verdict',
+      'aside.feature-sidebar',
+    ]) {
+      await expect(page.locator(el).first()).toBeVisible();
+      const opacity = await page
+        .locator(el)
+        .first()
+        .evaluate((node) => getComputedStyle(node).opacity);
+      expect(opacity).toBe('1');
+    }
+
+    const stats = page.locator('.feature-stats');
+    await expect(stats).toContainText('82%');
+    await expect(stats).toContainText('4');
+    await expect(stats).toContainText('11h');
+    await expect(stats).toContainText('0');
+
+    const hero = page.locator('.feature-hero__image');
+    const parallaxValue = await hero.evaluate((el) =>
+      getComputedStyle(el).getPropertyValue('--feature-parallax-y'),
+    );
+    expect(parallaxValue.trim()).toBe('0px');
+    // Reduced motion must disable parallax entirely, including its base
+    // scale: parallax.ts never sets --feature-parallax-scale, so it stays
+    // at the CSS default of 1 (no zoom).
+    const parallaxScale = await hero.evaluate((el) =>
+      getComputedStyle(el).getPropertyValue('--feature-parallax-scale'),
+    );
+    expect(parallaxScale.trim()).toBe('1');
+
+    const nextCta = page.getByRole('link', { name: /See all six builds/ });
+    const ctaTransformBefore = await nextCta.evaluate(
+      (el) => getComputedStyle(el).transform,
+    );
+    await nextCta.hover();
+    const ctaTransformAfterHover = await nextCta.evaluate(
+      (el) => getComputedStyle(el).transform,
+    );
+    expect(ctaTransformAfterHover).toBe(ctaTransformBefore);
+
+    await page.goBack().catch(() => {});
+    await page.goto('/feature/');
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
+    ).toBeVisible();
+
+    expect(consoleErrors).toEqual([]);
+  });
+});
+
+test.describe('Sprint 2A Feature review corrections', () => {
+  test('Hero frame owns its data-reveal marker; the hero caption does not', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+
+    const frameHasReveal = await page
+      .locator('.feature-hero__frame')
+      .evaluate((el) => el.hasAttribute('data-reveal'));
+    expect(frameHasReveal).toBe(true);
+
+    const caption = page.locator('figure.feature-hero > figcaption');
+    await expect(caption).toHaveCount(1);
+    const captionHasReveal = await caption.evaluate((el) =>
+      el.hasAttribute('data-reveal'),
+    );
+    expect(captionHasReveal).toBe(false);
+  });
+
+  test('Both Feature image frames independently own data-reveal', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+
+    const frames = page.locator(
+      '.feature-figures__grid .feature-figures__frame',
+    );
+    await expect(frames).toHaveCount(2);
+    const revealFlags = await frames.evaluateAll((els) =>
+      els.map((el) => el.hasAttribute('data-reveal')),
+    );
+    expect(revealFlags).toEqual([true, true]);
+  });
+
+  test('The two-image figure caption sits outside the image grid but inside the semantic figure', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+
+    await expect(
+      page.locator('.feature-figures__grid > figcaption'),
+    ).toHaveCount(0);
+    await expect(
+      page.locator('figure.feature-figures > figcaption'),
+    ).toHaveCount(1);
+  });
+
+  test('Below-fold scroll-reveal target animates through its authored .85s transition rather than snapping to its resting state', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+    const target = page.locator('.feature-quote');
+    await target.scrollIntoViewIfNeeded();
+
+    await expect(async () => {
+      const opacity = await target.evaluate(
+        (el) => getComputedStyle(el).opacity,
+      );
+      expect(opacity).toBe('1');
+    }).toPass({ timeout: 2000 });
+
+    // The transition must still be the authored one — a snap-to-resolve
+    // bug would have cleared `transition` back to '' at the same moment
+    // opacity/transform were set, which would read back as the browser
+    // default (0s) here instead.
+    const transitionDuration = await target.evaluate(
+      (el) => getComputedStyle(el).transitionDuration,
+    );
+    expect(transitionDuration).not.toBe('0s');
+    expect(transitionDuration.split(',')[0].trim()).toBe('0.85s');
+  });
+
+  test('Feature hero parallax applies the source-equivalent base scale under normal motion', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+    const hero = page.locator('.feature-hero__image');
+
+    await page.mouse.wheel(0, 100);
+    await expect(async () => {
+      const scale = (
+        await hero.evaluate((el) =>
+          getComputedStyle(el).getPropertyValue('--feature-parallax-scale'),
+        )
+      ).trim();
+      expect(scale).toBe('1.06');
+    }).toPass({ timeout: 2000 });
+  });
+
+  test('Feature verdict statistics all begin counting together through the verdict-level reveal, not independently', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+
+    // Structural proof: every [data-count] shares the exact same nearest
+    // [data-reveal] ancestor (the verdict block), not four independent
+    // observation targets.
+    const sameContainer = await page
+      .locator('[data-count]')
+      .evaluateAll((els) => {
+        const containers = els.map((el) => el.closest('[data-reveal]'));
+        return (
+          containers.every((c) => c === containers[0]) && containers[0] !== null
+        );
+      });
+    expect(sameContainer).toBe(true);
+
+    const verdict = page.locator('.feature-verdict');
+    await verdict.scrollIntoViewIfNeeded();
+
+    await expect(async () => {
+      const counted = await page
+        .locator('[data-count]')
+        .evaluateAll((els) => els.map((el) => el.hasAttribute('data-counted')));
+      expect(counted).toEqual([true, true, true, true]);
+    }).toPass({ timeout: 2000 });
+  });
+
+  test('Feature count-up animation work is cancelled on page exit, not left running on a detached node', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/feature/');
+    const verdict = page.locator('.feature-verdict');
+    await verdict.scrollIntoViewIfNeeded();
+
+    // Grab a handle to a statistic while it is very likely still mid-
+    // animation (well before the 1250ms count-up duration elapses).
+    const handle = await page.evaluateHandle(() =>
+      document.querySelector('[data-count="82"]'),
+    );
+
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+    await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+
+    const textAfterNav = await handle.evaluate(
+      (el) => (el as Element | null)?.textContent,
+    );
+    await page.waitForTimeout(400);
+    const textAfterWait = await handle.evaluate(
+      (el) => (el as Element | null)?.textContent,
+    );
+
+    // If the requestAnimationFrame loop had kept running against the
+    // detached node, its text would keep changing after navigation.
+    expect(textAfterWait).toBe(textAfterNav);
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Feature drop cap remains real accessible text, not hidden from the accessibility tree', async ({
+    page,
+  }) => {
+    await page.goto('/feature/');
+
+    const dropcap = page.locator('.feature-dropcap');
+    await expect(dropcap).toHaveText('L');
+    await expect(dropcap).not.toHaveAttribute('aria-hidden', 'true');
+
+    const firstParagraphText = await page
+      .locator('.feature-columns p')
+      .first()
+      .evaluate((el) => el.textContent?.trim().slice(0, 11));
+    expect(firstParagraphText).toBe('Lorem ipsum');
   });
 });

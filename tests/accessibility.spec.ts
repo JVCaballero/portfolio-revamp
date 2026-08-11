@@ -168,3 +168,193 @@ test('Cover root route has no automated WCAG A/AA violations beyond the document
       `exactly ${nodes.length} expected node(s): ${targets.join('; ')}`,
   });
 });
+
+/**
+ * Sprint 2A — Feature's own, separately-approved contrast exceptions. Both
+ * are NARROWLY scoped, exact-node additions kept independent from the
+ * Cover exception above: neither adds to, modifies, or otherwise touches
+ * `EXPECTED_CONTRAST_EXCEPTION_TARGETS`, and both target a different route
+ * entirely. See DESIGN_DEVIATIONS.md, "Sprint 2A — Feature" for the full
+ * record of both.
+ *
+ * 1. The Feature folio/kicker ("Feature / p.04 · AI & Automation") reuses
+ *    the exact same golden-master red-on-paper pairing as the Cover
+ *    exception targets (`#e2231a` on `#efe9dc`, ~3.86:1), at a small bold
+ *    size.
+ * 2. The "Next" CTA's small "Next" label sits at the immutable source's
+ *    own `opacity:.85` (Newsstand - Full Site.dc.html, ~line 233), which
+ *    blends its authored white text down to an effective ~#fbdedd against
+ *    the red CTA background (~3.69:1). Because `color-contrast` is a
+ *    render-time property, not a static CSS value, this exception is
+ *    verified against the actual composited (opacity-blended) color,
+ *    computed the same way axe/the browser render it — not the raw
+ *    authored `color: white`, which alone would misleadingly read as
+ *    passing.
+ *
+ * Both are preserved exactly per approved Sprint 2A design-preservation
+ * decisions rather than resolved by changing an accepted color/opacity.
+ */
+const FEATURE_KICKER_SELECTOR = '.feature-kicker';
+const FEATURE_NEXT_LABEL_SELECTOR = '.feature-next__label';
+const EXPECTED_NEXT_LABEL_BLENDED_RGB: [number, number, number] = [
+  251, 222, 221,
+]; // white at opacity .85 over #e2231a
+const EXPECTED_NEXT_LABEL_BG_RGB: [number, number, number] = [226, 35, 26]; // #e2231a
+const EXPECTED_NEXT_LABEL_CONTRAST_RATIO = 3.7;
+
+async function getBlendedForeground(
+  page: Page,
+  selector: string,
+): Promise<{ blended: [number, number, number]; alpha: number }> {
+  const value = await page
+    .locator(selector)
+    .first()
+    .evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { color: style.color, opacity: style.opacity };
+    });
+  const [r, g, b] = parseRgb(value.color);
+  const alpha = parseFloat(value.opacity);
+  return { blended: [r, g, b], alpha };
+}
+
+function blendOverBackground(
+  fg: [number, number, number],
+  alpha: number,
+  bg: [number, number, number],
+): [number, number, number] {
+  return [0, 1, 2].map((i) =>
+    Math.round(fg[i] * alpha + bg[i] * (1 - alpha)),
+  ) as [number, number, number];
+}
+
+test('Feature route has no automated WCAG A/AA violations beyond the documented golden-master contrast exceptions (Cover exception untouched)', async ({
+  page,
+}, testInfo) => {
+  // Feature's scroll-reveal module hides [data-reveal] content (opacity:0,
+  // translateY) until it scrolls into view or reduced motion is detected.
+  // Scanning immediately after `goto` without emulating reduced motion
+  // caught several of those elements mid-fade, so axe pixel-sampled
+  // transitional, blended colors that never actually render at rest —
+  // exactly the same "axe's own diagnostic sampling is unreliable" failure
+  // mode documented at the top of this file for the Cover exception, just
+  // triggered by animation-in-progress rather than anti-aliasing. Emulating
+  // reduced motion first settles every [data-reveal] node to its resting,
+  // fully-visible state before the scan (see scroll-reveal.ts), matching
+  // how tests/visual.spec.ts already captures Cover deterministically.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/feature/');
+
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+
+  const colorContrastViolation = results.violations.find(
+    (violation) => violation.id === 'color-contrast',
+  );
+  const otherViolations = results.violations.filter(
+    (violation) => violation.id !== 'color-contrast',
+  );
+
+  // Every non-color-contrast violation still fails this test — headings,
+  // landmarks, figure/figcaption, list, and link semantics are all covered
+  // by Axe's own rule set, not hand-rolled here.
+  expect(otherViolations).toEqual([]);
+
+  const nodes = colorContrastViolation?.nodes ?? [];
+  const targets = nodes.map((node) => node.target.join(' ')).sort();
+
+  // Exactly the two expected Feature-specific nodes — no more, no fewer,
+  // no different ones. Any other Feature contrast violation fails this
+  // test rather than being silently allowlisted.
+  expect(targets).toEqual(
+    [FEATURE_KICKER_SELECTOR, FEATURE_NEXT_LABEL_SELECTOR].sort(),
+  );
+
+  // 1. Feature kicker — same exact pairing as the Cover exception.
+  const kickerForeground = await getComputedForeground(
+    page,
+    FEATURE_KICKER_SELECTOR,
+  );
+  const kickerBackground = await getEffectiveBackground(
+    page,
+    FEATURE_KICKER_SELECTOR,
+  );
+  expect(kickerForeground).toEqual(EXPECTED_FOREGROUND_RGB);
+  expect(kickerBackground).toEqual(EXPECTED_BACKGROUND_RGB);
+  const kickerRatio = contrastRatio(kickerForeground, kickerBackground);
+  expect(kickerRatio).toBeGreaterThan(
+    EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE,
+  );
+  expect(kickerRatio).toBeLessThan(
+    EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE,
+  );
+
+  // 2. "Next" CTA label — verified against the actual rendered (opacity-
+  // blended) color, since the raw authored `color` alone is white and
+  // would misleadingly appear to pass.
+  const { blended: rawWhite, alpha } = await getBlendedForeground(
+    page,
+    FEATURE_NEXT_LABEL_SELECTOR,
+  );
+  const nextLabelBackground = await getEffectiveBackground(
+    page,
+    FEATURE_NEXT_LABEL_SELECTOR,
+  );
+  expect(nextLabelBackground).toEqual(EXPECTED_NEXT_LABEL_BG_RGB);
+  expect(alpha).toBeCloseTo(0.85, 2);
+  const renderedForeground = blendOverBackground(
+    rawWhite,
+    alpha,
+    nextLabelBackground,
+  );
+  expect(renderedForeground).toEqual(EXPECTED_NEXT_LABEL_BLENDED_RGB);
+  const nextLabelRatio = contrastRatio(renderedForeground, nextLabelBackground);
+  expect(nextLabelRatio).toBeGreaterThan(
+    EXPECTED_NEXT_LABEL_CONTRAST_RATIO - CONTRAST_TOLERANCE,
+  );
+  expect(nextLabelRatio).toBeLessThan(
+    EXPECTED_NEXT_LABEL_CONTRAST_RATIO + CONTRAST_TOLERANCE,
+  );
+
+  testInfo.annotations.push({
+    type: 'known-issue',
+    description:
+      `Sprint 2A approved Feature contrast exceptions: (1) kicker ` +
+      `(rgb(226, 35, 26) on rgb(239, 233, 220), ~${EXPECTED_CONTRAST_RATIO}:1) ` +
+      `on ${FEATURE_KICKER_SELECTOR}; (2) Next CTA label, opacity-blended ` +
+      `(rgb(${EXPECTED_NEXT_LABEL_BLENDED_RGB.join(', ')}) on rgb(${EXPECTED_NEXT_LABEL_BG_RGB.join(', ')}), ` +
+      `~${EXPECTED_NEXT_LABEL_CONTRAST_RATIO}:1) on ${FEATURE_NEXT_LABEL_SELECTOR}. ` +
+      `Both need 4.5:1. See DESIGN_DEVIATIONS.md for the approval record. ` +
+      `The Cover exception above remains a separate, untouched five-target set.`,
+  });
+});
+
+test('Feature exposes exactly one h1, real section headings in order, and figure/figcaption + list semantics for its editorial content', async ({
+  page,
+}) => {
+  await page.goto('/feature/');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: 'The inbox that learned to answer itself',
+    }),
+  ).toBeVisible();
+
+  const h2s = (
+    await page.getByRole('heading', { level: 2 }).allTextContents()
+  ).map((text) => text.trim());
+  expect(h2s).toEqual(['Lorem ipsum, in five movements', 'How it was built']);
+
+  await expect(page.locator('figure.feature-hero > figcaption')).toBeVisible();
+  await expect(
+    page.locator('figure.feature-figures > figcaption'),
+  ).toBeVisible();
+
+  await expect(page.locator('dl.feature-stats')).toBeVisible();
+  await expect(page.locator('dl.feature-spec__list')).toBeVisible();
+  await expect(page.locator('ol.feature-build')).toBeVisible();
+  await expect(page.getByRole('complementary')).toBeVisible();
+});

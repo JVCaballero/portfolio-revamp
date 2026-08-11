@@ -1,12 +1,17 @@
 /*
-  Sprint 1F — lifecycle plumbing only. Owns the Astro ClientRouter hookup
-  that future Newsstand interaction modules (scroll-reveal, magnetic nav,
-  count-up, etc.) will mount into and tear down from. No interaction
-  module lives here yet: the registry below is intentionally empty.
+  Sprint 1F lifecycle plumbing, populated starting Sprint 2A. Owns the Astro
+  ClientRouter hookup that Newsstand interaction modules mount into and tear
+  down from. Each module below is explicitly imported and pathname-gates
+  itself to the route(s) it applies to (see each module's own file) — this
+  registry performs no route filtering of its own.
 
   Independent from ../transition-wipe.ts, which keeps its own narrowly
   scoped astro:before-preparation / astro:after-swap wiring.
 */
+import { scrollReveal } from './scroll-reveal';
+import { parallax } from './parallax';
+import { countUp } from './count-up';
+import { magneticNavigation } from './magnetic-navigation';
 
 export interface InteractionContext {
   signal: AbortSignal;
@@ -19,9 +24,15 @@ export interface InteractionModule {
   init: (context: InteractionContext) => void | (() => void);
 }
 
-// Empty for Sprint 1F. Future modules are explicitly imported and listed
-// here as they are implemented — no automatic discovery.
-const MODULES: InteractionModule[] = [];
+// Sprint 2A adds the first four Feature interaction modules. Modules are
+// explicitly imported and listed here as they are implemented — no
+// automatic discovery.
+const MODULES: InteractionModule[] = [
+  scrollReveal,
+  parallax,
+  countUp,
+  magneticNavigation,
+];
 
 declare global {
   interface Window {

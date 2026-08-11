@@ -1,13 +1,330 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+/*
+  Sprint 2A Feature shell — static reproduction of the immutable golden
+  master's Feature ("case file") page (reference/newsstand-original/source/
+  Newsstand - Full Site.dc.html, the `isFeature` sc-if block, ~lines
+  142-240).
 
-const title = 'Feature | CABALLERO!';
-const description = 'Feature route shell for the CABALLERO! portfolio revamp.';
+  Content classification (Sprint 2A content-shell rule — see
+  DESIGN_DEVIATIONS.md and AGENTS.md):
+  - CLASS 1, structural/interface copy (Feature / p.04, figure numbering,
+    "The verdict", "The spec", field labels, "Next") is production-final
+    visual language.
+  - CLASS 2, everything else below (headline, dek, narrative paragraphs,
+    pull quote, handwritten notes, build-step prose, statistics, spec
+    values, CTA narrative) is source-faithful reference/demo copy carried
+    over verbatim to preserve composition and density. None of it is
+    verified production content — see the placeholder-claims list in the
+    Sprint 2A task contract. It arrives for real in a later content
+    checkpoint (Content Collection entry, not this page shell).
+  - The Lorem ipsum narrative paragraphs are literal golden-master
+    placeholder text, not a Sprint 2A shortcut.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/feature.css';
+
+const title = 'The inbox that learned to answer itself | CABALLERO!';
+const description =
+  'Feature / p.04 — the case file behind an AI-and-automation build. Demo content pending final Sprint 2 review.';
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="container">
-    <h1>Feature</h1>
-    <p data-route="feature">Feature content is coming in a later sprint.</p>
-  </div>
+  <article class="feature-page container">
+    <header class="feature-head">
+      <p class="feature-kicker">Feature / p.04 &middot; AI &amp; Automation</p>
+      <h1 class="feature-headline">The inbox that learned to answer itself</h1>
+      <p class="feature-dek">
+        Nine hundred customer emails a week, three overworked staff, and a brief
+        that just said &ldquo;add AI.&rdquo; What we did instead — and why the
+        boring version is the one still running.
+      </p>
+      <ul class="feature-meta">
+        <li>Words &amp; build: John Vincent Caballero</li>
+        <li>Role: solo — research to deploy</li>
+        <li>7 weeks &middot; 2026</li>
+        <li>Stack: n8n &middot; TypeScript &middot; Postgres &middot; LLM</li>
+      </ul>
+    </header>
+
+    <figure class="feature-hero">
+      <div class="feature-hero__frame" data-reveal>
+        <img
+          class="feature-hero__image"
+          data-parallax="14"
+          src="https://picsum.photos/seed/caballero-hero/1600/700"
+          width="1600"
+          height="700"
+          alt="Placeholder stock photo standing in for the workflow routing canvas — temporary demo image, not a real project screenshot"
+          loading="eager"
+          decoding="async"
+        />
+      </div>
+      <figcaption class="feature-hand feature-hand--hero">
+        Fig. 1 — the finished routing canvas. It was not this tidy in week two.
+      </figcaption>
+    </figure>
+
+    <div class="feature-layout">
+      <div class="feature-body">
+        <div class="feature-columns feature-columns--spaced" data-reveal>
+          <p>
+            <span class="feature-dropcap">L</span>orem ipsum dolor sit amet,
+            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+            exercitation ullamco laboris nisi ut aliquip ex ea commodo
+            consequat.
+          </p>
+          <p>
+            Duis aute irure dolor in reprehenderit in voluptate velit esse
+            cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+            cupidatat non proident, sunt in culpa qui officia deserunt mollit
+            anim id est laborum, sed ut perspiciatis unde omnis iste natus
+            error.
+          </p>
+          <p>
+            Sit voluptatem accusantium doloremque laudantium, totam rem aperiam,
+            eaque ipsa quae ab illo inventore veritatis et quasi architecto
+            beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia
+            voluptas sit aspernatur aut odit aut fugit.
+          </p>
+          <p>
+            Sed quia consequuntur magni dolores eos qui ratione voluptatem sequi
+            nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit
+            amet, consectetur, adipisci velit, sed quia non numquam eius modi
+            tempora incidunt ut labore.
+          </p>
+          <p>
+            Et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima
+            veniam, quis nostrum exercitationem ullam corporis suscipit
+            laboriosam, nisi ut aliquid ex ea commodi consequatur.
+          </p>
+          <p>
+            Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse
+            quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat
+            quo voluptas nulla pariatur.
+          </p>
+        </div>
+
+        <p class="feature-note">
+          <span class="feature-note__mark" aria-hidden="true">&#8627;</span>
+          <span class="feature-hand feature-hand--note">
+            note to self: this is the paragraph clients always quote back at me
+          </span>
+        </p>
+
+        <blockquote class="feature-quote" data-reveal>
+          <p>
+            &ldquo;Neque porro quisquam est qui dolorem ipsum quia dolor sit
+            amet — find that eighty per cent first.&rdquo;
+          </p>
+        </blockquote>
+
+        <h2 class="feature-heading" data-reveal>
+          Lorem ipsum, in five movements
+        </h2>
+        <div class="feature-columns feature-columns--spaced" data-reveal>
+          <p>
+            At vero eos et accusamus et iusto odio dignissimos ducimus qui
+            blanditiis praesentium voluptatum deleniti atque corrupti quos
+            dolores et quas molestias excepturi sint occaecati cupiditate non
+            provident.
+          </p>
+          <p>
+            Similique sunt in culpa qui officia deserunt mollitia animi, id est
+            laborum et dolorum fuga. Et harum quidem rerum facilis est et
+            expedita distinctio. Nam libero tempore, cum soluta nobis est
+            eligendi optio.
+          </p>
+          <p>
+            Cumque nihil impedit quo minus id quod maxime placeat facere
+            possimus, omnis voluptas assumenda est, omnis dolor repellendus.
+            Temporibus autem quibusdam et aut officiis debitis aut rerum
+            necessitatibus saepe eveniet.
+          </p>
+          <p>
+            Ut et voluptates repudiandae sint et molestiae non recusandae.
+            Itaque earum rerum hic tenetur a sapiente delectus, ut aut
+            reiciendis voluptatibus maiores alias consequatur aut perferendis
+            doloribus asperiores repellat.
+          </p>
+          <p>
+            Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+            accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae
+            ab illo inventore veritatis.
+          </p>
+          <p>
+            Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut
+            fugit, sed quia consequuntur magni dolores eos qui ratione
+            voluptatem sequi nesciunt.
+          </p>
+        </div>
+
+        <figure class="feature-figures">
+          <div class="feature-figures__grid">
+            <div class="feature-figures__frame" data-reveal>
+              <img
+                class="feature-figures__image"
+                src="https://picsum.photos/seed/caballero-fig1/900/700"
+                width="900"
+                height="700"
+                alt="Placeholder stock photo standing in for the review-queue interface — temporary demo image, not a real project screenshot"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <div class="feature-figures__frame" data-reveal>
+              <img
+                class="feature-figures__image"
+                src="https://picsum.photos/seed/caballero-fig2/900/700"
+                width="900"
+                height="700"
+                alt="Placeholder stock photo standing in for the evaluation spreadsheet — temporary demo image, not a real project screenshot"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          </div>
+          <figcaption class="feature-hand feature-hand--figs">
+            Figs. 2 &amp; 3 — the review queue, and the spreadsheet that
+            outlived three rewrites.
+          </figcaption>
+        </figure>
+
+        <h2 class="feature-heading feature-heading--build" data-reveal>
+          How it was built
+        </h2>
+        <ol class="feature-build">
+          <li class="feature-build__row" data-reveal>
+            <span class="feature-build__num" aria-hidden="true">01</span>
+            <div>
+              <h3 class="feature-build__title">
+                Lorem ipsum dolor, not the roadmap
+              </h3>
+              <p class="feature-build__body">
+                Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                labore et dolore magna aliqua enim ad minim veniam.
+              </p>
+            </div>
+          </li>
+          <li class="feature-build__row" data-reveal>
+            <span class="feature-build__num" aria-hidden="true">02</span>
+            <div>
+              <h3 class="feature-build__title">
+                Quis nostrud exercitation before you prompt
+              </h3>
+              <p class="feature-build__body">
+                Ullamco laboris nisi ut aliquip ex ea commodo consequat, duis
+                aute irure dolor in reprehenderit in voluptate.
+              </p>
+            </div>
+          </li>
+          <li class="feature-build__row" data-reveal>
+            <span class="feature-build__num" aria-hidden="true">03</span>
+            <div>
+              <h3 class="feature-build__title">
+                Velit esse cillum, never send
+              </h3>
+              <p class="feature-build__body">
+                Dolore eu fugiat nulla pariatur excepteur sint occaecat
+                cupidatat non proident, sunt in culpa qui officia deserunt.
+              </p>
+            </div>
+          </li>
+          <li class="feature-build__row" data-reveal>
+            <span class="feature-build__num" aria-hidden="true">04</span>
+            <div>
+              <h3 class="feature-build__title">
+                Mollit anim id est laborum, every Friday
+              </h3>
+              <p class="feature-build__body">
+                Totam rem aperiam eaque ipsa quae ab illo inventore veritatis et
+                quasi architecto beatae vitae dicta sunt explicabo.
+              </p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="feature-verdict" data-reveal>
+          <p class="feature-verdict__kicker">The verdict</p>
+          <dl class="feature-stats">
+            <div class="feature-stat">
+              <dt class="feature-stat__value" data-count="82" data-suffix="%">
+                82%
+              </dt>
+              <dd class="feature-stat__label">
+                of volume handled by six intents
+              </dd>
+            </div>
+            <div class="feature-stat">
+              <dt class="feature-stat__value" data-count="4">4</dt>
+              <dd class="feature-stat__label">
+                of those needed no model at all
+              </dd>
+            </div>
+            <div class="feature-stat">
+              <dt class="feature-stat__value" data-count="11" data-suffix="h">
+                11h
+              </dt>
+              <dd class="feature-stat__label">per week returned to the team</dd>
+            </div>
+            <div class="feature-stat">
+              <dt class="feature-stat__value" data-count="0">0</dt>
+              <dd class="feature-stat__label">replies sent without a human</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <aside class="feature-sidebar">
+        <div class="feature-spec">
+          <p class="feature-spec__kicker">The spec</p>
+          <dl class="feature-spec__list">
+            <div class="feature-spec__row">
+              <dt class="feature-spec__label">Client</dt>
+              <dd class="feature-spec__value">Regional retail ops team</dd>
+            </div>
+            <div class="feature-spec__row">
+              <dt class="feature-spec__label">Role</dt>
+              <dd class="feature-spec__value">
+                Solo — research, build, deploy, handover
+              </dd>
+            </div>
+            <div class="feature-spec__row">
+              <dt class="feature-spec__label">Stack</dt>
+              <dd class="feature-spec__value">
+                n8n &middot; TypeScript &middot; Postgres &middot; pgvector
+                &middot; OpenAI
+              </dd>
+            </div>
+            <div class="feature-spec__row">
+              <dt class="feature-spec__label">Timeline</dt>
+              <dd class="feature-spec__value">
+                7 weeks, two of them off-keyboard
+              </dd>
+            </div>
+            <div class="feature-spec__row">
+              <dt class="feature-spec__label">Still running</dt>
+              <dd class="feature-spec__value">Yes — 14 months and counting</dd>
+            </div>
+          </dl>
+          <div class="feature-spec__note">
+            <p class="feature-spec__note-label">
+              What I&rsquo;d do differently
+            </p>
+            <p class="feature-hand feature-hand--spec">
+              build the eval sheet in week one, not week four. everything before
+              that was vibes.
+            </p>
+          </div>
+        </div>
+
+        <a class="feature-next" href="/reviews/" data-magnet-target>
+          <span class="feature-next__label">Next</span>
+          <span class="feature-next__title">
+            See all six builds, rated <span aria-hidden="true">&rarr;</span>
+          </span>
+        </a>
+      </aside>
+    </div>
+  </article>
 </BaseLayout>
