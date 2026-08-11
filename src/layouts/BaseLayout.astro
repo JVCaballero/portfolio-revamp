@@ -45,7 +45,9 @@ const { title, description, noindex = false } = Astro.props;
     </main>
     <script>
       import { initTransitionWipe } from '../scripts/transition-wipe';
+      import { initInteractionController } from '../scripts/interactions/interaction-controller';
       initTransitionWipe();
+      initInteractionController();
     </script>
   </body>
 </html>

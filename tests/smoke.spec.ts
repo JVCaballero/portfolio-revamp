@@ -346,3 +346,351 @@ test('Unknown routes resolve through the custom 404 page', async ({ page }) => {
     page.getByRole('link', { name: 'Return to the cover.' }),
   ).toHaveAttribute('href', '/');
 });
+
+/**
+ * Installs test-side instrumentation before any application script runs.
+ * It does not touch production code or expose a debug API: it only wraps
+ * `document.addEventListener` to log registrations of the two Astro
+ * lifecycle events the interaction controller relies on, and adds its own
+ * listeners (registered first) to log when those events actually fire.
+ * This lets the tests below observe controller lifecycle behavior — one
+ * registration per event type, and before-swap/page-load firing in the
+ * expected order and count — without reading any internal controller state.
+ */
+async function installLifecycleInstrumentation(
+  page: import('@playwright/test').Page,
+) {
+  await page.addInitScript(() => {
+    const registrations: string[] = [];
+    const fires: string[] = [];
+    const tracked = new Set(['astro:before-swap', 'astro:page-load']);
+
+    for (const type of tracked) {
+      document.addEventListener(type, () => fires.push(type));
+    }
+
+    const originalAddEventListener = document.addEventListener.bind(document);
+    document.addEventListener = ((type: string, ...rest: unknown[]) => {
+      if (tracked.has(type)) registrations.push(type);
+      // @ts-expect-error test-side instrumentation shim
+      return originalAddEventListener(type, ...rest);
+    }) as typeof document.addEventListener;
+
+    Object.assign(window, {
+      __lifecycleRegistrations: registrations,
+      __lifecycleFires: fires,
+    });
+  });
+}
+
+function registrationCount(list: string[], type: string): number {
+  return list.filter((entry) => entry === type).length;
+}
+
+/**
+ * Native browser Back/Forward updates `location.href` before Astro's async
+ * before-swap/page-load pair for that transition has actually fired, so
+ * `toHaveURL` can resolve ahead of the lifecycle events settling. Poll the
+ * fire log itself rather than the URL so assertions observe a settled count.
+ */
+async function waitForFireCount(
+  page: import('@playwright/test').Page,
+  expected: number,
+) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () =>
+            (window as unknown as { __lifecycleFires: string[] })
+              .__lifecycleFires.length,
+        ),
+      { timeout: 2000 },
+    )
+    .toBe(expected);
+}
+
+test.describe('Sprint 1F interaction controller lifecycle', () => {
+  // `astro:before-swap` is registered on `document` exclusively by our
+  // controller (ClientRouter's own internal wiring for prefetch/announce/
+  // scroll-restoration only ever registers `astro:page-load`), so its
+  // registration count is asserted as an exact value throughout. For
+  // `astro:page-load`, ClientRouter's own internal listeners contribute a
+  // fixed number of registrations that are outside the controller's
+  // control, so tests instead assert the count established right after the
+  // controller's own bootstrap script first runs never grows afterwards —
+  // that is what proves the controller's own idempotency guard works.
+  test('direct initial document load registers the controller listener exactly once and mounts exactly one page scope', async ({
+    page,
+  }) => {
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+
+    const registrations = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleRegistrations: string[] })
+          .__lifecycleRegistrations,
+    );
+    const fires = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleFires: string[] }).__lifecycleFires,
+    );
+
+    expect(registrationCount(registrations, 'astro:before-swap')).toBe(1);
+    expect(registrationCount(fires, 'astro:page-load')).toBe(1);
+    // No outgoing-page cleanup should occur before the initial scope exists.
+    expect(registrationCount(fires, 'astro:before-swap')).toBe(0);
+  });
+
+  test('client-side navigation performs one teardown followed by one destination initialization, without accumulating controller listeners', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    const baselinePageLoadRegistrations = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleRegistrations: string[] })
+          .__lifecycleRegistrations.length,
+    );
+
+    await nav.getByRole('link', { name: 'Feature', exact: true }).click();
+    await expect(page).toHaveURL(/\/feature\/$/);
+
+    const afterFirstNav = await page.evaluate(() => ({
+      registrations: (
+        window as unknown as { __lifecycleRegistrations: string[] }
+      ).__lifecycleRegistrations,
+      fires: (window as unknown as { __lifecycleFires: string[] })
+        .__lifecycleFires,
+    }));
+
+    // Registrations must not multiply: the controller's init guard means the
+    // re-executed inline bootstrap script skips re-registering listeners.
+    expect(
+      registrationCount(afterFirstNav.registrations, 'astro:before-swap'),
+    ).toBe(1);
+    expect(afterFirstNav.registrations.length).toBe(
+      baselinePageLoadRegistrations,
+    );
+    // One teardown (before-swap) followed by one destination init (page-load):
+    // the initial mount plus the post-navigation mount is two page-load fires.
+    expect(registrationCount(afterFirstNav.fires, 'astro:before-swap')).toBe(1);
+    expect(registrationCount(afterFirstNav.fires, 'astro:page-load')).toBe(2);
+    // The events fire strictly in order (teardown before the new mount), so
+    // the last fire recorded must be the destination's page-load.
+    expect(afterFirstNav.fires.at(-1)).toBe('astro:page-load');
+
+    await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+
+    const afterSecondNav = await page.evaluate(() => ({
+      registrations: (
+        window as unknown as { __lifecycleRegistrations: string[] }
+      ).__lifecycleRegistrations,
+      fires: (window as unknown as { __lifecycleFires: string[] })
+        .__lifecycleFires,
+    }));
+
+    // Repeated navigation must not accumulate controller-level listeners.
+    expect(
+      registrationCount(afterSecondNav.registrations, 'astro:before-swap'),
+    ).toBe(1);
+    expect(afterSecondNav.registrations.length).toBe(
+      baselinePageLoadRegistrations,
+    );
+    // Each navigation contributes exactly one before-swap/page-load pair, so
+    // there is never more than one active page scope at a time.
+    expect(registrationCount(afterSecondNav.fires, 'astro:before-swap')).toBe(
+      2,
+    );
+    expect(registrationCount(afterSecondNav.fires, 'astro:page-load')).toBe(3);
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Back navigation performs teardown and reinitialization exactly once', async ({
+    page,
+  }) => {
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    const baselineRegistrations = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleRegistrations: string[] })
+          .__lifecycleRegistrations.length,
+    );
+    const baselineFires = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleFires: string[] }).__lifecycleFires
+          .length,
+    );
+
+    await nav.getByRole('link', { name: 'Feature', exact: true }).click();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await waitForFireCount(page, baselineFires + 2);
+    await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+    await waitForFireCount(page, baselineFires + 4);
+
+    const beforeBack = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleFires: string[] }).__lifecycleFires
+          .length,
+    );
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Feature' }),
+    ).toBeVisible();
+    await waitForFireCount(page, beforeBack + 2);
+
+    const afterBack = await page.evaluate(() => ({
+      registrations: (
+        window as unknown as { __lifecycleRegistrations: string[] }
+      ).__lifecycleRegistrations,
+      fires: (window as unknown as { __lifecycleFires: string[] })
+        .__lifecycleFires,
+    }));
+
+    expect(
+      registrationCount(afterBack.registrations, 'astro:before-swap'),
+    ).toBe(1);
+    expect(afterBack.registrations.length).toBe(baselineRegistrations);
+    expect(afterBack.fires.length - beforeBack).toBe(2);
+    expect(afterBack.fires.slice(beforeBack)).toEqual([
+      'astro:before-swap',
+      'astro:page-load',
+    ]);
+  });
+
+  test('Forward navigation performs teardown and reinitialization exactly once', async ({
+    page,
+  }) => {
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    const baselineRegistrations = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleRegistrations: string[] })
+          .__lifecycleRegistrations.length,
+    );
+    const baselineFires = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleFires: string[] }).__lifecycleFires
+          .length,
+    );
+
+    await nav.getByRole('link', { name: 'Feature', exact: true }).click();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await waitForFireCount(page, baselineFires + 2);
+    await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+    await waitForFireCount(page, baselineFires + 4);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await waitForFireCount(page, baselineFires + 6);
+
+    const beforeForward = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleFires: string[] }).__lifecycleFires
+          .length,
+    );
+
+    await page.goForward();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+    ).toBeVisible();
+    await waitForFireCount(page, beforeForward + 2);
+
+    const afterForward = await page.evaluate(() => ({
+      registrations: (
+        window as unknown as { __lifecycleRegistrations: string[] }
+      ).__lifecycleRegistrations,
+      fires: (window as unknown as { __lifecycleFires: string[] })
+        .__lifecycleFires,
+    }));
+
+    expect(
+      registrationCount(afterForward.registrations, 'astro:before-swap'),
+    ).toBe(1);
+    expect(afterForward.registrations.length).toBe(baselineRegistrations);
+    expect(afterForward.fires.length - beforeForward).toBe(2);
+    expect(afterForward.fires.slice(beforeForward)).toEqual([
+      'astro:before-swap',
+      'astro:page-load',
+    ]);
+  });
+
+  test('Direct reload re-establishes a single controller registration and a single page scope', async ({
+    page,
+  }) => {
+    await installLifecycleInstrumentation(page);
+    await page.goto('/reviews/');
+
+    const baselineRegistrations = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleRegistrations: string[] })
+          .__lifecycleRegistrations.length,
+    );
+
+    const reloadResponse = await page.reload();
+    expect(reloadResponse?.ok()).toBeTruthy();
+
+    const afterReload = await page.evaluate(() => ({
+      registrations: (
+        window as unknown as { __lifecycleRegistrations: string[] }
+      ).__lifecycleRegistrations,
+      fires: (window as unknown as { __lifecycleFires: string[] })
+        .__lifecycleFires,
+    }));
+
+    // A reload is a fresh document: the init script reruns, so counts reset
+    // to exactly one controller registration and one mount rather than
+    // accumulating across the reload boundary.
+    expect(
+      registrationCount(afterReload.registrations, 'astro:before-swap'),
+    ).toBe(1);
+    expect(afterReload.registrations.length).toBe(baselineRegistrations);
+    expect(registrationCount(afterReload.fires, 'astro:page-load')).toBe(1);
+    expect(registrationCount(afterReload.fires, 'astro:before-swap')).toBe(0);
+  });
+
+  test('Routes with an empty interaction registry navigate cleanly with no console errors', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    for (const label of [
+      'Feature',
+      'Reviews',
+      'The Interview',
+      'Columns',
+      'B-Sides',
+      'Rotation',
+      'Letters',
+    ]) {
+      await nav.getByRole('link', { name: label, exact: true }).click();
+    }
+
+    await expect(page).toHaveURL(/\/letters\/$/);
+    expect(consoleErrors).toEqual([]);
+  });
+});
