@@ -13,6 +13,7 @@
 */
 import { ClientRouter } from 'astro:transitions';
 import FontFaces from '../components/FontFaces.astro';
+import NewsstandBottomChrome from '../components/NewsstandBottomChrome.astro';
 import NewsstandNavigation from '../components/NewsstandNavigation.astro';
 import TransitionWipe from '../components/TransitionWipe.astro';
 import '../styles/global.css';
@@ -43,6 +44,7 @@ const { title, description, noindex = false } = Astro.props;
     <main class="site-main">
       <slot />
     </main>
+    <NewsstandBottomChrome />
     <script>
       import { initTransitionWipe } from '../scripts/transition-wipe';
       import { initInteractionController } from '../scripts/interactions/interaction-controller';

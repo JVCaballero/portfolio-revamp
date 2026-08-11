@@ -27,7 +27,7 @@ const routes = [
   { href: '/resume/', heading: 'Resume', activeLabel: null },
 ] as const;
 
-test('Sprint 0 root route is deployable without console errors', async ({
+test('Cover root route renders the Newsstand Cover shell without console errors', async ({
   page,
 }) => {
   const consoleErrors: string[] = [];
@@ -42,8 +42,57 @@ test('Sprint 0 root route is deployable without console errors', async ({
   await expect(
     page.getByRole('heading', { level: 1, name: 'CABALLERO!' }),
   ).toBeVisible();
-  await expect(page.locator('[data-sprint="0"]')).toBeVisible();
+  await expect(page.locator('.cover-masthead__badge')).toBeVisible();
+  await expect(page.locator('.cover-masthead__badge')).toContainText(
+    'Portfolio',
+  );
+  await expect(
+    page.getByRole('heading', {
+      level: 2,
+      name: 'The inbox that learned to answer itself',
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'In this issue' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('img', { name: /placeholder portrait/i }),
+  ).toBeVisible();
   expect(consoleErrors).toEqual([]);
+});
+
+test('Cover exposes its principal editorial links as native anchors to real production routes', async ({
+  page,
+}) => {
+  await page.goto('/');
+
+  await expect(
+    page.getByRole('link', {
+      name: /The inbox that learned to answer itself/,
+    }),
+  ).toHaveAttribute('href', '/feature/');
+  await expect(
+    page.getByRole('link', { name: /Figma to paying customers/ }),
+  ).toHaveAttribute('href', '/reviews/');
+  await expect(
+    page.getByRole('link', { name: /Conducting is just standup/ }),
+  ).toHaveAttribute('href', '/interview/');
+  await expect(
+    page.getByRole('link', { name: /Four side projects rated/ }),
+  ).toHaveAttribute('href', '/b-sides/');
+
+  const issueCards = [
+    { name: 'The Cover Story', href: '/feature/' },
+    { name: 'All The Work', href: '/reviews/' },
+    { name: 'Who I Am', href: '/interview/' },
+    { name: "This Month's Rotation", href: '/rotation/' },
+  ] as const;
+
+  for (const card of issueCards) {
+    await expect(
+      page.getByRole('link', { name: new RegExp(card.name) }),
+    ).toHaveAttribute('href', card.href);
+  }
 });
 
 test('Shared Newsstand navigation matches the approved primary chrome', async ({
@@ -71,7 +120,147 @@ test('Shared Newsstand navigation matches the approved primary chrome', async ({
   await expect(
     nav.getByRole('link', { name: 'Resume', exact: true }),
   ).toHaveCount(0);
-  await expect(page.locator('[data-sprint="0"]')).toBeVisible();
+});
+
+test('Shared Newsstand bottom chrome (Dispatch strip + publication footer) renders on the Cover', async ({
+  page,
+}) => {
+  await page.goto('/');
+
+  const chrome = page.locator('footer.newsstand-bottom-chrome');
+  await expect(chrome).toBeVisible();
+  await expect(chrome.getByText('Dispatch')).toBeVisible();
+  await expect(
+    chrome.getByText('Caballero! Issue 05 · printed in Cebu'),
+  ).toBeVisible();
+  await expect(chrome.getByText('© 2026 John Vincent Caballero')).toBeVisible();
+});
+
+test.describe('Sprint 1H Cover shell', () => {
+  test('Cover teaser navigation reaches a real route, and Back/Forward/reload remain correct', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/');
+    const wipe = page.locator('[data-transition-wipe]');
+    const storyTeaser = page.getByRole('link', {
+      name: /The inbox that learned to answer itself/,
+    });
+
+    await storyTeaser.click();
+    await expect(wipe).toHaveClass(/is-active/);
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Feature' }),
+    ).toBeVisible();
+    await expect(wipe).not.toHaveClass(/is-active/, { timeout: 2000 });
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'CABALLERO!' }),
+    ).toBeVisible();
+
+    await page.goForward();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Feature' }),
+    ).toBeVisible();
+
+    const reloadResponse = await page.reload();
+    expect(reloadResponse?.ok()).toBeTruthy();
+    expect(new URL(page.url()).pathname).toBe('/feature/');
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Cover-local entrance/badge/handwriting animation collapses under reduced motion, and all Cover content stays visible', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/');
+
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'CABALLERO!' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', {
+        level: 2,
+        name: 'The inbox that learned to answer itself',
+      }),
+    ).toBeVisible();
+    await expect(page.getByText("yes, that's a real baton")).toBeVisible();
+    await expect(page.getByText('5 yrs')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'In this issue' }),
+    ).toBeVisible();
+
+    const durations = await page.evaluate(() => {
+      const cover = document.querySelector('.cover-page');
+      const badge = document.querySelector('.cover-badge');
+      const handnote = document.querySelector('.cover-handnote');
+      if (!cover || !badge || !handnote) {
+        throw new Error('Cover-local animated elements not found');
+      }
+      return {
+        cover: getComputedStyle(cover).animationDuration,
+        badge: getComputedStyle(badge).animationDuration,
+        handnote: getComputedStyle(handnote).animationDuration,
+      };
+    });
+
+    for (const value of Object.values(durations)) {
+      expect(parseFloat(value)).toBeLessThan(0.001);
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Highlighted Rotation issue card resolves the golden-master rest/hover color inversion, including its eyebrow', async ({
+    page,
+  }) => {
+    // Reduced motion collapses the card's transition-duration to near-zero,
+    // so the hover color check below reads the settled target value rather
+    // than an interpolated mid-transition frame.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+
+    const card = page.getByRole('link', { name: /This Month's Rotation/ });
+
+    const readColors = () =>
+      card.evaluate((el) => {
+        const eyebrow = el.querySelector('.cover-card__eyebrow');
+        if (!eyebrow) throw new Error('eyebrow element not found');
+        return {
+          cardBackground: getComputedStyle(el).backgroundColor,
+          eyebrowColor: getComputedStyle(eyebrow).color,
+        };
+      });
+
+    const rest = await readColors();
+    expect(rest.cardBackground).toBe('rgb(255, 230, 0)'); // --color-highlight
+    expect(rest.eyebrowColor).toBe('rgb(23, 19, 15)'); // --color-text (inherited)
+
+    await card.hover();
+    // Even at a near-zero reduced-motion duration, the transitioned
+    // background/color values apply on the next animation frame rather
+    // than synchronously with the hover event, so poll rather than read
+    // immediately.
+    await expect(async () => {
+      const hovered = await readColors();
+      expect(hovered.cardBackground).toBe('rgb(23, 19, 15)'); // --color-ink
+      expect(hovered.eyebrowColor).toBe('rgb(255, 230, 0)'); // --color-highlight (inherited)
+    }).toPass({ timeout: 2000 });
+  });
 });
 
 for (const route of routes) {
@@ -104,6 +293,8 @@ for (const route of routes) {
     await expect(nav.locator('[aria-current="page"]')).toHaveCount(
       route.activeLabel ? 1 : 0,
     );
+
+    await expect(page.locator('footer.newsstand-bottom-chrome')).toBeVisible();
 
     const reloadResponse = await page.reload();
     expect(reloadResponse?.ok()).toBeTruthy();
