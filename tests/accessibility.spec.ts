@@ -121,6 +121,22 @@ async function getEffectiveBackground(
 test('Cover root route has no automated WCAG A/AA violations beyond the documented golden-master contrast exception', async ({
   page,
 }, testInfo) => {
+  // `.cover-page` fades in over .62s (cover-fade-in). On a slower/cold
+  // environment (observed in CI, not reproducible on a warm local
+  // dev-machine run), axe can sample pixels while that fade is still
+  // mid-transition, catching `.cover-teaser__cta`'s sibling badge
+  // (`.cover-teaser__kicker`, white-on-red, ~5.4:1 at rest — nowhere near
+  // a real contrast failure) at a partially-blended, transiently-lower-
+  // contrast frame. Reproduced directly: forcing an early scan (before
+  // the animation settles) surfaces exactly that one extra node; emulating
+  // reduced motion collapses the animation to instant and the extra node
+  // never appears, across repeated runs and CPU-throttle stress-testing.
+  // Emulating reduced motion here — exactly as tests/visual.spec.ts and
+  // the Feature accessibility test below already do for the same class of
+  // issue — scans the page's settled, steady-state rendering rather than
+  // an arbitrary mid-animation frame. This is a test-determinism fix, not
+  // a design change: no color, size, or timing value below is altered.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
 
   const results = await new AxeBuilder({ page })
