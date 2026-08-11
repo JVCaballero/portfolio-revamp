@@ -334,6 +334,126 @@ test('prefers-reduced-motion navigation works without a visible animated wipe', 
   expect(consoleErrors).toEqual([]);
 });
 
+test.describe('Sprint 1G reduced-motion journey', () => {
+  // Representative CSS-owned transition (Sprint 1C nav-link hover/active
+  // feedback, --duration-control) used to prove reduced motion collapses
+  // real component timing rather than only a wipe-specific value. Declared
+  // duration is 0.3s under normal motion (tokens.css) and 0.01ms under
+  // reduced motion (global.css); 1ms is comfortably between the two
+  // regardless of how the browser serializes the computed value.
+  const INSTANT_THRESHOLD_SECONDS = 0.001;
+
+  async function getNavLinkTransitionDurationSeconds(
+    page: import('@playwright/test').Page,
+  ): Promise<number> {
+    return page.evaluate(() => {
+      const link = document.querySelector('.newsstand-nav-link');
+      if (!link) throw new Error('nav link not found');
+      const duration = getComputedStyle(link).transitionDuration;
+      return parseFloat(duration);
+    });
+  }
+
+  test('Full reduced-motion journey (load, nav, Back, Forward, reload) keeps the wipe suppressed, preserves content and focus, and stays console-clean', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    const wipe = page.locator('[data-transition-wipe]');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    // 1 & 2: initial direct load succeeds, wipe does not visibly run.
+    const initialResponse = await page.goto('/');
+    expect(initialResponse?.ok()).toBeTruthy();
+    await expect(wipe).toHaveCount(1);
+    await expect(wipe).not.toHaveClass(/is-active/);
+
+    // 12: representative CSS-owned motion resolves effectively
+    // instantaneously under reduced motion.
+    expect(await getNavLinkTransitionDurationSeconds(page)).toBeLessThan(
+      INSTANT_THRESHOLD_SECONDS,
+    );
+
+    // 3, 4, 5: client-side navigation succeeds, wipe stays suppressed,
+    // destination content is visible and understandable.
+    await nav.getByRole('link', { name: 'Feature', exact: true }).click();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Feature' }),
+    ).toBeVisible();
+    await expect(
+      nav.getByRole('link', { name: 'Feature', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+    await expect(wipe).not.toHaveClass(/is-active/);
+
+    await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+    ).toBeVisible();
+    await expect(wipe).not.toHaveClass(/is-active/);
+
+    // 6 & 7: Back succeeds, wipe remains suppressed.
+    await page.goBack();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Feature' }),
+    ).toBeVisible();
+    await expect(
+      nav.getByRole('link', { name: 'Feature', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+    await expect(wipe).not.toHaveClass(/is-active/);
+
+    // 8 & 9: Forward succeeds, wipe remains suppressed.
+    await page.goForward();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+    ).toBeVisible();
+    await expect(
+      nav.getByRole('link', { name: 'Reviews', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+    await expect(wipe).not.toHaveClass(/is-active/);
+
+    // 10, 11, 13: direct reload succeeds, preserves the route, does not
+    // create a transition wipe, and the final state remains intact.
+    const reloadResponse = await page.reload();
+    expect(reloadResponse?.ok()).toBeTruthy();
+    expect(new URL(page.url()).pathname).toBe('/reviews/');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+    ).toBeVisible();
+    await expect(wipe).toHaveCount(1);
+    await expect(wipe).not.toHaveClass(/is-active/);
+    expect(await getNavLinkTransitionDurationSeconds(page)).toBeLessThan(
+      INSTANT_THRESHOLD_SECONDS,
+    );
+
+    // 14: keyboard focus remains visibly indicated.
+    const brand = page.getByRole('link', { name: 'CABALLERO!', exact: true });
+    await brand.focus();
+    await page.keyboard.press('Tab');
+    const focused = page.locator(':focus-visible');
+    await expect(focused).toHaveCount(1);
+    const outlineStyle = await focused.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        outlineStyle: style.outlineStyle,
+        outlineWidth: style.outlineWidth,
+      };
+    });
+    expect(outlineStyle.outlineStyle).toBe('solid');
+    expect(parseFloat(outlineStyle.outlineWidth)).toBeGreaterThan(0);
+
+    // 15: no console errors across the whole reduced-motion journey.
+    expect(consoleErrors).toEqual([]);
+  });
+});
+
 test('Unknown routes resolve through the custom 404 page', async ({ page }) => {
   const response = await page.goto('/this-route-does-not-exist/');
 
