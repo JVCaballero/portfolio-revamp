@@ -1,25 +1,148 @@
 ---
-const title = 'CABALLERO! Portfolio Revamp';
+/*
+  Sprint 1H Cover shell — static reproduction of the immutable golden
+  master's Cover page (reference/newsstand-original/source/
+  Newsstand - Full Site.dc.html, the `isCover` sc-if block, ~lines 58-140).
+
+  Content classification (see Sprint 1H content-shell rule):
+  - Structural/interface copy (CABALLERO!, The Portfolio Issue, COVER
+    STORY, IN THIS ISSUE, page labels) is production-final visual language.
+  - Everything else below (case-file claims, project descriptions, the
+    portrait, the "5 yrs" badge, the handwritten annotation) is
+    source-faithful reference/demo copy carried over to preserve
+    composition. None of it is verified production content.
+*/
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/cover.css';
+
+const title = 'CABALLERO! — The Portfolio Issue';
+const description =
+  'CABALLERO! Issue 05 — The Portfolio Issue. Cover story, reviews, interview and this month’s rotation.';
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta
-      name="description"
-      content="Sprint 0 repository foundation for the CABALLERO! portfolio revamp."
-    />
-    <title>{title}</title>
-  </head>
-  <body>
-    <main>
-      <h1>CABALLERO!</h1>
-      <p data-sprint="0">
-        Sprint 0 foundation is active. The approved Newsstand visual port begins
-        in Sprint 1.
-      </p>
-    </main>
-  </body>
-</html>
+<BaseLayout title={title} description={description}>
+  <div class="cover-page">
+    <div class="cover-hero container">
+      <div class="cover-folio">
+        <span>Issue 05</span>
+        <span>August 2026</span>
+        <span>The engineering &amp; noise quarterly</span>
+        <span>&#8369;250 / $5</span>
+      </div>
+
+      <div class="cover-masthead">
+        <h1 class="cover-masthead__title">CABALLERO!</h1>
+        <p class="cover-masthead__badge">The<br />Portfolio<br />Issue</p>
+      </div>
+
+      <div class="cover-lead">
+        <div class="cover-lead__left">
+          <a class="cover-teaser cover-teaser--story" href="/feature/">
+            <span class="cover-teaser__kicker">COVER STORY</span>
+            <h2 class="cover-teaser__title">
+              The inbox that learned to answer itself
+            </h2>
+            <p class="cover-teaser__dek">
+              900 emails a week, three tired staff, one n8n canvas — and the
+              four routes that never touched a model.
+            </p>
+            <span class="cover-teaser__cta">Read the case file →</span>
+          </a>
+
+          <a class="cover-teaser cover-teaser--secondary" href="/reviews/">
+            <h2 class="cover-teaser__title">
+              Figma to paying customers in
+              <mark class="cover-teaser__highlight">eleven weeks</mark>
+            </h2>
+            <p class="cover-teaser__dek">
+              Two founders, no backend team. p. 22
+            </p>
+          </a>
+        </div>
+
+        <figure class="cover-portrait">
+          <div class="cover-portrait__frame">
+            <img
+              class="cover-portrait__image"
+              src="https://picsum.photos/seed/caballero-portrait/900/1200"
+              width="900"
+              height="1200"
+              alt="Temporary placeholder portrait photo — not a final photo of John Vincent Caballero"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+          <p class="cover-badge">
+            <span class="cover-badge__value">5 yrs</span>
+            <span class="cover-badge__label">full-stack<br />&amp; AI</span>
+          </p>
+          <figcaption class="cover-handnote">
+            yes, that's a real baton in the other photo →
+          </figcaption>
+        </figure>
+
+        <div class="cover-lead__right">
+          <a class="cover-teaser cover-teaser--quote" href="/interview/">
+            <h2 class="cover-teaser__title">
+              &ldquo;Conducting is just standup with a baton&rdquo;
+            </h2>
+            <p class="cover-teaser__dek">
+              Five years of code, one marching band, and a bar-gig setlist that
+              saved a launch. p. 12
+            </p>
+          </a>
+
+          <a class="cover-teaser cover-teaser--bsides" href="/b-sides/">
+            <p class="cover-teaser__plug">
+              Plus! Four side projects rated out of five
+            </p>
+          </a>
+
+          <div class="cover-barcode">
+            <span class="cover-barcode__lines" aria-hidden="true"></span>
+            <span class="cover-barcode__label">HIRE-ME-2026</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section
+      class="cover-issue container"
+      aria-labelledby="cover-issue-heading"
+    >
+      <h2 id="cover-issue-heading" class="cover-issue__kicker">
+        In this issue
+      </h2>
+      <div class="cover-issue__grid">
+        <a class="cover-card" href="/feature/">
+          <span class="cover-card__eyebrow">p.04 — Feature</span>
+          <h3 class="cover-card__title">The Cover Story</h3>
+          <span class="cover-card__dek">
+            One case file, told long: research, routes, evals, what shipped.
+          </span>
+        </a>
+        <a class="cover-card" href="/reviews/">
+          <span class="cover-card__eyebrow">p.18 — Reviews</span>
+          <h3 class="cover-card__title">All The Work</h3>
+          <span class="cover-card__dek">
+            Six builds, rated and reviewed — web, mobile and automation.
+          </span>
+        </a>
+        <a class="cover-card" href="/interview/">
+          <span class="cover-card__eyebrow">p.12 — Interview</span>
+          <h3 class="cover-card__title">Who I Am</h3>
+          <span class="cover-card__dek">
+            The band, the bar gigs, the manga, the résumé at the back.
+          </span>
+        </a>
+        <a class="cover-card cover-card--highlight" href="/rotation/">
+          <span class="cover-card__eyebrow">p.30 — Now</span>
+          <h3 class="cover-card__title">This Month's Rotation</h3>
+          <span class="cover-card__dek">
+            What I'm building, playing, reading and rehearsing right now.
+          </span>
+        </a>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

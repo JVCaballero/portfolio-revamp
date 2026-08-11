@@ -1,0 +1,56 @@
+---
+/*
+  Sprint 1E — the approved Newsstand transition wipe (golden master:
+  reference/newsstand-original/source/Newsstand - Full Site.dc.html,
+  the `dv-wipe` keyframes and its fixed 3px bar, ~lines 24 & 651).
+
+  Renders only the fixed visual. Navigation wiring lives in
+  ../scripts/transition-wipe.ts; this component owns no routing state.
+*/
+---
+
+<div
+  class="transition-wipe"
+  data-transition-wipe
+  aria-hidden="true"
+  transition:name="transition-wipe"
+  transition:persist
+>
+</div>
+
+<style>
+  .transition-wipe {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--border-width-heavy);
+    background: var(--color-red);
+    z-index: var(--z-transition-overlay);
+    pointer-events: none;
+    transform-origin: left;
+    transform: scaleX(0);
+    opacity: 0;
+  }
+
+  .transition-wipe.is-active {
+    animation: transition-wipe-sweep var(--duration-wipe) var(--ease-wipe) both;
+  }
+
+  @keyframes transition-wipe-sweep {
+    0% {
+      transform: scaleX(0);
+      opacity: 1;
+    }
+
+    62% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+
+    100% {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+  }
+</style>

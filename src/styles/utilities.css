@@ -1,0 +1,19 @@
+/*
+  Small, genuinely reusable layout primitives only. This is not a utility
+  framework — just the handful of container/measure patterns that recur
+  throughout the golden master.
+*/
+
+.container {
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-gutter);
+}
+
+.measure-60 {
+  max-width: var(--measure-60);
+}
+
+.measure-62 {
+  max-width: var(--measure-62);
+}

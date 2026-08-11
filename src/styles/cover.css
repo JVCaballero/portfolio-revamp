@@ -1,0 +1,484 @@
+/*
+  Sprint 1H Cover shell. Scoped beneath the Cover-owned .cover-page root.
+  Every rule is derived from the immutable golden master
+  (reference/newsstand-original/source/Newsstand - Full Site.dc.html,
+  the Cover `sc-if` block, ~lines 58-140) and mapped onto Sprint 1A tokens
+  only where both the value AND the semantic role already match. Values
+  that recur once, or that would misuse an existing token's role, stay
+  literal at the point of use rather than being forced through a
+  misleading alias.
+
+  No Cover-specific width breakpoints exist here on purpose: the source
+  has none, and the layout adapts entirely through intrinsic flex/grid
+  wrapping.
+*/
+
+.cover-page {
+  animation: cover-fade-in var(--duration-lift) var(--ease-editorial) both;
+}
+
+/* ---------------------------------------------------------------------
+   Hero block: folio bar, masthead, lead composition.
+   --------------------------------------------------------------------- */
+
+.cover-hero {
+  padding-block: var(--space-shell-xs) var(--space-shell-sm);
+  border-bottom: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.cover-folio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-10) var(--space-20);
+  margin: 0 0 var(--space-10);
+  padding-bottom: var(--space-6);
+  border-bottom: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-mono-fluid-folio);
+  letter-spacing: var(--tracking-nav);
+  text-transform: uppercase;
+}
+
+.cover-masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: clamp(10px, 2.5vw, 18px);
+  margin-bottom: clamp(18px, 3vw, 26px);
+}
+
+.cover-masthead__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: var(--font-size-display-masthead);
+  line-height: var(--leading-display);
+  color: var(--color-accent);
+  letter-spacing: var(--tracking-display);
+  text-shadow: var(--text-shadow-display);
+}
+
+.cover-masthead__badge {
+  margin: 0;
+  background: var(--color-ink);
+  color: var(--color-highlight);
+  padding: var(--space-6) var(--space-9);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: clamp(13px, 2.6vw, 16px);
+  line-height: var(--leading-label);
+  letter-spacing: var(--tracking-tag);
+  text-transform: uppercase;
+}
+
+.cover-lead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: clamp(18px, 3vw, 28px);
+}
+
+.cover-lead__left,
+.cover-lead__right {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2.4vw, 22px);
+}
+
+.cover-lead__right {
+  flex-basis: 240px;
+  gap: clamp(14px, 2.2vw, 18px);
+}
+
+/* ---------------------------------------------------------------------
+   Teasers (Cover Story, Figma, quote, B-Sides plug) — native anchors
+   replacing the source's clickable-div plumbing.
+   --------------------------------------------------------------------- */
+
+.cover-teaser {
+  display: block;
+  color: var(--color-text);
+  transition: transform var(--duration-transform) var(--ease-editorial);
+}
+
+.cover-teaser:hover {
+  color: var(--color-text);
+}
+
+.cover-teaser--story:hover,
+.cover-teaser--secondary:hover {
+  transform: translateX(4px);
+}
+
+.cover-teaser--story:active,
+.cover-teaser--secondary:active {
+  transform: translateX(7px) scale(0.99);
+}
+
+.cover-teaser--quote:hover,
+.cover-teaser--bsides:hover {
+  transform: translateX(-4px);
+}
+
+.cover-teaser--quote:active,
+.cover-teaser--bsides:active {
+  transform: translateX(-7px) scale(0.99);
+}
+
+.cover-teaser--secondary,
+.cover-teaser--bsides {
+  border-top: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.cover-teaser--secondary {
+  padding-top: var(--space-11);
+}
+
+.cover-teaser--bsides {
+  padding-top: var(--space-10);
+}
+
+.cover-teaser__kicker {
+  display: inline-block;
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10-5);
+  letter-spacing: var(--tracking-label);
+  padding: 3px var(--space-7);
+  margin-bottom: var(--space-7);
+}
+
+.cover-teaser--story .cover-teaser__title {
+  font-size: clamp(30px, 4.4vw, 40px);
+}
+
+.cover-teaser--secondary .cover-teaser__title {
+  font-size: clamp(24px, 3.2vw, 30px);
+}
+
+.cover-teaser--quote .cover-teaser__title {
+  font-size: clamp(26px, 3.4vw, 32px);
+}
+
+.cover-teaser__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-heading-tight);
+  text-transform: uppercase;
+}
+
+.cover-teaser__dek {
+  margin: var(--space-6) 0 0;
+  font-family: var(--font-body);
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.cover-teaser--story .cover-teaser__dek {
+  font-size: clamp(13.5px, 1.5vw, 15px);
+  max-width: 34ch;
+}
+
+.cover-teaser--quote .cover-teaser__dek {
+  font-size: var(--font-size-caption);
+}
+
+.cover-teaser--secondary .cover-teaser__dek {
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: var(--font-size-caption);
+  line-height: 1.25;
+}
+
+.cover-teaser__highlight {
+  background: var(--color-highlight);
+  padding: 0 4px;
+}
+
+.cover-teaser__cta {
+  display: block;
+  margin-top: var(--space-9);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.cover-teaser__plug {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-13);
+  line-height: var(--leading-copy-compact);
+  letter-spacing: var(--tracking-strong);
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+/* ---------------------------------------------------------------------
+   Portrait column.
+   --------------------------------------------------------------------- */
+
+.cover-portrait {
+  flex: 1 1 300px;
+  min-width: 0;
+  position: relative;
+  margin: 0;
+}
+
+.cover-portrait__frame {
+  aspect-ratio: 3 / 4;
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  overflow: hidden;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--color-stripe-a) 0 10px,
+    var(--color-stripe-b) 10px 20px
+  );
+}
+
+.cover-portrait__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(1) contrast(1.08);
+  transition:
+    filter 0.72s var(--ease-standard),
+    transform 0.8s var(--ease-editorial);
+}
+
+.cover-portrait__image:hover {
+  filter: none;
+  transform: scale(1.035);
+}
+
+.cover-badge {
+  margin: 0;
+  position: absolute;
+  right: -8px;
+  top: -14px;
+  transform: rotate(-8deg);
+  background: var(--color-highlight);
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding: var(--space-9) var(--space-11);
+  text-align: center;
+  animation: cover-badge-pop 0.5s 0.3s var(--ease-standard) both;
+  transition: transform var(--duration-xs) var(--ease-editorial);
+}
+
+.cover-badge:hover {
+  transform: rotate(-3deg) scale(1.07);
+}
+
+.cover-badge__value {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(20px, 3vw, 26px);
+  line-height: var(--leading-display-compact);
+  text-transform: uppercase;
+}
+
+.cover-badge__label {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-9);
+  letter-spacing: var(--tracking-tag);
+  text-transform: uppercase;
+}
+
+.cover-handnote {
+  margin: var(--space-12) 0 0;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-normal);
+  font-size: clamp(16px, 2.1vw, 19px);
+  line-height: 1.25;
+  color: var(--color-handwriting);
+  transform: rotate(-2deg);
+  animation: cover-handnote-scrawl var(--duration-scrawl) 0.45s
+    var(--ease-standard) both;
+}
+
+/* ---------------------------------------------------------------------
+   Barcode strip.
+   --------------------------------------------------------------------- */
+
+.cover-barcode {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-10);
+  margin-top: 4px;
+}
+
+.cover-barcode__lines {
+  width: 88px;
+  height: 44px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-ink) 0 2px,
+    transparent 2px 4px,
+    var(--color-ink) 4px 5px,
+    transparent 5px 9px
+  );
+}
+
+.cover-barcode__label {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+  font-size: var(--font-size-mono-9);
+  letter-spacing: var(--tracking-metadata);
+  color: var(--color-utility-neutral);
+}
+
+/* ---------------------------------------------------------------------
+   In This Issue section.
+   --------------------------------------------------------------------- */
+
+.cover-issue {
+  padding-block: var(--space-fluid-sm) var(--space-fluid-md);
+}
+
+.cover-issue__kicker {
+  margin: 0 0 var(--space-18);
+  padding-bottom: var(--space-7);
+  border-bottom: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.cover-issue__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--space-16);
+}
+
+.cover-card {
+  display: block;
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding: var(--space-15);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition:
+    transform var(--duration-card) var(--ease-editorial),
+    box-shadow var(--duration-card) var(--ease-standard),
+    background var(--duration-card) var(--ease-standard),
+    color var(--duration-card) var(--ease-standard);
+}
+
+.cover-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-hard-xl);
+  background: var(--color-ink);
+  color: var(--color-surface);
+}
+
+.cover-card:active {
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.cover-card--highlight {
+  background: var(--color-highlight);
+}
+
+.cover-card--highlight:hover {
+  color: var(--color-highlight);
+}
+
+.cover-card__eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* Only the three ordinary cards declare an explicit eyebrow color in the
+   golden master (source lines 117/122/127); the highlighted Rotation card's
+   eyebrow (line 132) has none, so it inherits the card's own ambient color
+   in both rest and hover states. */
+.cover-card:not(.cover-card--highlight) .cover-card__eyebrow {
+  color: var(--color-accent);
+}
+
+.cover-card__title {
+  margin: var(--space-6) 0 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-heading-section);
+  line-height: var(--leading-heading-tight);
+  text-transform: uppercase;
+}
+
+.cover-card__dek {
+  display: block;
+  margin-top: var(--space-6);
+  font-family: var(--font-body);
+  font-size: var(--font-size-caption);
+  line-height: var(--leading-body);
+}
+
+/* ---------------------------------------------------------------------
+   Cover-local animations.
+   --------------------------------------------------------------------- */
+
+@keyframes cover-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cover-badge-pop {
+  from {
+    opacity: 0;
+    transform: rotate(-8deg) scale(0.82);
+  }
+
+  to {
+    opacity: 1;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+
+@keyframes cover-handnote-scrawl {
+  from {
+    opacity: 0;
+    transform: rotate(-2deg) translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: rotate(-2deg) translateY(0);
+  }
+}

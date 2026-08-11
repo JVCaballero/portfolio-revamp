@@ -1,0 +1,22 @@
+---
+/*
+  Narrow, non-visual head component: emits the Astro Fonts API <Font/>
+  declarations shared by every page. It exists only to avoid duplicating
+  five <Font/> tags per page — it must never grow into a layout,
+  navigation, or metadata component.
+
+  Preload is limited to the families proven above the fold at 1440x900 by
+  the golden-master baseline/source: the masthead (Archivo Black), nav and
+  folio labels (Space Mono), editorial headings (Barlow Condensed), and the
+  cover dek/byline copy (Source Serif 4, both normal and italic). Architects
+  Daughter (handwriting) first appears below the fold at 1440x900, so it is
+  not preloaded.
+*/
+import { Font } from 'astro:assets';
+---
+
+<Font cssVariable="--font-archivo-black" preload />
+<Font cssVariable="--font-barlow-condensed" preload />
+<Font cssVariable="--font-source-serif-4" preload />
+<Font cssVariable="--font-space-mono" preload />
+<Font cssVariable="--font-architects-daughter" />

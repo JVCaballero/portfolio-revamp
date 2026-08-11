@@ -1,0 +1,184 @@
+---
+/*
+  Sprint 1C shared chrome extracted from the immutable Newsstand header
+  (source/Newsstand - Full Site.dc.html, lines 33-53). Scroll progress,
+  magnetic movement, and transition-wipe behavior remain deferred to their
+  dedicated checkpoints.
+*/
+import { primaryNavigation } from '../data/navigation';
+
+const pathname = Astro.url.pathname;
+
+const isCurrentPath = (href: string) =>
+  href === '/' ? pathname === '/' : pathname.startsWith(href);
+---
+
+<header class="newsstand-chrome">
+  <div class="newsstand-utility container">
+    <div class="newsstand-identity">
+      <a class="newsstand-brand" href="/">CABALLERO!</a>
+      <span class="newsstand-issue">Issue 05 · Aug 2026</span>
+    </div>
+
+    <span class="newsstand-availability">Open to work · Nov 2026</span>
+  </div>
+
+  <div class="newsstand-nav-band">
+    <nav class="newsstand-primary container" aria-label="Primary">
+      {
+        primaryNavigation.map((item) => {
+          const isCurrent = isCurrentPath(item.href);
+
+          return (
+            <a
+              class="newsstand-nav-link"
+              href={item.href}
+              aria-current={isCurrent ? 'page' : undefined}
+            >
+              {isCurrent && (
+                <span class="newsstand-active-dot" aria-hidden="true" />
+              )}
+              {item.label}
+            </a>
+          );
+        })
+      }
+    </nav>
+  </div>
+</header>
+
+<style>
+  .newsstand-chrome {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky-nav);
+    background: var(--color-paper);
+    border-bottom: var(--border-width-standard) var(--border-style-solid)
+      var(--color-ink);
+  }
+
+  .newsstand-utility {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-12);
+    padding-block: var(--space-10) var(--space-8);
+  }
+
+  .newsstand-identity {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-10);
+  }
+
+  .newsstand-brand {
+    color: var(--color-red);
+    font-family: var(--font-display);
+    font-size: clamp(22px, 5.4vw, 30px);
+    font-weight: var(--weight-normal);
+    line-height: var(--leading-normal);
+    letter-spacing: var(--tracking-brand-compact);
+    text-shadow: var(--text-shadow-sm);
+    transition:
+      text-shadow var(--duration-hover) var(--ease-standard),
+      transform var(--duration-hover) var(--ease-standard);
+  }
+
+  .newsstand-brand:hover {
+    color: var(--color-red);
+    text-shadow: var(--text-shadow-md);
+    transform: translate(-1px, -1px);
+  }
+
+  .newsstand-issue,
+  .newsstand-availability,
+  .newsstand-nav-link {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-bold);
+    text-transform: uppercase;
+  }
+
+  .newsstand-issue {
+    color: var(--color-muted-metadata);
+    font-size: var(--font-size-mono-10);
+    letter-spacing: var(--tracking-kicker);
+  }
+
+  .newsstand-availability {
+    border: var(--border-width-hairline) var(--border-style-solid)
+      var(--color-ink);
+    background: var(--color-yellow);
+    font-size: clamp(8.5px, 2.2vw, 10px);
+    letter-spacing: var(--tracking-nav);
+    padding: 4px var(--space-8);
+    transition:
+      transform var(--duration-hover) var(--ease-standard),
+      box-shadow var(--duration-hover) var(--ease-standard);
+  }
+
+  .newsstand-availability:hover {
+    box-shadow: var(--shadow-hard-md);
+    transform: translate(-1px, -1px);
+  }
+
+  .newsstand-nav-band {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .newsstand-primary {
+    display: flex;
+    gap: clamp(16px, 3.4vw, 30px);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .newsstand-nav-link {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: var(--space-6);
+    padding-block: var(--space-11);
+    color: var(--color-paper);
+    font-size: var(--font-size-mono-11);
+    letter-spacing: var(--tracking-nav);
+    transition:
+      color var(--duration-control) var(--ease-standard),
+      transform var(--duration-control) var(--ease-standard);
+  }
+
+  .newsstand-nav-link:hover {
+    color: var(--color-yellow);
+    transform: translateY(-1px);
+  }
+
+  .newsstand-nav-link:active {
+    color: var(--color-red);
+    transform: translateY(2px) scale(0.94);
+  }
+
+  .newsstand-active-dot {
+    width: var(--space-6);
+    height: var(--space-6);
+    flex: 0 0 auto;
+    border-radius: var(--radius-circle);
+    background: var(--color-yellow);
+    animation: newsstand-nav-dot-fade var(--duration-control)
+      var(--ease-standard) both;
+  }
+
+  @keyframes newsstand-nav-dot-fade {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

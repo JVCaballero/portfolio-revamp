@@ -1,0 +1,110 @@
+---
+/*
+  Sprint 1H shared shell for the golden master's bottom-of-document chrome
+  (source/Newsstand - Full Site.dc.html, the `dispatchMode` strip at
+  ~lines 621-629 and the publication footer at ~lines 640-644). Both bands
+  sit outside every page's `sc-if` conditional in the immutable source, so
+  they are genuinely site-wide rather than Cover-specific.
+
+  Static only: the source rotates `dispatchNow` through a five-message
+  array on a timer. That rotation, and the underlying interaction module it
+  would require, is explicitly deferred past Sprint 1H. The first dispatch
+  message below is reference/demo shell copy carried over verbatim to
+  preserve composition — it is not verified production content.
+*/
+---
+
+<footer class="newsstand-bottom-chrome">
+  <div class="newsstand-dispatch">
+    <div class="newsstand-dispatch__inner container">
+      <span class="newsstand-dispatch__label">Dispatch</span>
+      <span class="newsstand-dispatch__dot" aria-hidden="true"></span>
+      <p class="newsstand-dispatch__message">
+        Case file: teaching a bot to say &ldquo;I don&rsquo;t know&rdquo;
+      </p>
+    </div>
+  </div>
+
+  <div class="newsstand-publication">
+    <div class="newsstand-publication__inner container">
+      <span>Caballero! Issue 05 &middot; printed in Cebu</span>
+      <span>Set in Archivo Black, Barlow Condensed &amp; Source Serif</span>
+      <span>&copy; 2026 John Vincent Caballero</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .newsstand-bottom-chrome {
+    background: var(--color-surface);
+  }
+
+  .newsstand-dispatch {
+    background: var(--color-ink);
+    color: var(--color-surface);
+    border-top: var(--border-width-standard) var(--border-style-solid)
+      var(--color-ink);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .newsstand-dispatch__inner {
+    display: flex;
+    align-items: center;
+    gap: clamp(10px, 2.5vw, 18px);
+    min-height: var(--space-20);
+    padding-block: var(--space-11);
+  }
+
+  .newsstand-dispatch__label {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-bold);
+    font-size: var(--font-size-mono-10);
+    letter-spacing: var(--tracking-kicker);
+    text-transform: uppercase;
+    color: var(--color-highlight);
+  }
+
+  .newsstand-dispatch__dot {
+    flex: 0 0 auto;
+    width: 5px;
+    height: 5px;
+    border-radius: var(--radius-circle);
+    background: var(--color-accent);
+  }
+
+  .newsstand-dispatch__message {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-bold);
+    font-size: clamp(9.5px, 2.1vw, 11px);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .newsstand-publication {
+    background: var(--color-surface);
+    border-top: var(--border-width-standard) var(--border-style-solid)
+      var(--color-ink);
+  }
+
+  .newsstand-publication__inner {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-8) var(--space-20);
+    padding-block: var(--space-18);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-bold);
+    font-size: clamp(9px, 1.8vw, 10px);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-muted-metadata);
+  }
+</style>
