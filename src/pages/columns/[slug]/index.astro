@@ -1,0 +1,83 @@
+---
+/*
+  Sprint 2D Columns [slug] — a temporary route-integrity shell only. This
+  is NOT Sprint 2E's production article template, and it deliberately does
+  NOT reproduce the immutable golden master's article-detail view
+  (reference/newsstand-original/source/Newsstand - Full Site.dc.html, the
+  `isColumns` sc-if block's `readingColumn` branch, ~lines 401-472): no
+  hero hierarchy, no article body, no byline system, no sticky rail, no
+  prev/next navigation, no pull quote, no signature, no multi-column prose,
+  no article-specific asset system. Those all belong to Sprint 2E.
+
+  What this route DOES guarantee, per the approved Sprint 2D architecture
+  (see DESIGN_DEVIATIONS.md, "Sprint 2D — Columns" entry 3): each of the
+  five demo slugs below resolves to a real, direct /columns/<slug>/ URL;
+  the page survives reload and is Back/Forward-safe; it keeps the shared
+  Columns navigation state active (NewsstandNavigation's own pathname
+  prefix match already covers this — no navigation change was needed); and
+  it is marked noindex, since these are temporary demo identifiers, not
+  approved permanent editorial identities or SEO URLs.
+
+  The five slugs and their titles are the same demo identities already
+  used on the Columns index (src/pages/columns/index.astro) — reused
+  verbatim, not invented, so the link from the index to here is coherent.
+*/
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import '../../../styles/columns.css';
+
+export function getStaticPaths() {
+  // Self-contained on purpose: Astro extracts getStaticPaths into its own
+  // build-time module, so its data lives entirely inside the function body
+  // rather than referencing an outer-scope const. The five slugs and their
+  // titles are the same demo identities already used on the Columns index
+  // (src/pages/columns/index.astro) — reused verbatim, not invented.
+  const columns = [
+    {
+      slug: 'your-automation-doesnt-need-a-model',
+      title: "Your automation doesn't need a model",
+    },
+    {
+      slug: 'six-months-with-a-mechanical-keyboard-i-regret',
+      title: 'Six months with a mechanical keyboard I regret',
+    },
+    {
+      slug: 'what-conducting-taught-me-about-standups',
+      title: 'What conducting taught me about standups',
+    },
+    {
+      slug: 'gacha-ui-is-better-than-your-products-ui',
+      title: "Gacha UI is better than your product's UI",
+    },
+    {
+      slug: 'the-eval-sheet-is-the-deliverable',
+      title: 'The eval sheet is the deliverable',
+    },
+  ];
+
+  return columns.map(({ slug, title }) => ({
+    params: { slug },
+    props: { title },
+  }));
+}
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props as Props;
+const description = `Columns / p.26 — ${title}. This individual column's full template is deferred to a later checkpoint.`;
+---
+
+<BaseLayout title={`${title} | CABALLERO!`} description={description} noindex>
+  <div class="columns-detail-shell container">
+    <p class="columns-detail__kicker">Columns / p.26</p>
+    <h1 class="columns-detail-shell__title">{title}</h1>
+    <p class="columns-detail-shell__note">
+      This individual column's full reading view is deferred to a later
+      checkpoint. This page is a temporary placeholder that confirms the link
+      works, survives a reload, and responds correctly to your browser's Back
+      and Forward buttons.
+    </p>
+    <a class="columns-detail__back" href="/columns/">← All columns</a>
+  </div>
+</BaseLayout>

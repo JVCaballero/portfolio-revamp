@@ -28,7 +28,11 @@ const routes = [
     heading: 'Forty players, one tempo, and a deploy on Sunday',
     activeLabel: 'The Interview',
   },
-  { href: '/columns/', heading: 'Columns', activeLabel: 'Columns' },
+  {
+    href: '/columns/',
+    heading: 'Words, rants and gadget reviews',
+    activeLabel: 'Columns',
+  },
   { href: '/b-sides/', heading: 'B-Sides', activeLabel: 'B-Sides' },
   { href: '/rotation/', heading: 'Rotation', activeLabel: 'Rotation' },
   { href: '/letters/', heading: 'Letters', activeLabel: 'Letters' },
@@ -1030,14 +1034,16 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
     expect(registrationCount(afterReload.fires, 'astro:before-swap')).toBe(0);
   });
 
-  // Feature, Reviews, and Interview are still exercised here (as hops on
-  // the way to Letters) but have real page-specific interaction work of
-  // their own — Feature's four Sprint 2A modules, Reviews' Sprint 2B
-  // scroll-reveal/cursor-preview, and Interview's Sprint 2C scroll-reveal/
-  // magnetic-navigation — so their dedicated lifecycle behavior is covered
-  // by "Sprint 2A Feature interaction lifecycle", "Sprint 2B Reviews
-  // interaction lifecycle", and "Sprint 2C Interview interaction
-  // lifecycle" below, not by this generic console-cleanliness pass-through.
+  // Feature, Reviews, Interview, and Columns are still exercised here (as
+  // hops on the way to Letters) but have real page-specific interaction
+  // work of their own — Feature's four Sprint 2A modules, Reviews' Sprint
+  // 2B scroll-reveal/cursor-preview, Interview's Sprint 2C scroll-reveal/
+  // magnetic-navigation, and Columns' Sprint 2D scroll-reveal/cursor-
+  // preview — so their dedicated lifecycle behavior is covered by
+  // "Sprint 2A Feature interaction lifecycle", "Sprint 2B Reviews
+  // interaction lifecycle", "Sprint 2C Interview interaction lifecycle",
+  // and "Sprint 2D Columns interaction lifecycle" below, not by this
+  // generic console-cleanliness pass-through.
   test('Routes with no active interaction work navigate cleanly with no console errors', async ({
     page,
   }) => {
@@ -1053,7 +1059,6 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
     for (const label of [
       'Feature',
       'Reviews',
-      'Columns',
       'B-Sides',
       'Rotation',
       'Letters',
@@ -2407,5 +2412,556 @@ test.describe('Sprint 2C Interview interaction lifecycle', () => {
     ).toBeVisible();
 
     expect(consoleErrors).toEqual([]);
+  });
+});
+
+test.describe('Sprint 2D Columns page', () => {
+  test('Columns renders the golden-master anatomy: kicker, headline, lead article, four secondary rows, and handwritten note', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    const response = await page.goto('/columns/');
+    expect(response?.ok()).toBeTruthy();
+
+    await expect(page.locator('.columns-kicker')).toHaveText('Columns / p.26');
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Words, rants and gadget reviews',
+      }),
+    ).toBeVisible();
+
+    await expect(page.locator('article.columns-lead')).toBeVisible();
+    await expect(
+      page.getByRole('heading', {
+        level: 2,
+        name: "Your automation doesn't need a model",
+      }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'More columns' }),
+    ).toBeVisible();
+    await expect(page.locator('li.columns-more__item')).toHaveCount(4);
+    await expect(page.locator('h3.columns-more__title')).toHaveCount(4);
+
+    await expect(page.locator('.columns-hand-note')).toBeVisible();
+    await expect(page.locator('footer.newsstand-bottom-chrome')).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Primary' })
+        .getByRole('link', { name: 'Columns', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('All five Columns article links are native anchors to real /columns/<slug>/ URLs', async ({
+    page,
+  }) => {
+    await page.goto('/columns/');
+
+    const leadLink = page.locator('a.columns-lead__link');
+    await expect(leadLink).toHaveAttribute(
+      'href',
+      '/columns/your-automation-doesnt-need-a-model/',
+    );
+
+    const rowLinks = page.locator('a.columns-more__row');
+    await expect(rowLinks).toHaveCount(4);
+    const expectedHrefs = [
+      '/columns/six-months-with-a-mechanical-keyboard-i-regret/',
+      '/columns/what-conducting-taught-me-about-standups/',
+      '/columns/gacha-ui-is-better-than-your-products-ui/',
+      '/columns/the-eval-sheet-is-the-deliverable/',
+    ];
+    for (let i = 0; i < expectedHrefs.length; i++) {
+      await expect(rowLinks.nth(i)).toHaveAttribute('href', expectedHrefs[i]);
+    }
+  });
+
+  test('Columns has no positive tabindex and no click-only div semantics anywhere on the page', async ({
+    page,
+  }) => {
+    await page.goto('/columns/');
+
+    const positiveTabindexCount = await page
+      .locator('[tabindex]')
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+            .length,
+      );
+    expect(positiveTabindexCount).toBe(0);
+
+    const linkCount = await page
+      .locator('a.columns-lead__link, a.columns-more__row')
+      .count();
+    expect(linkCount).toBe(5);
+  });
+
+  test('Columns lead image has explicit dimensions and decorative (non-truthful placeholder) alt text', async ({
+    page,
+  }) => {
+    await page.goto('/columns/');
+
+    const image = page.locator('.columns-lead__image img');
+    await expect(image).toHaveAttribute('width', '1200');
+    await expect(image).toHaveAttribute('height', '675');
+    await expect(image).toHaveAttribute('alt', '');
+  });
+
+  test('A Columns article link is keyboard reachable, shows a visible focus ring, and behaves as a native link — lead, then secondary rows 1-4, in order', async ({
+    page,
+  }) => {
+    await page.goto('/columns/');
+
+    const leadLink = page.locator('a.columns-lead__link');
+    await leadLink.focus();
+    await expect(leadLink).toBeFocused();
+
+    const outlineStyle = await leadLink.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        outlineStyle: style.outlineStyle,
+        outlineWidth: style.outlineWidth,
+      };
+    });
+    expect(outlineStyle.outlineStyle).toBe('solid');
+    expect(parseFloat(outlineStyle.outlineWidth)).toBeGreaterThan(0);
+
+    await page.keyboard.press('Tab');
+    await expect(page.locator('a.columns-more__row').first()).toBeFocused();
+
+    await leadLink.focus();
+    await leadLink.press('Enter');
+    await expect(page).toHaveURL(
+      /\/columns\/your-automation-doesnt-need-a-model\/$/,
+    );
+  });
+
+  test('Columns lead -> detail navigation via click works, and Back returns to Columns', async ({
+    page,
+  }) => {
+    await page.goto('/columns/');
+    const leadLink = page.locator('a.columns-lead__link');
+
+    await leadLink.click();
+    await expect(page).toHaveURL(
+      /\/columns\/your-automation-doesnt-need-a-model\/$/,
+    );
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: "Your automation doesn't need a model",
+      }),
+    ).toBeVisible();
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/columns\/$/);
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Words, rants and gadget reviews',
+      }),
+    ).toBeVisible();
+
+    await page.goForward();
+    await expect(page).toHaveURL(
+      /\/columns\/your-automation-doesnt-need-a-model\/$/,
+    );
+  });
+});
+
+test.describe('Sprint 2D Columns [slug] temporary route-integrity shell', () => {
+  const slugs = [
+    'your-automation-doesnt-need-a-model',
+    'six-months-with-a-mechanical-keyboard-i-regret',
+    'what-conducting-taught-me-about-standups',
+    'gacha-ui-is-better-than-your-products-ui',
+    'the-eval-sheet-is-the-deliverable',
+  ];
+
+  test('Each of the five temporary demo slugs resolves directly, is noindex, and keeps Columns navigation active', async ({
+    page,
+  }) => {
+    for (const slug of slugs) {
+      const response = await page.goto(`/columns/${slug}/`);
+      expect(response?.ok()).toBeTruthy();
+      expect(new URL(page.url()).pathname).toBe(`/columns/${slug}/`);
+
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+        'content',
+        'noindex',
+      );
+      await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+      await expect(page.locator('.columns-detail__kicker')).toHaveText(
+        'Columns / p.26',
+      );
+
+      await expect(
+        page
+          .getByRole('navigation', { name: 'Primary' })
+          .getByRole('link', { name: 'Columns', exact: true }),
+      ).toHaveAttribute('aria-current', 'page');
+    }
+  });
+
+  test('Direct reload of a Columns slug route keeps the same URL and re-renders the shell', async ({
+    page,
+  }) => {
+    const response = await page.goto(
+      '/columns/the-eval-sheet-is-the-deliverable/',
+    );
+    expect(response?.ok()).toBeTruthy();
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The eval sheet is the deliverable',
+      }),
+    ).toBeVisible();
+
+    const reloadResponse = await page.reload();
+    expect(reloadResponse?.ok()).toBeTruthy();
+    expect(new URL(page.url()).pathname).toBe(
+      '/columns/the-eval-sheet-is-the-deliverable/',
+    );
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The eval sheet is the deliverable',
+      }),
+    ).toBeVisible();
+  });
+
+  test('Back navigates from a Columns slug route to the Columns index, and Forward returns to the slug route', async ({
+    page,
+  }) => {
+    await page.goto('/columns/');
+    await page.locator('a.columns-lead__link').click();
+    await expect(page).toHaveURL(
+      /\/columns\/your-automation-doesnt-need-a-model\/$/,
+    );
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/columns\/$/);
+
+    await page.goForward();
+    await expect(page).toHaveURL(
+      /\/columns\/your-automation-doesnt-need-a-model\/$/,
+    );
+  });
+
+  test('The Columns slug shell links back to the Columns index via a real anchor', async ({
+    page,
+  }) => {
+    await page.goto('/columns/what-conducting-taught-me-about-standups/');
+
+    const backLink = page.locator('a.columns-detail__back');
+    await expect(backLink).toHaveAttribute('href', '/columns/');
+    await backLink.click();
+    await expect(page).toHaveURL(/\/columns\/$/);
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Words, rants and gadget reviews',
+      }),
+    ).toBeVisible();
+  });
+});
+
+test.describe('Sprint 2D Columns interaction lifecycle', () => {
+  test('Columns interaction modules initialize exactly once on direct load and resolve visible content', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/columns/');
+
+    await expect(page.locator('a.columns-lead__link')).toBeVisible();
+    for (const row of await page.locator('a.columns-more__row').all()) {
+      await expect(row).toBeVisible();
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Repeated ClientRouter navigation into and out of Columns stays console-clean', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    for (let visit = 0; visit < 3; visit++) {
+      await nav.getByRole('link', { name: 'Columns', exact: true }).click();
+      await expect(page).toHaveURL(/\/columns\/$/);
+      await expect(
+        page.getByRole('heading', {
+          level: 1,
+          name: 'Words, rants and gadget reviews',
+        }),
+      ).toBeVisible();
+
+      await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+      await expect(page).toHaveURL(/\/reviews\/$/);
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Desktop cursor preview shows a per-item label over Columns items and hides on exit, without persisting after navigation', async ({
+    page,
+  }, testInfo) => {
+    if (testInfo.project.name !== 'desktop') {
+      test.skip(true, 'cursor preview only applies above the 900px threshold');
+    }
+
+    await page.goto('/columns/');
+    const plate = page.locator('[data-cursor-preview]');
+    const leadLink = page.locator('a.columns-lead__link');
+    const firstRow = page.locator('a.columns-more__row').first();
+
+    await expect(plate).not.toHaveClass(/columns-cursor-preview--visible/);
+
+    const leadBox = await leadLink.boundingBox();
+    if (!leadBox) throw new Error('lead link bounding box unavailable');
+    await page.mouse.move(
+      leadBox.x + leadBox.width / 2,
+      leadBox.y + leadBox.height / 2,
+    );
+    await expect(plate).toHaveClass(/columns-cursor-preview--visible/);
+    await expect(plate).toHaveText('Read the essay →');
+
+    const rowBox = await firstRow.boundingBox();
+    if (!rowBox) throw new Error('row bounding box unavailable');
+    await page.mouse.move(
+      rowBox.x + rowBox.width / 2,
+      rowBox.y + rowBox.height / 2,
+    );
+    await expect(plate).toHaveClass(/columns-cursor-preview--visible/);
+    await expect(plate).toHaveText('Read the review →');
+
+    await page.mouse.move(rowBox.x + rowBox.width / 2, rowBox.y - 60);
+    await expect(plate).not.toHaveClass(/columns-cursor-preview--visible/);
+
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+    await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+    await expect(page.locator('.columns-cursor-preview')).toHaveCount(0);
+  });
+
+  test('Re-entering Columns does not duplicate cursor-preview behavior, and Reviews cursor-preview behavior is unaffected', async ({
+    page,
+  }, testInfo) => {
+    if (testInfo.project.name !== 'desktop') {
+      test.skip(true, 'cursor preview only applies above the 900px threshold');
+    }
+
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    let expectedFires = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleFires: string[] }).__lifecycleFires
+          .length,
+    );
+
+    for (let visit = 0; visit < 2; visit++) {
+      await nav.getByRole('link', { name: 'Columns', exact: true }).click();
+      expectedFires += 2;
+      await waitForFireCount(page, expectedFires);
+      await expect(page).toHaveURL(/\/columns\/$/);
+      // The transition wipe overlay intercepts pointer events (and
+      // therefore `event.target`) while active — wait for it to clear
+      // before dispatching pointermove, same rationale as the equivalent
+      // Reviews lifecycle test above.
+      await expect(page.locator('[data-transition-wipe]')).not.toHaveClass(
+        /is-active/,
+        { timeout: 2000 },
+      );
+
+      const plate = page.locator('[data-cursor-preview]');
+      await expect(plate).toHaveCount(1);
+
+      const leadLink = page.locator('a.columns-lead__link');
+      const box = await leadLink.boundingBox();
+      if (!box) throw new Error('lead link bounding box unavailable');
+      await page.mouse.move(0, 0);
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await expect(plate).toHaveClass(/columns-cursor-preview--visible/);
+
+      await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+      expectedFires += 2;
+      await waitForFireCount(page, expectedFires);
+      await expect(page).toHaveURL(/\/reviews\/$/);
+      await expect(page.locator('[data-transition-wipe]')).not.toHaveClass(
+        /is-active/,
+        { timeout: 2000 },
+      );
+
+      // Reviews' own cursor-preview keeps its static label and visible
+      // class untouched by Columns' dynamic-label extension.
+      const reviewsPlate = page.locator('[data-cursor-preview]');
+      const reviewRow = page.locator('a.review-row').first();
+      const reviewBox = await reviewRow.boundingBox();
+      if (!reviewBox) throw new Error('review row bounding box unavailable');
+      await page.mouse.move(0, 0);
+      await page.mouse.move(
+        reviewBox.x + reviewBox.width / 2,
+        reviewBox.y + reviewBox.height / 2,
+      );
+      await expect(reviewsPlate).toHaveClass(/reviews-cursor-preview--visible/);
+      await expect(reviewsPlate).toHaveText('Read the case file →');
+    }
+  });
+
+  test('Columns content stays fully visible under reduced motion, and the cursor-preview plate never becomes visible', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/columns/');
+
+    const links = page.locator('a.columns-lead__link, a.columns-more__row');
+    await expect(links).toHaveCount(5);
+    const count = await links.count();
+    for (let i = 0; i < count; i++) {
+      await expect(links.nth(i)).toBeVisible();
+      const opacity = await links
+        .nth(i)
+        .evaluate((node) => getComputedStyle(node).opacity);
+      expect(opacity).toBe('1');
+    }
+
+    const plate = page.locator('[data-cursor-preview]');
+    const box = await links.first().boundingBox();
+    if (box) {
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    }
+    await expect(plate).not.toHaveClass(/columns-cursor-preview--visible/);
+
+    await page.goBack().catch(() => {});
+    await page.goto('/columns/');
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Words, rants and gadget reviews',
+      }),
+    ).toBeVisible();
+
+    expect(consoleErrors).toEqual([]);
+  });
+});
+
+test.describe('Sprint 2D Columns lead image hover correction', () => {
+  // Correction pass: the lead image's grayscale-to-color/scale transition
+  // must be owned by the image itself (`.columns-lead__image img:hover`),
+  // not by the whole `.columns-lead__link` article link. Hovering the
+  // title/excerpt/metadata/CTA must NOT animate the image; only hovering
+  // the image itself should. The cursor-preview cue is a separate
+  // responsibility and still activates across the whole lead link — this
+  // test does not conflate the two.
+  test('Lead image only animates when the image itself is hovered, not when other lead content is hovered', async ({
+    page,
+  }, testInfo) => {
+    if (testInfo.project.name !== 'desktop') {
+      test.skip(true, 'hover interactions are desktop-only');
+    }
+
+    await page.goto('/columns/');
+
+    const image = page.locator('.columns-lead__image img');
+    const title = page.locator('.columns-lead__title');
+    const excerpt = page.locator('.columns-lead__excerpt');
+
+    async function imageState() {
+      return image.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { filter: style.filter, transform: style.transform };
+      });
+    }
+
+    // State A — resting: grayscale filter, no scale transform.
+    await page.mouse.move(10, 10);
+    const resting = await imageState();
+    expect(resting.filter).toContain('grayscale(1)');
+    expect(resting.transform).toBe('none');
+
+    // State B — hovering non-image lead content (title, excerpt) must NOT
+    // animate the image; it stays in its resting filter/transform state.
+    const titleBox = await title.boundingBox();
+    if (!titleBox) throw new Error('lead title bounding box unavailable');
+    await page.mouse.move(
+      titleBox.x + titleBox.width / 2,
+      titleBox.y + titleBox.height / 2,
+    );
+    // Give any (incorrect) transition a moment to start, then assert it
+    // never left the resting state.
+    await page.waitForTimeout(150);
+    const duringTitleHover = await imageState();
+    expect(duringTitleHover.filter).toContain('grayscale(1)');
+    expect(duringTitleHover.transform).toBe('none');
+
+    const excerptBox = await excerpt.boundingBox();
+    if (!excerptBox) throw new Error('lead excerpt bounding box unavailable');
+    await page.mouse.move(
+      excerptBox.x + excerptBox.width / 2,
+      excerptBox.y + excerptBox.height / 2,
+    );
+    await page.waitForTimeout(150);
+    const duringExcerptHover = await imageState();
+    expect(duringExcerptHover.filter).toContain('grayscale(1)');
+    expect(duringExcerptHover.transform).toBe('none');
+
+    // State C — hovering the image itself must reach the golden-master
+    // hover state (filter removed, ~scale(1.03)) once the transition
+    // settles. Wait for the transition to finish rather than sampling
+    // mid-animation.
+    const imageBox = await image.boundingBox();
+    if (!imageBox) throw new Error('lead image bounding box unavailable');
+    await page.mouse.move(
+      imageBox.x + imageBox.width / 2,
+      imageBox.y + imageBox.height / 2,
+    );
+    await expect(async () => {
+      const hovered = await imageState();
+      expect(hovered.filter).toBe('none');
+      const match = hovered.transform.match(
+        /matrix\(([-\d.]+),\s*0,\s*0,\s*([-\d.]+)/,
+      );
+      expect(match).not.toBeNull();
+      if (match) {
+        expect(parseFloat(match[1])).toBeCloseTo(1.03, 1);
+        expect(parseFloat(match[2])).toBeCloseTo(1.03, 1);
+      }
+    }).toPass({ timeout: 2000 });
+
+    // The cursor-preview cue is a separate responsibility from the image
+    // hover above and still activates across the whole lead article link,
+    // including over non-image content — verify it is not conflated with
+    // the image-hover fix.
+    const plate = page.locator('[data-cursor-preview]');
+    await page.mouse.move(
+      titleBox.x + titleBox.width / 2,
+      titleBox.y + titleBox.height / 2,
+    );
+    await expect(plate).toHaveClass(/columns-cursor-preview--visible/);
   });
 });

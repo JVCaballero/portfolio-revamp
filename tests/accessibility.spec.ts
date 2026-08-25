@@ -851,3 +851,329 @@ test('Reviews exposes exactly one h1, six h2 review titles, a semantic repeated-
     await expect(link).toHaveAttribute('href', '/feature/');
   }
 });
+
+/*
+  Sprint 2D — Columns' own, separately-approved contrast exceptions. Both
+  are NARROWLY scoped, exact-node additions kept independent from the
+  Cover/Feature/Reviews/Interview exceptions above: neither adds to,
+  modifies, or otherwise touches any prior target set, and both target a
+  different route entirely. See DESIGN_DEVIATIONS.md, "Sprint 2D —
+  Columns" for the full record of both.
+
+  1. Columns small Newsstand-red text (`.columns-kicker`,
+     `.columns-lead__cta`, `.columns-more__kicker` x4) reuses the same
+     golden-master red-on-paper pairing as the Cover/Feature/Reviews/
+     Interview exception targets (`#e2231a` on `#efe9dc`, ~3.86:1) at rest.
+  2. More Columns row hover/active opacity (`.columns-more__row`'s own
+     `opacity: .72` on hover, applied to the whole row) reduces the
+     effective, alpha-composited contrast of the row's own text (title,
+     excerpt, date/read-time) below AA, even though every one of those
+     colors passes AA at full (resting) opacity. Unlike the Reviews/
+     Interview background-swap exceptions, this is an opacity-blend
+     exception — verified below by composing the row's own color against
+     its effective background at the measured opacity, not by a background
+     color change.
+*/
+const COLUMNS_RED_TEXT_SELECTORS = [
+  '.columns-kicker',
+  '.columns-lead__cta',
+  '.columns-more__kicker',
+];
+
+test('Columns route has no automated WCAG A/AA violations beyond the documented golden-master contrast exceptions (Cover/Feature/Reviews/Interview exceptions untouched)', async ({
+  page,
+}, testInfo) => {
+  // Columns' scroll-reveal module hides [data-reveal] nodes until they
+  // scroll into view or reduced motion is detected — same rationale as the
+  // Feature/Reviews/Interview scans above: settle to the resting,
+  // fully-visible state first so Axe never pixel-samples a mid-fade frame.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/columns/');
+
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+
+  const colorContrastViolation = results.violations.find(
+    (violation) => violation.id === 'color-contrast',
+  );
+  const otherViolations = results.violations.filter(
+    (violation) => violation.id !== 'color-contrast',
+  );
+
+  // Every non-color-contrast violation still fails this test — headings,
+  // landmarks, list, and link semantics are all covered by Axe's own rule
+  // set, not hand-rolled here.
+  expect(otherViolations).toEqual([]);
+
+  const nodes = colorContrastViolation?.nodes ?? [];
+  const targets = nodes.map((node) => node.target.join(' '));
+
+  // Exactly six flagged nodes at rest: one `.columns-kicker`, one
+  // `.columns-lead__cta`, and four `.columns-more__kicker` (one per
+  // secondary row) — no more, no fewer. The row-hover opacity exception
+  // (#2 above) is never visible to a resting-state Axe scan, since the
+  // resting state passes; it is verified separately below.
+  expect(targets).toHaveLength(6);
+  const rowKickerTargets = targets.filter((t) =>
+    t.includes('.columns-more__kicker'),
+  );
+  const ctaTargets = targets.filter((t) => t.includes('.columns-lead__cta'));
+  const kickerTargets = targets.filter(
+    (t) => t.includes('.columns-kicker') && !t.includes('.columns-more__'),
+  );
+  expect(rowKickerTargets).toHaveLength(4);
+  expect(ctaTargets).toHaveLength(1);
+  expect(kickerTargets).toHaveLength(1);
+
+  // Color identity verified for every occurrence of all three node types
+  // (including the four repeated row kickers), not just axe's own
+  // diagnostic fields — see the file-level comment near the top of this
+  // file for why real computed style is the source of truth here.
+  for (const selector of COLUMNS_RED_TEXT_SELECTORS) {
+    const locator = page.locator(selector);
+    const count = await locator.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      const node = locator.nth(i);
+      const foreground = await node.evaluate(
+        (el) => getComputedStyle(el).color,
+      );
+      const [r, g, b] = parseRgb(foreground);
+      expect([r, g, b]).toEqual(EXPECTED_FOREGROUND_RGB);
+    }
+    const background = await getEffectiveBackground(page, selector);
+    expect(background).toEqual(EXPECTED_BACKGROUND_RGB);
+    const foreground = await getComputedForeground(page, selector);
+    const ratio = contrastRatio(foreground, background);
+    expect(ratio).toBeGreaterThan(EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE);
+    expect(ratio).toBeLessThan(EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE);
+  }
+
+  testInfo.annotations.push({
+    type: 'known-issue',
+    description:
+      `Sprint 2D approved Columns contrast exception #1: red editorial ` +
+      `text (rgb(226, 35, 26) on rgb(239, 233, 220), ~${EXPECTED_CONTRAST_RATIO}:1) ` +
+      `on ${COLUMNS_RED_TEXT_SELECTORS.join(', ')} (the row kicker occurs 4 ` +
+      `times, once per secondary row). Needs 4.5:1. See DESIGN_DEVIATIONS.md ` +
+      `for the approval record and exception #2 (More Columns row ` +
+      `hover/active opacity, verified separately below). The Cover, ` +
+      `Feature, Reviews, and Interview exceptions above remain separate, ` +
+      `untouched target sets.`,
+  });
+});
+
+test('More Columns rows apply their approved hover/active opacity exception to row text, without lowering resting contrast', async ({
+  page,
+}) => {
+  await page.goto('/columns/');
+
+  const firstRow = page.locator('a.columns-more__row').first();
+  const excerpt = firstRow.locator('.columns-more__excerpt');
+  const date = firstRow.locator('.columns-more__date');
+
+  // Unlike the Reviews/Interview background-swap exceptions, the Columns
+  // row applies opacity to itself (and therefore to all of its own text),
+  // so the *effective* rendered color is the row's own text color
+  // alpha-composited over its ancestor's opaque background at the row's
+  // current opacity — not a background color swap. This helper reproduces
+  // that composition directly from real computed style.
+  async function blendedContrast(locator: ReturnType<Page['locator']>) {
+    return locator.evaluate((el) => {
+      function relativeLuminance([r, g, b]: number[]): number {
+        const [rs, gs, bs] = [r, g, b].map((channel) => {
+          const c = channel / 255;
+          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+      }
+      function ratioOf(fg: number[], bg: number[]): number {
+        const l1 = relativeLuminance(fg);
+        const l2 = relativeLuminance(bg);
+        const [lighter, darker] = l1 > l2 ? [l1, l2] : [l2, l1];
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+
+      const row = el.closest('.columns-more__row') as HTMLElement;
+      const opacity = parseFloat(getComputedStyle(row).opacity);
+      const parseRgbLocal = (value: string) =>
+        (value.match(/[\d.]+/g) ?? []).map(Number).slice(0, 3);
+      const fg = parseRgbLocal(getComputedStyle(el).color);
+
+      let node: Element | null = el.parentElement;
+      let bg = [239, 233, 220];
+      while (node) {
+        const bgc = getComputedStyle(node).backgroundColor;
+        const match = bgc.match(/rgba?\(([^)]+)\)/);
+        if (match) {
+          const parts = match[1].split(',').map((part) => parseFloat(part));
+          if ((parts[3] ?? 1) > 0) {
+            bg = parts.slice(0, 3);
+            break;
+          }
+        }
+        node = node.parentElement;
+      }
+
+      const blended = fg.map((c, i) => bg[i] + opacity * (c - bg[i]));
+      return { opacity, ratio: ratioOf(blended, bg) };
+    });
+  }
+
+  const AA_NORMAL_TEXT_THRESHOLD = 4.5;
+
+  const excerptRest = await blendedContrast(excerpt);
+  expect(excerptRest.opacity).toBe(1);
+  expect(excerptRest.ratio).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_THRESHOLD);
+
+  const dateRest = await blendedContrast(date);
+  expect(dateRest.opacity).toBe(1);
+  expect(dateRest.ratio).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_THRESHOLD);
+
+  await firstRow.hover();
+  await expect(async () => {
+    const excerptHover = await blendedContrast(excerpt);
+    expect(excerptHover.opacity).toBeCloseTo(0.72, 2);
+    expect(excerptHover.ratio).toBeLessThan(AA_NORMAL_TEXT_THRESHOLD);
+
+    const dateHover = await blendedContrast(date);
+    expect(dateHover.opacity).toBeCloseTo(0.72, 2);
+    expect(dateHover.ratio).toBeLessThan(AA_NORMAL_TEXT_THRESHOLD);
+  }).toPass({ timeout: 2000 });
+});
+
+test('Columns exposes exactly one h1, the lead title and "More columns" as h2s, four h3 secondary titles, a semantic list, and five keyboard-reachable links in logical focus order', async ({
+  page,
+}) => {
+  await page.goto('/columns/');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: 'Words, rants and gadget reviews',
+    }),
+  ).toBeVisible();
+
+  const h2s = await page.getByRole('heading', { level: 2 }).allTextContents();
+  expect(h2s).toEqual(["Your automation doesn't need a model", 'More columns']);
+
+  const h3s = await page.getByRole('heading', { level: 3 }).allTextContents();
+  expect(h3s).toHaveLength(4);
+
+  await expect(
+    page
+      .getByRole('list')
+      .filter({ hasText: 'Six months with a mechanical keyboard' }),
+  ).toBeVisible();
+  await expect(page.locator('li.columns-more__item')).toHaveCount(4);
+
+  const leadLink = page.locator('a.columns-lead__link');
+  const rowLinks = page.locator('a.columns-more__row');
+  await expect(leadLink).toHaveCount(1);
+  await expect(rowLinks).toHaveCount(4);
+
+  // Logical focus order: lead article first, then the four secondary rows
+  // in document order — matches the visual left-to-right / top-to-bottom
+  // reading order on desktop and the stacked order on narrower viewports.
+  await leadLink.focus();
+  await expect(leadLink).toBeFocused();
+  const outlineStyle = await leadLink.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      outlineStyle: style.outlineStyle,
+      outlineWidth: style.outlineWidth,
+    };
+  });
+  expect(outlineStyle.outlineStyle).toBe('solid');
+  expect(parseFloat(outlineStyle.outlineWidth)).toBeGreaterThan(0);
+
+  for (let i = 0; i < 4; i++) {
+    await page.keyboard.press('Tab');
+    await expect(rowLinks.nth(i)).toBeFocused();
+  }
+});
+
+test('Columns has no positive tabindex, and the cursor-preview plate is excluded from the accessibility tree', async ({
+  page,
+}) => {
+  await page.goto('/columns/');
+
+  const positiveTabindexCount = await page
+    .locator('[tabindex]')
+    .evaluateAll(
+      (nodes) =>
+        nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+          .length,
+    );
+  expect(positiveTabindexCount).toBe(0);
+
+  const plate = page.locator('[data-cursor-preview]');
+  await expect(plate).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.getByRole('button')).toHaveCount(0);
+});
+
+/*
+  Correction pass — representative Axe scan for the temporary [slug]
+  detail-route shell (src/pages/columns/[slug]/index.astro). All five demo
+  slugs share the exact same template, so one representative route is
+  scanned rather than five redundant Axe runs; tests/smoke.spec.ts already
+  covers all five routes resolving, noindex, and active Columns navigation.
+  This test exists specifically to confirm the correction-pass fix: the
+  shell's kicker and back link now use ink-colored text
+  (`.columns-detail__kicker`, `.columns-detail__back`) instead of reusing
+  the Columns Index's approved red-on-paper exception (DESIGN_DEVIATIONS.md
+  entry 7), so no new, unapproved contrast failure exists on this route and
+  no new accessibility exception is required here.
+*/
+test('Columns [slug] detail-route shell (representative route) has no automated WCAG A/AA violations and needs no contrast exception', async ({
+  page,
+}) => {
+  await page.goto('/columns/your-automation-doesnt-need-a-model/');
+
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+
+  expect(results.violations).toEqual([]);
+
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    'content',
+    'noindex',
+  );
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Primary' })
+      .getByRole('link', { name: 'Columns', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+
+  const backLink = page.locator('a.columns-detail__back');
+  await expect(backLink).toHaveAttribute('href', '/columns/');
+
+  const positiveTabindexCount = await page
+    .locator('[tabindex]')
+    .evaluateAll(
+      (nodes) =>
+        nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+          .length,
+    );
+  expect(positiveTabindexCount).toBe(0);
+
+  // The detail-shell kicker and back link (resting state) are ink-colored,
+  // not the Columns Index's approved red exception — verify identity
+  // directly from computed style rather than relying on Axe's absence of a
+  // violation alone.
+  const kickerColor = await page
+    .locator('.columns-detail__kicker')
+    .evaluate((el) => getComputedStyle(el).color);
+  const backColor = await page
+    .locator('a.columns-detail__back')
+    .evaluate((el) => getComputedStyle(el).color);
+  const [kr, kg, kb] = parseRgb(kickerColor);
+  const [br, bg, bb] = parseRgb(backColor);
+  expect([kr, kg, kb]).not.toEqual(EXPECTED_FOREGROUND_RGB);
+  expect([br, bg, bb]).not.toEqual(EXPECTED_FOREGROUND_RGB);
+});

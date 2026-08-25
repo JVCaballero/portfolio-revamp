@@ -1,0 +1,398 @@
+/*
+  Sprint 2D Columns Index shell, plus the minimal styling required by the
+  temporary [slug] detail-route shell. Scoped beneath the Columns-owned
+  .columns-page root (and the unrelated .columns-detail-shell root — see
+  the final section of this file). Every rule is derived from the
+  immutable golden master (reference/newsstand-original/source/Newsstand -
+  Full Site.dc.html, the `isColumns` sc-if block's `listingColumns` branch,
+  ~lines 474-503) and mapped onto accepted tokens only where both the value
+  AND the semantic role already match (see tokens.css). One-off source
+  values (headline clamp, lead/row title clamps, 420px/280px card minimums,
+  56ch measure, handwritten-note rotation) stay literal at the point of use
+  rather than being forced through a misleading alias — matching the
+  precedent set in reviews.css and interview.css.
+
+  No Columns-specific width breakpoints exist here on purpose: the source
+  has none, and the lead/sidebar split adapts entirely through intrinsic
+  flex/wrap mechanics (see DESIGN_DEVIATIONS.md — no entry needed for
+  layout, this is source-faithful, not a deviation).
+*/
+
+.columns-page {
+  animation: columns-fade-in var(--duration-lift) var(--ease-editorial) both;
+  padding-block: var(--space-fluid-sm) var(--space-fluid-md);
+}
+
+/* ---------------------------------------------------------------------
+   Folio/kicker, headline.
+   --------------------------------------------------------------------- */
+
+/* Approved Sprint 2D design-preservation exception #1 (small Newsstand-red
+   Columns text): this exact node (source-faithful red-on-paper kicker)
+   fails WCAG AA normal-text contrast (~3.87:1) at rest. Scoped to the
+   Columns Index only — the temporary [slug] detail shell uses its own
+   ink-colored `.columns-detail__kicker` below instead, precisely so this
+   exception is never extended to a node it wasn't approved for. See
+   DESIGN_DEVIATIONS.md and tests/accessibility.spec.ts. */
+.columns-kicker {
+  margin: 0 0 var(--space-8);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.columns-headline {
+  margin: 0 0 var(--space-20);
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(34px, 7.4vw, 82px);
+  line-height: var(--leading-display-page);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+/* ---------------------------------------------------------------------
+   Lead / More Columns split.
+   --------------------------------------------------------------------- */
+
+.columns-split {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: clamp(20px, 3vw, 30px);
+  border-top: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+  padding-top: var(--space-22);
+}
+
+.columns-lead {
+  flex: 1 1 min(100%, 420px);
+  min-width: 0;
+}
+
+.columns-lead__link {
+  display: block;
+  color: inherit;
+  cursor: pointer;
+}
+
+.columns-lead__link:hover {
+  color: inherit;
+}
+
+.columns-lead__image {
+  aspect-ratio: 16 / 9;
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  overflow: hidden;
+  margin-bottom: var(--space-14);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--color-stripe-a) 0 10px,
+    var(--color-stripe-b) 10px 20px
+  );
+}
+
+.columns-lead__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(1) contrast(1.05);
+  transition:
+    filter 0.72s var(--ease-standard),
+    transform 0.8s var(--ease-editorial);
+}
+
+.columns-lead__image img:hover {
+  filter: none;
+  transform: scale(1.03);
+}
+
+.columns-lead__badge {
+  display: inline-block;
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-label);
+  padding: 3px 7px;
+  margin-bottom: var(--space-8);
+}
+
+.columns-lead__title {
+  margin: 0 0 var(--space-10);
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(30px, 5vw, 46px);
+  line-height: var(--leading-display-compact);
+  text-transform: uppercase;
+}
+
+.columns-lead__excerpt {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: clamp(15px, 1.8vw, 16px);
+  line-height: var(--leading-body-relaxed);
+  max-width: 56ch;
+}
+
+.columns-lead__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-14);
+  margin-top: var(--space-12);
+}
+
+.columns-lead__meta {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted-metadata);
+}
+
+/* Approved Sprint 2D design-preservation exception #1 (small Newsstand-red
+   Columns text): same source-faithful red pairing as the kicker, at 10px
+   bold. See DESIGN_DEVIATIONS.md. */
+.columns-lead__cta {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.columns-more {
+  flex: 1 1 min(100%, 280px);
+  min-width: 0;
+}
+
+.columns-more__heading {
+  margin: 0 0 4px;
+  padding-bottom: 7px;
+  border-bottom: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+}
+
+.columns-more__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.columns-more__item {
+  margin: 0;
+}
+
+.columns-more__row {
+  display: block;
+  color: inherit;
+  cursor: pointer;
+  padding: var(--space-14) 0;
+  border-bottom: var(--border-width-hairline) var(--border-style-solid)
+    var(--color-rule-soft);
+  transition:
+    transform var(--duration-transform) var(--ease-editorial),
+    opacity var(--duration-control) var(--ease-standard);
+}
+
+.columns-more__row:hover {
+  color: inherit;
+  transform: translateX(6px);
+  opacity: 0.72;
+}
+
+.columns-more__row:active {
+  transform: translateX(9px) scale(0.99);
+}
+
+.columns-more__item:last-child .columns-more__row {
+  border-bottom: none;
+}
+
+/* Approved Sprint 2D design-preservation exception #1 (small Newsstand-red
+   Columns text): the sidebar category kickers share the same
+   source-faithful red pairing, at 9.5px bold. See DESIGN_DEVIATIONS.md. */
+.columns-more__kicker {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-9-5);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.columns-more__title {
+  margin: 4px 0 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-heading-item);
+  line-height: var(--leading-heading-relaxed);
+  text-transform: uppercase;
+}
+
+.columns-more__excerpt {
+  margin: 4px 0 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-copy-secondary);
+}
+
+/* Approved Sprint 2D design-preservation exception #2 (More Columns
+   hover/active opacity): the row's own :hover/:active opacity above
+   reduces this node's effective contrast. See DESIGN_DEVIATIONS.md. */
+.columns-more__date {
+  margin: 5px 0 0;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-utility);
+  text-transform: uppercase;
+  color: var(--color-muted-metadata);
+}
+
+/* ---------------------------------------------------------------------
+   Handwritten closing annotation.
+   --------------------------------------------------------------------- */
+
+.columns-hand-note {
+  margin: var(--space-16) 0 0;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-normal);
+  color: var(--color-handwriting);
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: var(--leading-copy-compact);
+  transform: rotate(-1deg);
+}
+
+/* ---------------------------------------------------------------------
+   Cursor-preview plate (cursor-preview.ts). Reproduces the immutable
+   source's fixed-position plate (Newsstand - Full Site.dc.html, ~line 759)
+   — same treatment as reviews.css's .reviews-cursor-preview, but with a
+   dynamic label sourced per-row from data-cue instead of a static string.
+   --------------------------------------------------------------------- */
+
+.columns-cursor-preview {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: var(--z-cursor-preview);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(14px, 14px) rotate(-4deg);
+  transition: opacity var(--duration-sm) var(--ease-standard);
+  background: var(--color-highlight);
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding: 6px 9px;
+  box-shadow: var(--shadow-hard-md);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-9-5);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.columns-cursor-preview--visible {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------
+   Columns-local animation.
+   --------------------------------------------------------------------- */
+
+@keyframes columns-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Temporary [slug] route-integrity shell only (src/pages/columns/[slug]/
+   index.astro). This is NOT the immutable article-detail template — see
+   DESIGN_DEVIATIONS.md, "Sprint 2D — Columns" entry 3, and the file-level
+   comment in [slug]/index.astro. Deliberately minimal, and deliberately
+   NOT reusing the detail template's own clamp()/measure values so this
+   never reads as that template.
+
+   Correction pass: this shell does NOT reuse `.columns-kicker` or any
+   other node covered by the Columns Index's approved red-on-paper
+   contrast exception (DESIGN_DEVIATIONS.md entry 7). That exception is
+   scoped to the Index only. `.columns-detail__kicker` and
+   `.columns-detail__back` (resting state) use `--color-ink` instead, so
+   this temporary shell introduces no new, unapproved contrast failure.
+   --------------------------------------------------------------------- */
+
+.columns-detail-shell {
+  padding-block: var(--space-fluid-sm) var(--space-fluid-md);
+}
+
+.columns-detail__kicker {
+  margin: 0 0 var(--space-8);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+.columns-detail-shell__title {
+  margin: 0 0 var(--space-16);
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(28px, 5vw, 44px);
+  line-height: var(--leading-heading-tight);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  max-width: 26ch;
+}
+
+.columns-detail-shell__note {
+  margin: 0 0 var(--space-20);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--leading-body-relaxed);
+  color: var(--color-copy-secondary);
+  max-width: var(--measure-60);
+}
+
+.columns-detail__back {
+  display: inline-block;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  transition: transform var(--duration-transform) var(--ease-editorial);
+}
+
+.columns-detail__back:hover {
+  transform: translateX(-4px);
+}
