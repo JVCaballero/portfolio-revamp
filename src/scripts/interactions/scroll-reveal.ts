@@ -1,5 +1,6 @@
 /*
-  Sprint 2A — Feature scroll-reveal, extended in Sprint 2B to Reviews.
+  Sprint 2A — Feature scroll-reveal, extended in Sprint 2B to Reviews and
+  Sprint 2C to Interview.
   Mirrors the golden master's sweep()/reveal() pair (reference/newsstand-
   original/index.html, the compiled runtime's IntersectionObserver setup
   and stagger logic): elements marked [data-reveal] fade up on entering
@@ -21,7 +22,7 @@
 */
 import type { InteractionModule } from './interaction-controller';
 
-const PATHNAME_PREFIXES = ['/feature/', '/reviews/'];
+const PATHNAME_PREFIXES = ['/feature/', '/reviews/', '/interview/'];
 const SELECTOR = '[data-reveal]';
 const ROOT_MARGIN = '0px 0px -6% 0px';
 const THRESHOLD = 0.06;

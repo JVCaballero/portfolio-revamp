@@ -1,0 +1,463 @@
+/*
+  Sprint 2C Interview shell. Scoped beneath the Interview-owned
+  .interview-page root. Every rule is derived from the immutable golden
+  master (reference/newsstand-original/source/Newsstand - Full Site.dc.html,
+  the Interview `sc-if` block, ~lines 323-397) and mapped onto accepted
+  tokens only where both the value AND the semantic role already match (see
+  tokens.css). One-off source values (headline clamp, handwritten
+  rotations, 52ch/48ch/24ch measures, the 4:5 portrait ratio, the 260px grid
+  minimum) stay literal at the point of use rather than being forced
+  through a misleading alias — matching the precedent set in feature.css
+  and reviews.css.
+
+  No Interview-specific width breakpoints exist here on purpose: the
+  source has none, and the layout adapts entirely through intrinsic
+  clamp()/auto-fit/flex-wrap/columns mechanics (see DESIGN_DEVIATIONS.md —
+  no entry needed for layout, this is source-faithful, not a deviation).
+*/
+
+.interview-page {
+  animation: interview-fade-in var(--duration-lift) var(--ease-editorial) both;
+  padding-block: var(--space-fluid-sm) var(--space-fluid-md);
+}
+
+/* ---------------------------------------------------------------------
+   Folio/kicker, headline, handwritten recording note.
+   --------------------------------------------------------------------- */
+
+/* Approved Sprint 2C design-preservation exception #1 (small Newsstand-red
+   Interview text): this exact node (source-faithful red-on-paper kicker)
+   fails WCAG AA normal-text contrast (~3.87:1). See DESIGN_DEVIATIONS.md
+   and tests/accessibility.spec.ts for the narrowly-scoped verification. */
+.interview-kicker {
+  margin: 0 0 var(--space-8);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.interview-headline {
+  margin: 0 0 var(--space-10);
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(34px, 7.6vw, 90px);
+  line-height: 0.85;
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.interview-hand {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-normal);
+  color: var(--color-handwriting);
+}
+
+.interview-hand--note {
+  margin: 0 0 var(--space-22);
+  font-size: clamp(17px, 2.3vw, 22px);
+  line-height: 1.3;
+  max-width: 52ch;
+  transform: rotate(-0.8deg);
+}
+
+/* ---------------------------------------------------------------------
+   Portrait grid.
+   --------------------------------------------------------------------- */
+
+.interview-portraits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: clamp(16px, 2.6vw, 28px);
+  margin-bottom: var(--space-30);
+}
+
+.interview-portrait {
+  aspect-ratio: 4 / 5;
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  overflow: hidden;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--color-stripe-a) 0 10px,
+    var(--color-stripe-b) 10px 20px
+  );
+}
+
+.interview-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(1) contrast(1.06);
+  transition:
+    filter 0.72s var(--ease-standard),
+    transform 0.8s var(--ease-editorial);
+}
+
+.interview-portrait img:hover {
+  filter: none;
+  transform: scale(1.035);
+}
+
+/* ---------------------------------------------------------------------
+   Editorial / sidebar layout.
+   --------------------------------------------------------------------- */
+
+.interview-layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: clamp(20px, 3vw, 34px);
+}
+
+.interview-body {
+  flex: 1 1 min(100%, 520px);
+  min-width: 0;
+}
+
+.interview-sidebar {
+  flex: 1 1 min(100%, 260px);
+  min-width: 0;
+}
+
+.interview-meta {
+  margin: 0 0 var(--space-18);
+  padding: var(--space-8) 0;
+  border-top: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  border-bottom: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+  font-size: clamp(10px, 1.8vw, 12px);
+  letter-spacing: var(--tracking-metadata);
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------------
+   Q&A columns.
+   --------------------------------------------------------------------- */
+
+.interview-qa {
+  columns: var(--columns-width) 2;
+  column-gap: var(--columns-gap);
+  column-rule: var(--border-width-hairline) var(--border-style-solid)
+    var(--color-rule-soft);
+  font-family: var(--font-body);
+  font-size: var(--font-size-lede-fluid);
+  line-height: var(--leading-copy);
+  text-wrap: pretty;
+}
+
+.interview-qa p {
+  margin: 0 0 var(--space-12);
+}
+
+.interview-qa p:last-child {
+  margin-bottom: 0;
+}
+
+/* Approved Sprint 2C design-preservation exception #1 (small Newsstand-red
+   Interview text): the five inline Q markers share the kicker's contrast
+   gap. See DESIGN_DEVIATIONS.md. */
+.interview-qa__marker {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-metadata);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.interview-aside {
+  display: flex;
+  gap: var(--space-12);
+  align-items: flex-start;
+  margin: var(--space-20) 0 0;
+}
+
+.interview-aside__mark {
+  font-family: var(--font-hand);
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-accent);
+}
+
+.interview-hand--aside {
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.35;
+  max-width: 48ch;
+  transform: rotate(-0.6deg);
+}
+
+/* ---------------------------------------------------------------------
+   Pull quote.
+   --------------------------------------------------------------------- */
+
+.interview-quote {
+  margin: var(--space-26) 0;
+  padding: var(--space-18) 0;
+  border-top: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+  border-bottom: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.interview-quote p {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-heading-quote);
+  line-height: var(--leading-heading-relaxed);
+  text-transform: uppercase;
+  max-width: 24ch;
+}
+
+.interview-quote cite {
+  display: block;
+  margin-top: var(--space-14);
+  font-family: var(--font-hand);
+  font-style: normal;
+  font-size: clamp(20px, 3vw, 28px);
+  line-height: 1.1;
+  color: var(--color-handwriting-dark);
+  transform: rotate(-2deg);
+}
+
+/* ---------------------------------------------------------------------
+   Tour dates / the résumé.
+   --------------------------------------------------------------------- */
+
+/* Approved Sprint 2C design-preservation exception #1 (small Newsstand-red
+   Interview text): the "Tour dates / the résumé" heading shares the
+   kicker's contrast gap. See DESIGN_DEVIATIONS.md. */
+.interview-timeline-heading {
+  margin: 0 0 var(--space-10);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.interview-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.interview-timeline__row {
+  display: flex;
+  gap: 10px 14px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 13px var(--space-6);
+  border-bottom: var(--border-width-hairline) var(--border-style-solid)
+    var(--color-rule-soft);
+  transition:
+    background var(--duration-hover) var(--ease-standard),
+    padding-left var(--duration-hover) var(--ease-standard);
+}
+
+.interview-timeline__item:last-child .interview-timeline__row {
+  border-bottom: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.interview-timeline__row:hover {
+  background: var(--color-paper-hover);
+  padding-left: 14px;
+}
+
+.interview-timeline__row:active {
+  background: var(--color-paper-active);
+  padding-left: 19px;
+}
+
+.interview-timeline__years {
+  flex: 0 0 90px;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-13);
+}
+
+.interview-timeline__body {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.interview-timeline__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-heading-sm);
+  line-height: var(--leading-normal);
+  text-transform: uppercase;
+}
+
+.interview-timeline__desc {
+  margin: 3px 0 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-copy-secondary);
+}
+
+.interview-timeline__status {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+}
+
+.interview-timeline__status--current {
+  background: var(--color-ink);
+  color: var(--color-highlight);
+  padding: 4px 6px;
+}
+
+/* Approved Sprint 2C design-preservation exception #2 (muted résumé
+   status): resting contrast passes; only the row's own hover/active
+   background swap below drags it under AA. See DESIGN_DEVIATIONS.md. */
+.interview-timeline__status--muted {
+  color: var(--color-muted-metadata);
+}
+
+/* ---------------------------------------------------------------------
+   Sidebar cards.
+   --------------------------------------------------------------------- */
+
+.interview-card {
+  margin: 0 0 var(--space-18);
+  padding: var(--space-16);
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.interview-card__heading {
+  margin: 0 0 var(--space-11);
+  padding-bottom: 7px;
+  border-bottom: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+}
+
+.interview-card--instruments {
+  background: var(--color-highlight);
+}
+
+.interview-card--instruments .interview-card__heading {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: var(--space-10);
+}
+
+.interview-rider__intro {
+  margin: 0 0 var(--space-10);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-compact);
+  line-height: var(--leading-body-relaxed);
+}
+
+.interview-rider__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-family: var(--font-hand);
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.3;
+  color: var(--color-handwriting-dark);
+}
+
+.interview-instruments {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--leading-copy);
+}
+
+/* ---------------------------------------------------------------------
+   Rotation CTA — magnetic-navigation scope for Sprint 2C.
+   --------------------------------------------------------------------- */
+
+/* The source CTA (Newsstand - Full Site.dc.html, ~line 390) is a plain div
+   with no explicit rest `color`, so its title text inherits ink from the
+   page root. The production node is a semantic <a>, so `color: ink` is set
+   explicitly here to match — otherwise the global `a { color: red }` rule
+   (global.css) would win instead of the source's inherited ink. */
+.interview-cta {
+  display: block;
+  color: var(--color-ink);
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding: var(--space-16);
+  transition:
+    background var(--duration-transform) var(--ease-standard),
+    color var(--duration-transform) var(--ease-standard),
+    box-shadow var(--duration-transform) var(--ease-standard);
+}
+
+.interview-cta:hover {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  box-shadow: var(--shadow-hard-lg-red-alt);
+}
+
+.interview-cta:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-hard-sm-red);
+}
+
+/* Approved Sprint 2C design-preservation exception #1 (small Newsstand-red
+   Interview text): the "Also" label shares the kicker's contrast gap at
+   rest, and a second gap against the hover background. See
+   DESIGN_DEVIATIONS.md. */
+.interview-cta__label {
+  display: block;
+  margin: 0 0 5px;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.interview-cta__title {
+  display: block;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: clamp(22px, 2.8vw, 26px);
+  line-height: var(--leading-heading-relaxed);
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------------
+   Interview-local animation.
+   --------------------------------------------------------------------- */
+
+@keyframes interview-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

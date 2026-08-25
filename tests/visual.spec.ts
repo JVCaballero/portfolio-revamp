@@ -37,3 +37,16 @@ test('Reviews shell full-page visual regression', async ({ page }) => {
     fullPage: true,
   });
 });
+
+test('Interview shell full-page visual regression', async ({ page }) => {
+  // Reduced motion settles scroll-reveal and the magnetic Rotation CTA to
+  // their resting, fully-visible final state (scroll-reveal.ts,
+  // magnetic-navigation.ts), so the snapshot captures deterministic layout
+  // rather than an arbitrary mid-reveal frame.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/interview/');
+
+  await expect(page).toHaveScreenshot('interview-shell.png', {
+    fullPage: true,
+  });
+});

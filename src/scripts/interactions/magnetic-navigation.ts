@@ -1,16 +1,17 @@
 /*
-  Sprint 2A — Feature "Next" CTA magnetic navigation. Mirrors the golden
-  master's onMove() magnet branch (reference/newsstand-original/index.html):
-  the target marked [data-magnet-target] drifts toward the pointer within a
-  proximity threshold.
+  Sprint 2A — Feature "Next" CTA magnetic navigation, extended in Sprint 2C
+  to the Interview Rotation CTA. Mirrors the golden master's onMove() magnet
+  branch (reference/newsstand-original/index.html): the target marked
+  [data-magnet-target] drifts toward the pointer within a proximity
+  threshold.
 
-  Sprint 2A scope is the Feature CTA only — the shared Newsstand primary
-  navigation does not receive this behavior (see the Sprint 2A task
+  Scope is limited to these two single-target CTAs — the shared Newsstand
+  primary navigation does not receive this behavior (see the Sprint 2A task
   contract's interaction-architecture scope note).
 */
 import type { InteractionModule } from './interaction-controller';
 
-const PATHNAME_PREFIX = '/feature/';
+const PATHNAME_PREFIXES = ['/feature/', '/interview/'];
 const SELECTOR = '[data-magnet-target]';
 const PROXIMITY_X_PX = 70;
 const PROXIMITY_Y_PX = 50;
@@ -20,7 +21,10 @@ const FACTOR_Y = 0.09;
 export const magneticNavigation: InteractionModule = {
   name: 'magnetic-navigation',
   init(context) {
-    if (!context.pathname.startsWith(PATHNAME_PREFIX)) return;
+    if (
+      !PATHNAME_PREFIXES.some((prefix) => context.pathname.startsWith(prefix))
+    )
+      return;
     if (context.reducedMotion.matches) return;
 
     const target = document.querySelector<HTMLElement>(SELECTOR);

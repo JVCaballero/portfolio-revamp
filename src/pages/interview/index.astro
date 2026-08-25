@@ -1,16 +1,235 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+/*
+  Sprint 2C Interview shell — static reproduction of the immutable golden
+  master's Interview page (reference/newsstand-original/source/Newsstand -
+  Full Site.dc.html, the `isInterview` sc-if block, ~lines 323-397).
 
-const title = 'The Interview | CABALLERO!';
+  Content classification (Sprint 2 content-shell rule — see
+  DESIGN_DEVIATIONS.md and AGENTS.md):
+  - CLASS 1, structural/interface copy (The Interview / p.12, "Tour dates /
+    the résumé", "The rider", "Instruments", "Also", status labels) is
+    production-final visual language.
+  - CLASS 2, everything else below (headline, handwritten notes, the
+    interview subject narrative, Q&A, pull quote, résumé job/date/status
+    text, rider requirements, instruments list, CTA narrative) is
+    source-faithful reference/demo copy carried over verbatim to preserve
+    composition and density. None of it is verified production content —
+    it will be replaced with real copy in a later content checkpoint.
+    Where that copy is ultimately stored (inline, Content Collection, or
+    otherwise) is not decided by this shell and is not implied here.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/interview.css';
+
+const title = 'Forty players, one tempo, and a deploy on Sunday | CABALLERO!';
 const description =
-  'The Interview route shell for the CABALLERO! portfolio revamp.';
+  'The Interview / p.12 — forty small decisions that only work if everyone hits the same beat. Demo content pending final Sprint 2 review.';
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="container">
-    <h1>The Interview</h1>
-    <p data-route="interview">
-      The Interview content is coming in a later sprint.
-    </p>
-  </div>
+  <article class="interview-page container">
+    <header>
+      <p class="interview-kicker">The Interview / p.12</p>
+      <h1 class="interview-headline">
+        Forty players, one tempo, and a deploy on Sunday
+      </h1>
+      <p class="interview-hand interview-hand--note">
+        recorded over two long blacks, twice interrupted by a rehearsal call
+      </p>
+    </header>
+
+    <div class="interview-portraits">
+      <div class="interview-portrait" data-reveal>
+        <img
+          src="https://picsum.photos/seed/caballero-desk/900/1100"
+          width="900"
+          height="1100"
+          alt="Placeholder stock photo standing in for a desk portrait of the interview subject — temporary demo image, not an authentic photograph"
+          loading="eager"
+          decoding="async"
+        />
+      </div>
+      <div class="interview-portrait" data-reveal>
+        <img
+          src="https://picsum.photos/seed/caballero-stage/900/1100"
+          width="900"
+          height="1100"
+          alt="Placeholder stock photo standing in for an on-stage portrait of the interview subject — temporary demo image, not an authentic photograph"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+
+    <div class="interview-layout">
+      <div class="interview-body">
+        <p class="interview-meta">
+          John Vincent Caballero &middot; Cebu, Philippines &middot; five years
+          in &middot; answers lightly edited
+        </p>
+
+        <div class="interview-qa" data-reveal>
+          <p>
+            <strong class="interview-qa__marker">Q</strong>
+            &nbsp;You direct a marching band and you ship software. Which is harder?
+          </p>
+          <p>
+            The band, easily. You cannot hotfix a field show at halftime. But
+            they teach each other — both are forty small decisions that only
+            work if everyone hits the same beat, and both fall apart the moment
+            you stop rehearsing.
+          </p>
+          <p>
+            <strong class="interview-qa__marker">Q</strong>
+            &nbsp;Everyone wants AI in their product. What do you tell them?
+          </p>
+          <p>
+            That most of what they want is an if-statement with good manners.
+            I&rsquo;ll happily build the model part — after we&rsquo;ve found
+            the boring 80% that doesn&rsquo;t need one. Clients think
+            that&rsquo;s me talking them out of work. It&rsquo;s the opposite:
+            it&rsquo;s what makes the model part survive contact with reality.
+          </p>
+          <p>
+            <strong class="interview-qa__marker">Q</strong>
+            &nbsp;Full-stack, mobile, automation — isn&rsquo;t that spread thin?
+          </p>
+          <p>
+            It&rsquo;s one skill wearing three coats: I like owning the thing
+            from the first conversation to the deploy. Small teams don&rsquo;t
+            need a specialist for each layer, they need someone who won&rsquo;t
+            hand off the awkward middle.
+          </p>
+          <p>
+            <strong class="interview-qa__marker">Q</strong>
+            &nbsp;A bar-gig setlist saved a launch?
+          </p>
+          <p>
+            Sort of. I built Setlist between two acoustic sets because I kept
+            forgetting capo positions. The offline sync pattern I hacked
+            together that night is exactly what shipped in the clinic app six
+            months later.
+          </p>
+          <p>
+            <strong class="interview-qa__marker">Q</strong>
+            &nbsp;Gacha games, manga, gadget reviews. Do those show up in the work?
+          </p>
+          <p>
+            Constantly. Gacha UI is the most ruthlessly optimised interface
+            design on earth — every tap is measured, every reward is paced.
+            I&rsquo;ve stolen more from a pull animation than from most
+            dashboards. And reviewing gadgets keeps me writing about things I
+            use, which is the same muscle as writing a case study.
+          </p>
+        </div>
+
+        <div class="interview-aside">
+          <span class="interview-aside__mark" aria-hidden="true">*</span>
+          <span class="interview-hand interview-hand--aside">
+            he did in fact check his phone for the pull rates mid-answer. twice.
+          </span>
+        </div>
+
+        <blockquote class="interview-quote" data-reveal>
+          <p>
+            &ldquo;Conducting is standup with a baton. Same tempo problem,
+            better hats.&rdquo;
+          </p>
+          <cite>&mdash; J. V. Caballero</cite>
+        </blockquote>
+
+        <h2 class="interview-timeline-heading">Tour dates / the résumé</h2>
+        <ol class="interview-timeline">
+          <li class="interview-timeline__item">
+            <div class="interview-timeline__row" data-reveal>
+              <span class="interview-timeline__years">2024&mdash;26</span>
+              <div class="interview-timeline__body">
+                <p class="interview-timeline__title">
+                  Full-Stack Product Engineer &middot; AI &amp; Automation
+                </p>
+                <p class="interview-timeline__desc">
+                  End-to-end web and mobile builds, plus workflow automation for
+                  ops teams.
+                </p>
+              </div>
+              <span
+                class="interview-timeline__status interview-timeline__status--current"
+              >
+                ON NOW
+              </span>
+            </div>
+          </li>
+          <li class="interview-timeline__item">
+            <div class="interview-timeline__row" data-reveal>
+              <span class="interview-timeline__years">2022&mdash;24</span>
+              <div class="interview-timeline__body">
+                <p class="interview-timeline__title">
+                  Software Engineer &middot; Product Team
+                </p>
+                <p class="interview-timeline__desc">
+                  Front to back on a shipping product, plus the deploys nobody
+                  volunteered for.
+                </p>
+              </div>
+              <span
+                class="interview-timeline__status interview-timeline__status--muted"
+              >
+                SOLD OUT
+              </span>
+            </div>
+          </li>
+          <li class="interview-timeline__item">
+            <div class="interview-timeline__row" data-reveal>
+              <span class="interview-timeline__years">2021&mdash;22</span>
+              <div class="interview-timeline__body">
+                <p class="interview-timeline__title">
+                  Freelance Developer &middot; Cebu
+                </p>
+                <p class="interview-timeline__desc">
+                  Small businesses, smaller budgets, excellent stories.
+                </p>
+              </div>
+              <span
+                class="interview-timeline__status interview-timeline__status--muted"
+              >
+                ARCHIVE
+              </span>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <aside class="interview-sidebar">
+        <div class="interview-card" data-reveal>
+          <h2 class="interview-card__heading">The rider</h2>
+          <p class="interview-rider__intro">What I need to do good work:</p>
+          <ul class="interview-rider__list">
+            <li>&check; access to the people who&rsquo;ll actually use it</li>
+            <li>&check; permission to delete things</li>
+            <li>&check; one decision-maker, not a committee</li>
+            <li>&check; two weeks before anyone asks for a demo</li>
+            <li>&check; coffee, and a wall I can tape paper to</li>
+          </ul>
+        </div>
+
+        <div class="interview-card interview-card--instruments" data-reveal>
+          <h2 class="interview-card__heading">Instruments</h2>
+          <p class="interview-instruments">
+            TypeScript &middot; React &middot; Next.js &middot; React Native
+            &middot; Node &middot; Postgres &middot; n8n &middot; LLM
+            orchestration &amp; evals &middot; Tailwind &middot; Docker &middot;
+            a baton &middot; an acoustic guitar
+          </p>
+        </div>
+
+        <a class="interview-cta" href="/rotation/" data-magnet-target>
+          <span class="interview-cta__label">Also</span>
+          <span class="interview-cta__title">
+            What I&rsquo;m doing right now <span aria-hidden="true">&rarr;</span
+            >
+          </span>
+        </a>
+      </aside>
+    </div>
+  </article>
 </BaseLayout>
