@@ -538,6 +538,263 @@ test('Reviews muted metadata and Verdict labels pass contrast at rest, and only 
   }
 });
 
+/*
+  Sprint 2C — Interview's own, separately-approved contrast exceptions. Both
+  are NARROWLY scoped, exact-node additions kept independent from the
+  Cover/Feature/Reviews exceptions above: neither adds to, modifies, or
+  otherwise touches any prior target set, and both target a different route
+  entirely. See DESIGN_DEVIATIONS.md, "Sprint 2C — Interview" for the full
+  record of both.
+
+  1. Interview small Newsstand-red text (`.interview-kicker`,
+     `.interview-qa__marker` (x5), `.interview-timeline-heading`,
+     `.interview-cta__label`) reuses the same golden-master red-on-paper
+     pairing as the Cover/Feature/Reviews exception targets (`#e2231a` on
+     `#efe9dc`, ~3.86:1) at rest, plus a second gap once the Rotation CTA's
+     own hover swaps its background to `#17130f` (~3.95:1).
+  2. Interview muted résumé status (`.interview-timeline__status--muted`)
+     passes at rest (~4.68:1) — the resting state is deliberately NOT
+     allowlisted — but fails once an ancestor `.interview-timeline__row` is
+     hovered (~4.19:1) or pressed (~3.88:1), since the row background
+     itself swaps.
+*/
+const INTERVIEW_CTA_LABEL_SELECTOR = '.interview-cta__label';
+const EXPECTED_CTA_HOVER_BG_RGB: [number, number, number] = [23, 19, 15]; // #17130f
+const EXPECTED_CTA_HOVER_CONTRAST_RATIO = 3.95;
+
+// Exact set of Interview nodes Axe's automated scan flags at rest. Axe's
+// color-contrast rule does not report the five inline `.interview-qa__marker`
+// <strong> nodes (verified empirically — they carry the identical failing
+// color pair but are short, bold inline runs embedded inside much longer
+// paragraph text, which axe-core's own sampling heuristic does not flag as
+// a violation on its own). They are still part of the approved exception
+// and are verified directly below by real computed style, not by Axe.
+const INTERVIEW_AXE_RED_TEXT_SELECTORS = [
+  '.interview-kicker',
+  '.interview-timeline-heading',
+  INTERVIEW_CTA_LABEL_SELECTOR,
+].sort();
+
+// The complete approved exception membership is exactly 8 nodes: 1 kicker +
+// 5 Q markers + 1 "Tour dates / the résumé" heading + 1 CTA "Also" label —
+// the 3-selector Axe-visible set above, plus the 5 Q markers verified
+// directly below. Any Interview node outside this exact set failing
+// contrast is NOT allowlisted and must fail this test.
+const EXPECTED_QA_MARKER_COUNT = 5;
+
+test('Interview route has no automated WCAG A/AA violations beyond the documented golden-master contrast exceptions (Cover/Feature/Reviews exceptions untouched)', async ({
+  page,
+}, testInfo) => {
+  // Interview's scroll-reveal module hides [data-reveal] nodes until they
+  // scroll into view or reduced motion is detected — same rationale as the
+  // Feature/Reviews scans above: settle to the resting, fully-visible state
+  // first so Axe never pixel-samples a mid-fade frame.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/interview/');
+
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+
+  const colorContrastViolation = results.violations.find(
+    (violation) => violation.id === 'color-contrast',
+  );
+  const otherViolations = results.violations.filter(
+    (violation) => violation.id !== 'color-contrast',
+  );
+
+  // Every non-color-contrast violation still fails this test — headings,
+  // landmarks, quote, and list semantics are all covered by Axe's own rule
+  // set, not hand-rolled here.
+  expect(otherViolations).toEqual([]);
+
+  const nodes = colorContrastViolation?.nodes ?? [];
+  const targets = nodes.map((node) => node.target.join(' ')).sort();
+
+  // Exact membership, not "whatever Axe happened to report": if a new
+  // Interview node starts failing contrast, or an approved node stops being
+  // flagged, this array differs from the fixed expected set and the test
+  // fails. No other Interview contrast violation is silently allowlisted.
+  expect(targets).toEqual(INTERVIEW_AXE_RED_TEXT_SELECTORS);
+
+  for (const target of targets) {
+    const foreground = await getComputedForeground(page, target);
+    const background = await getEffectiveBackground(page, target);
+    expect(foreground).toEqual(EXPECTED_FOREGROUND_RGB);
+    expect(background).toEqual(EXPECTED_BACKGROUND_RGB);
+    const ratio = contrastRatio(foreground, background);
+    expect(ratio).toBeGreaterThan(EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE);
+    expect(ratio).toBeLessThan(EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE);
+  }
+
+  // The five Q markers are part of the approved exception (see file
+  // comment above) but are not reported by Axe's own scan — verified here
+  // directly against real computed style, and the count is pinned so a
+  // missing/extra marker also fails this test.
+  const qaMarkers = page.locator('.interview-qa__marker');
+  await expect(qaMarkers).toHaveCount(EXPECTED_QA_MARKER_COUNT);
+  const markerCount = await qaMarkers.count();
+  for (let i = 0; i < markerCount; i++) {
+    const marker = qaMarkers.nth(i);
+    const foreground = await marker.evaluate(
+      (el) => getComputedStyle(el).color,
+    );
+    const [fr, fg, fb] = parseRgb(foreground);
+    expect([fr, fg, fb]).toEqual(EXPECTED_FOREGROUND_RGB);
+    const background = await getEffectiveBackground(
+      page,
+      '.interview-qa__marker',
+    );
+    expect(background).toEqual(EXPECTED_BACKGROUND_RGB);
+    const ratio = contrastRatio([fr, fg, fb], background);
+    expect(ratio).toBeGreaterThan(EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE);
+    expect(ratio).toBeLessThan(EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE);
+  }
+
+  // The CTA label's own hover-state gap (against the darker CTA hover
+  // background) is not visible to a resting-state Axe scan — verified
+  // deterministically below instead.
+  await page.hover(`a:has(${INTERVIEW_CTA_LABEL_SELECTOR})`);
+  const hoverForeground = await getComputedForeground(
+    page,
+    INTERVIEW_CTA_LABEL_SELECTOR,
+  );
+  const hoverBackground = await getEffectiveBackground(
+    page,
+    INTERVIEW_CTA_LABEL_SELECTOR,
+  );
+  expect(hoverForeground).toEqual(EXPECTED_FOREGROUND_RGB);
+  expect(hoverBackground).toEqual(EXPECTED_CTA_HOVER_BG_RGB);
+  const hoverRatio = contrastRatio(hoverForeground, hoverBackground);
+  expect(hoverRatio).toBeGreaterThan(
+    EXPECTED_CTA_HOVER_CONTRAST_RATIO - CONTRAST_TOLERANCE,
+  );
+  expect(hoverRatio).toBeLessThan(
+    EXPECTED_CTA_HOVER_CONTRAST_RATIO + CONTRAST_TOLERANCE,
+  );
+
+  testInfo.annotations.push({
+    type: 'known-issue',
+    description:
+      `Sprint 2C approved Interview contrast exceptions: (1) red editorial ` +
+      `text (rgb(226, 35, 26) on rgb(239, 233, 220), ~${EXPECTED_CONTRAST_RATIO}:1 ` +
+      `at rest; ~${EXPECTED_CTA_HOVER_CONTRAST_RATIO}:1 on ${INTERVIEW_CTA_LABEL_SELECTOR} ` +
+      `hover) on ${targets.join(', ')}. Needs 4.5:1. See DESIGN_DEVIATIONS.md ` +
+      `for the approval record and exception #2 (muted résumé status, ` +
+      `hover/active row states only, verified separately below). The ` +
+      `Cover, Feature, and Reviews exceptions above remain separate, ` +
+      `untouched target sets.`,
+  });
+});
+
+test('Interview muted résumé status passes contrast at rest, and only its approved hover/active exception applies', async ({
+  page,
+}) => {
+  await page.goto('/interview/');
+
+  const mutedRow = page
+    .locator('.interview-timeline__row')
+    .filter({ hasText: 'SOLD OUT' });
+  const status = mutedRow.locator('.interview-timeline__status--muted');
+
+  async function contrastFor(locator: ReturnType<Page['locator']>) {
+    const foreground = await locator.evaluate(
+      (el) => getComputedStyle(el).color,
+    );
+    const background = await locator.evaluate((el) => {
+      let node: Element | null = el;
+      while (node) {
+        const bg = getComputedStyle(node).backgroundColor;
+        const match = bg.match(/rgba?\(([^)]+)\)/);
+        if (match) {
+          const parts = match[1].split(',').map((p) => parseFloat(p.trim()));
+          if ((parts[3] ?? 1) > 0) return bg;
+        }
+        node = node.parentElement;
+      }
+      throw new Error('no opaque ancestor background found');
+    });
+    const [fr, fg, fb] = parseRgb(foreground);
+    const [br, bg, bb] = parseRgb(background);
+    return {
+      ratio: contrastRatio([fr, fg, fb], [br, bg, bb]),
+      foreground: [fr, fg, fb] as [number, number, number],
+      background: [br, bg, bb] as [number, number, number],
+    };
+  }
+
+  const EXPECTED_MUTED_RGB: [number, number, number] = [111, 102, 86]; // #6f6656
+  const AA_NORMAL_TEXT_THRESHOLD = 4.5;
+
+  const statusRest = await contrastFor(status);
+  expect(statusRest.foreground).toEqual(EXPECTED_MUTED_RGB);
+  expect(statusRest.ratio).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_THRESHOLD);
+
+  await mutedRow.hover();
+  const statusHover = await contrastFor(status);
+  expect(statusHover.background).toEqual([229, 221, 204]); // #e5ddcc
+  expect(statusHover.ratio).toBeLessThan(AA_NORMAL_TEXT_THRESHOLD);
+  expect(statusHover.ratio).toBeGreaterThan(4.0);
+
+  // Active state: hold the pointer down on the row (still hovering from
+  // above) to trigger :active, then release — mouse.up() runs even if an
+  // assertion above throws is not guaranteed, so this is wrapped to always
+  // clean up the pressed state before the test ends.
+  const box = await mutedRow.boundingBox();
+  if (!box) throw new Error('interview timeline row bounding box unavailable');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  try {
+    // The row's background/padding transition over .32s (normal motion);
+    // sampling immediately after mousedown can catch an interpolated
+    // mid-transition color instead of the settled :active value.
+    await page.waitForTimeout(400);
+    const EXPECTED_ACTIVE_RATIO = 3.88;
+
+    const statusActive = await contrastFor(status);
+    expect(statusActive.background).toEqual([222, 213, 194]); // #ded5c2
+    expect(statusActive.ratio).toBeLessThan(AA_NORMAL_TEXT_THRESHOLD);
+    expect(statusActive.ratio).toBeGreaterThan(
+      EXPECTED_ACTIVE_RATIO - CONTRAST_TOLERANCE,
+    );
+    expect(statusActive.ratio).toBeLessThan(
+      EXPECTED_ACTIVE_RATIO + CONTRAST_TOLERANCE,
+    );
+  } finally {
+    await page.mouse.up();
+  }
+});
+
+test('Interview exposes exactly one h1, real section headings in order, and blockquote/list/aside semantics for its editorial content', async ({
+  page,
+}) => {
+  await page.goto('/interview/');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: 'Forty players, one tempo, and a deploy on Sunday',
+    }),
+  ).toBeVisible();
+
+  const h2s = (
+    await page.getByRole('heading', { level: 2 }).allTextContents()
+  ).map((text) => text.trim());
+  expect(h2s).toEqual(['Tour dates / the résumé', 'The rider', 'Instruments']);
+
+  await expect(page.getByRole('blockquote')).toBeVisible();
+  await expect(page.locator('.interview-quote cite')).toBeVisible();
+
+  await expect(page.locator('ol.interview-timeline')).toBeVisible();
+  await expect(page.locator('li.interview-timeline__item')).toHaveCount(3);
+
+  await expect(page.locator('ul.interview-rider__list')).toBeVisible();
+  await expect(page.locator('ul.interview-rider__list li')).toHaveCount(5);
+
+  await expect(page.getByRole('complementary')).toBeVisible();
+});
+
 test('Feature exposes exactly one h1, real section headings in order, and figure/figcaption + list semantics for its editorial content', async ({
   page,
 }) => {

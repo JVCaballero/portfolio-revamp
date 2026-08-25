@@ -25,7 +25,7 @@ const routes = [
   },
   {
     href: '/interview/',
-    heading: 'The Interview',
+    heading: 'Forty players, one tempo, and a deploy on Sunday',
     activeLabel: 'The Interview',
   },
   { href: '/columns/', heading: 'Columns', activeLabel: 'Columns' },
@@ -1030,13 +1030,14 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
     expect(registrationCount(afterReload.fires, 'astro:before-swap')).toBe(0);
   });
 
-  // Feature and Reviews are still exercised here (as hops on the way to
-  // Letters) but have real page-specific interaction work of their own —
-  // Feature's four Sprint 2A modules and Reviews' Sprint 2B scroll-reveal/
-  // cursor-preview — so their dedicated lifecycle behavior is covered by
-  // "Sprint 2A Feature interaction lifecycle" and "Sprint 2B Reviews
-  // interaction lifecycle" below, not by this generic console-cleanliness
-  // pass-through.
+  // Feature, Reviews, and Interview are still exercised here (as hops on
+  // the way to Letters) but have real page-specific interaction work of
+  // their own — Feature's four Sprint 2A modules, Reviews' Sprint 2B
+  // scroll-reveal/cursor-preview, and Interview's Sprint 2C scroll-reveal/
+  // magnetic-navigation — so their dedicated lifecycle behavior is covered
+  // by "Sprint 2A Feature interaction lifecycle", "Sprint 2B Reviews
+  // interaction lifecycle", and "Sprint 2C Interview interaction
+  // lifecycle" below, not by this generic console-cleanliness pass-through.
   test('Routes with no active interaction work navigate cleanly with no console errors', async ({
     page,
   }) => {
@@ -1052,7 +1053,6 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
     for (const label of [
       'Feature',
       'Reviews',
-      'The Interview',
       'Columns',
       'B-Sides',
       'Rotation',
@@ -2008,6 +2008,401 @@ test.describe('Sprint 2B Reviews interaction lifecycle', () => {
       page.getByRole('heading', {
         level: 1,
         name: 'All the work, rated and reviewed',
+      }),
+    ).toBeVisible();
+
+    expect(consoleErrors).toEqual([]);
+  });
+});
+
+test.describe('Sprint 2C Interview page', () => {
+  test('Interview renders the golden-master anatomy: kicker, headline, portraits, Q&A, quote, résumé, rider, instruments, and Rotation CTA', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    const response = await page.goto('/interview/');
+    expect(response?.ok()).toBeTruthy();
+
+    await expect(page.locator('.interview-kicker')).toHaveText(
+      'The Interview / p.12',
+    );
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Forty players, one tempo, and a deploy on Sunday',
+      }),
+    ).toBeVisible();
+
+    const portraits = page.locator('.interview-portrait');
+    await expect(portraits).toHaveCount(2);
+
+    await expect(page.locator('.interview-qa').first()).toBeVisible();
+    await expect(page.locator('.interview-qa__marker')).toHaveCount(5);
+
+    await expect(page.getByRole('blockquote')).toBeVisible();
+    await expect(page.locator('.interview-quote cite')).toBeVisible();
+
+    await expect(
+      page.getByRole('heading', {
+        level: 2,
+        name: 'Tour dates / the résumé',
+      }),
+    ).toBeVisible();
+    const timelineRows = page.locator('.interview-timeline__row');
+    await expect(timelineRows).toHaveCount(3);
+
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'The rider' }),
+    ).toBeVisible();
+    await expect(page.locator('.interview-rider__list li')).toHaveCount(5);
+
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Instruments' }),
+    ).toBeVisible();
+    await expect(page.locator('.interview-card--instruments')).toBeVisible();
+
+    const rotationCta = page.getByRole('link', {
+      name: /doing right now/,
+    });
+    await expect(rotationCta).toBeVisible();
+    await expect(rotationCta).toHaveAttribute('href', '/rotation/');
+
+    await expect(page.locator('footer.newsstand-bottom-chrome')).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Primary' })
+        .getByRole('link', { name: 'The Interview', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Interview portraits declare explicit dimensions and meaningful placeholder-aware alt text', async ({
+    page,
+  }) => {
+    await page.goto('/interview/');
+
+    const images = page.locator('.interview-portrait img');
+    await expect(images).toHaveCount(2);
+
+    const count = await images.count();
+    for (let i = 0; i < count; i++) {
+      const image = images.nth(i);
+      await expect(image).toHaveAttribute('width', '900');
+      await expect(image).toHaveAttribute('height', '1100');
+      const alt = await image.getAttribute('alt');
+      expect(alt).toBeTruthy();
+      expect(alt?.toLowerCase()).toMatch(/placeholder/);
+    }
+  });
+
+  test('Interview has no positive tabindex and no click-only div controls', async ({
+    page,
+  }) => {
+    await page.goto('/interview/');
+
+    const positiveTabindexCount = await page
+      .locator('[tabindex]')
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+            .length,
+      );
+    expect(positiveTabindexCount).toBe(0);
+
+    const onclickDivCount = await page
+      .locator('div[onclick], div[role="button"]')
+      .count();
+    expect(onclickDivCount).toBe(0);
+  });
+
+  test('Interview Rotation CTA is keyboard reachable, shows a visible focus ring, and behaves as a native link', async ({
+    page,
+  }) => {
+    await page.goto('/interview/');
+
+    const rotationCta = page.getByRole('link', {
+      name: /doing right now/,
+    });
+    await expect(rotationCta).toHaveAttribute('href', '/rotation/');
+
+    await rotationCta.focus();
+    await expect(rotationCta).toBeFocused();
+
+    const outlineStyle = await rotationCta.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        outlineStyle: style.outlineStyle,
+        outlineWidth: style.outlineWidth,
+      };
+    });
+    expect(outlineStyle.outlineStyle).toBe('solid');
+    expect(parseFloat(outlineStyle.outlineWidth)).toBeGreaterThan(0);
+
+    await rotationCta.press('Enter');
+    await expect(page).toHaveURL(/\/rotation\/$/);
+  });
+
+  test('Interview -> Rotation navigation via the CTA works, and Back returns to Interview', async ({
+    page,
+  }) => {
+    await page.goto('/interview/');
+    const rotationCta = page.getByRole('link', {
+      name: /doing right now/,
+    });
+    await rotationCta.click();
+    await expect(page).toHaveURL(/\/rotation\/$/);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/interview\/$/);
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Forty players, one tempo, and a deploy on Sunday',
+      }),
+    ).toBeVisible();
+
+    await page.goForward();
+    await expect(page).toHaveURL(/\/rotation\/$/);
+  });
+
+  test('Direct reload of /interview/ keeps the same URL, re-renders the golden-master anatomy, and reinitializes interaction cleanly', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/interview/');
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Forty players, one tempo, and a deploy on Sunday',
+      }),
+    ).toBeVisible();
+
+    const reloadResponse = await page.reload();
+    expect(reloadResponse?.ok()).toBeTruthy();
+
+    await expect(page).toHaveURL(/\/interview\/$/);
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Forty players, one tempo, and a deploy on Sunday',
+      }),
+    ).toBeVisible();
+    await expect(page.locator('.interview-kicker')).toBeVisible();
+    await expect(page.locator('.interview-portrait')).toHaveCount(2);
+    await expect(page.locator('.interview-timeline__row')).toHaveCount(3);
+    const rotationCta = page.getByRole('link', { name: /doing right now/ });
+    await expect(rotationCta).toHaveAttribute('href', '/rotation/');
+
+    // Interaction initialization stays sane after a full-document reload:
+    // the magnetic CTA responds to pointer movement exactly once, from a
+    // fresh rest state, matching the direct-load lifecycle test above.
+    await rotationCta.scrollIntoViewIfNeeded();
+    const box = await rotationCta.boundingBox();
+    if (!box) throw new Error('Rotation CTA bounding box unavailable');
+    const restTransform = await rotationCta.evaluate(
+      (el) => getComputedStyle(el).transform,
+    );
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(async () => {
+      const transform = await rotationCta.evaluate(
+        (el) => getComputedStyle(el).transform,
+      );
+      expect(transform).not.toBe(restTransform);
+    }).toPass({ timeout: 2000 });
+
+    expect(consoleErrors).toEqual([]);
+  });
+});
+
+test.describe('Sprint 2C Interview interaction lifecycle', () => {
+  test('Interview interaction modules initialize exactly once on direct load and resolve visible/understandable content', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/interview/');
+
+    await expect(page.locator('.interview-kicker')).toBeVisible();
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Forty players, one tempo, and a deploy on Sunday',
+      }),
+    ).toBeVisible();
+
+    // Above-the-fold [data-reveal] content (the portraits) must never be
+    // stuck hidden, whether or not the reveal module has run yet.
+    await expect(page.locator('.interview-portrait').first()).toBeVisible();
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Repeated ClientRouter navigation into and out of Interview stays console-clean and performs exactly one teardown/reinit pair per hop', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    const baselineFires = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleFires: string[] }).__lifecycleFires
+          .length,
+    );
+
+    for (let visit = 0; visit < 3; visit++) {
+      await nav
+        .getByRole('link', { name: 'The Interview', exact: true })
+        .click();
+      await expect(page).toHaveURL(/\/interview\/$/);
+      await expect(
+        page.getByRole('heading', {
+          level: 1,
+          name: 'Forty players, one tempo, and a deploy on Sunday',
+        }),
+      ).toBeVisible();
+      await waitForFireCount(page, baselineFires + visit * 4 + 2);
+
+      await nav.getByRole('link', { name: 'Columns', exact: true }).click();
+      await expect(page).toHaveURL(/\/columns\/$/);
+      await waitForFireCount(page, baselineFires + visit * 4 + 4);
+    }
+
+    const registrations = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleRegistrations: string[] })
+          .__lifecycleRegistrations,
+    );
+    expect(registrationCount(registrations, 'astro:before-swap')).toBe(1);
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Interview magnetic CTA cleanup runs on page exit and reinitializes correctly on return', async ({
+    page,
+  }) => {
+    async function ctaTransform() {
+      return page
+        .getByRole('link', { name: /doing right now/ })
+        .evaluate((el) => getComputedStyle(el).transform);
+    }
+
+    await page.goto('/interview/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    const cta = page.getByRole('link', { name: /doing right now/ });
+    await cta.scrollIntoViewIfNeeded();
+    const box = await cta.boundingBox();
+    if (!box) throw new Error('Rotation CTA bounding box unavailable');
+
+    const restTransform = await ctaTransform();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(async () => {
+      expect(await ctaTransform()).not.toBe(restTransform);
+    }).toPass({ timeout: 2000 });
+
+    await page.mouse.move(0, 0);
+    await nav.getByRole('link', { name: 'Feature', exact: true }).click();
+    await expect(page).toHaveURL(/\/feature\/$/);
+
+    await nav.getByRole('link', { name: 'The Interview', exact: true }).click();
+    await expect(page).toHaveURL(/\/interview\/$/);
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Forty players, one tempo, and a deploy on Sunday',
+      }),
+    ).toBeVisible();
+
+    // No stale transform survives the page exit — the fresh mount starts
+    // from rest again.
+    expect(await ctaTransform()).toBe(restTransform);
+
+    const freshCta = page.getByRole('link', {
+      name: /doing right now/,
+    });
+    await freshCta.scrollIntoViewIfNeeded();
+    const freshBox = await freshCta.boundingBox();
+    if (!freshBox) throw new Error('Rotation CTA bounding box unavailable');
+    await page.mouse.move(
+      freshBox.x + freshBox.width / 2,
+      freshBox.y + freshBox.height / 2,
+    );
+    await expect(async () => {
+      expect(await ctaTransform()).not.toBe(restTransform);
+    }).toPass({ timeout: 2000 });
+  });
+
+  test('Interview content stays fully visible under reduced motion, and the magnetic CTA does not displace on pointer movement', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/interview/');
+
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Forty players, one tempo, and a deploy on Sunday',
+      }),
+    ).toBeVisible();
+
+    for (const el of [
+      '.interview-kicker',
+      '.interview-portrait',
+      '.interview-qa',
+      '.interview-quote',
+      '.interview-timeline__row',
+      'aside.interview-sidebar',
+    ]) {
+      await expect(page.locator(el).first()).toBeVisible();
+      const opacity = await page
+        .locator(el)
+        .first()
+        .evaluate((node) => getComputedStyle(node).opacity);
+      expect(opacity).toBe('1');
+    }
+
+    const cta = page.getByRole('link', { name: /doing right now/ });
+    await cta.scrollIntoViewIfNeeded();
+    const box = await cta.boundingBox();
+    if (!box) throw new Error('Rotation CTA bounding box unavailable');
+    const transformBefore = await cta.evaluate(
+      (el) => getComputedStyle(el).transform,
+    );
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    const transformAfter = await cta.evaluate(
+      (el) => getComputedStyle(el).transform,
+    );
+    expect(transformAfter).toBe(transformBefore);
+
+    await page.goBack().catch(() => {});
+    await page.goto('/interview/');
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Forty players, one tempo, and a deploy on Sunday',
       }),
     ).toBeVisible();
 
