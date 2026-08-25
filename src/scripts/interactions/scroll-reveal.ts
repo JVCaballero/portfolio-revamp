@@ -1,8 +1,9 @@
 /*
-  Sprint 2A — Feature scroll-reveal. Mirrors the golden master's sweep()/
-  reveal() pair (reference/newsstand-original/index.html, the compiled
-  runtime's IntersectionObserver setup and stagger logic): elements marked
-  [data-reveal] fade up on entering view, staggered by document order.
+  Sprint 2A — Feature scroll-reveal, extended in Sprint 2B to Reviews.
+  Mirrors the golden master's sweep()/reveal() pair (reference/newsstand-
+  original/index.html, the compiled runtime's IntersectionObserver setup
+  and stagger logic): elements marked [data-reveal] fade up on entering
+  view, staggered by document order.
 
   Above-fold elements (already within 90% of viewport height at mount) are
   revealed immediately without ever being hidden, matching the source's own
@@ -20,7 +21,7 @@
 */
 import type { InteractionModule } from './interaction-controller';
 
-const PATHNAME_PREFIX = '/feature/';
+const PATHNAME_PREFIXES = ['/feature/', '/reviews/'];
 const SELECTOR = '[data-reveal]';
 const ROOT_MARGIN = '0px 0px -6% 0px';
 const THRESHOLD = 0.06;
@@ -53,7 +54,10 @@ function resolveViaTransition(el: HTMLElement): void {
 export const scrollReveal: InteractionModule = {
   name: 'scroll-reveal',
   init(context) {
-    if (!context.pathname.startsWith(PATHNAME_PREFIX)) return;
+    if (
+      !PATHNAME_PREFIXES.some((prefix) => context.pathname.startsWith(prefix))
+    )
+      return;
 
     const targets = Array.from(
       document.querySelectorAll<HTMLElement>(SELECTOR),

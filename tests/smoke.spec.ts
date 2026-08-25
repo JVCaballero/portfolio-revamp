@@ -18,7 +18,11 @@ const routes = [
     heading: 'The inbox that learned to answer itself',
     activeLabel: 'Feature',
   },
-  { href: '/reviews/', heading: 'Reviews', activeLabel: 'Reviews' },
+  {
+    href: '/reviews/',
+    heading: 'All the work, rated and reviewed',
+    activeLabel: 'Reviews',
+  },
   {
     href: '/interview/',
     heading: 'The Interview',
@@ -425,7 +429,10 @@ test('A second client-side navigation triggers a fresh, complete wipe', async ({
   await expect(persistedWipe).toHaveClass(/is-active/);
   await expect(page).toHaveURL(/\/reviews\/$/);
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Reviews' }),
+    page.getByRole('heading', {
+      level: 1,
+      name: 'All the work, rated and reviewed',
+    }),
   ).toBeVisible();
   await expect(persistedWipe).toHaveClass(/is-active/);
   await expect(persistedWipe).not.toHaveClass(/is-active/, { timeout: 2000 });
@@ -485,7 +492,10 @@ test('Browser forward navigation triggers the custom wipe and resolves the corre
 
   await expect(page).toHaveURL(/\/reviews\/$/);
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Reviews' }),
+    page.getByRole('heading', {
+      level: 1,
+      name: 'All the work, rated and reviewed',
+    }),
   ).toBeVisible();
   await expect(
     nav.getByRole('link', { name: 'Reviews', exact: true }),
@@ -508,7 +518,10 @@ test('Reload after client-side navigation resolves the direct route and does not
   expect(reloadResponse?.ok()).toBeTruthy();
   expect(new URL(page.url()).pathname).toBe('/reviews/');
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Reviews' }),
+    page.getByRole('heading', {
+      level: 1,
+      name: 'All the work, rated and reviewed',
+    }),
   ).toBeVisible();
 
   // A full reload is not a client-side navigation: the wipe must come back
@@ -606,7 +619,10 @@ test.describe('Sprint 1G reduced-motion journey', () => {
     await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
     await expect(page).toHaveURL(/\/reviews\/$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'All the work, rated and reviewed',
+      }),
     ).toBeVisible();
     await expect(wipe).not.toHaveClass(/is-active/);
 
@@ -628,7 +644,10 @@ test.describe('Sprint 1G reduced-motion journey', () => {
     await page.goForward();
     await expect(page).toHaveURL(/\/reviews\/$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'All the work, rated and reviewed',
+      }),
     ).toBeVisible();
     await expect(
       nav.getByRole('link', { name: 'Reviews', exact: true }),
@@ -641,7 +660,10 @@ test.describe('Sprint 1G reduced-motion journey', () => {
     expect(reloadResponse?.ok()).toBeTruthy();
     expect(new URL(page.url()).pathname).toBe('/reviews/');
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'All the work, rated and reviewed',
+      }),
     ).toBeVisible();
     await expect(wipe).toHaveCount(1);
     await expect(wipe).not.toHaveClass(/is-active/);
@@ -948,7 +970,10 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
     await page.goForward();
     await expect(page).toHaveURL(/\/reviews\/$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'All the work, rated and reviewed',
+      }),
     ).toBeVisible();
     await waitForFireCount(page, beforeForward + 2);
 
@@ -1005,10 +1030,13 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
     expect(registrationCount(afterReload.fires, 'astro:before-swap')).toBe(0);
   });
 
-  // Feature is excluded here since Sprint 2A gives it a non-populated (but
-  // no longer literally empty) registry: all four modules run their
-  // pathname gate on every route and no-op off /feature/. See "Sprint 2A
-  // Feature interaction lifecycle" below for its own dedicated coverage.
+  // Feature and Reviews are still exercised here (as hops on the way to
+  // Letters) but have real page-specific interaction work of their own —
+  // Feature's four Sprint 2A modules and Reviews' Sprint 2B scroll-reveal/
+  // cursor-preview — so their dedicated lifecycle behavior is covered by
+  // "Sprint 2A Feature interaction lifecycle" and "Sprint 2B Reviews
+  // interaction lifecycle" below, not by this generic console-cleanliness
+  // pass-through.
   test('Routes with no active interaction work navigate cleanly with no console errors', async ({
     page,
   }) => {
@@ -1156,7 +1184,10 @@ test.describe('Sprint 2A Feature page', () => {
     await nextCta.press('Enter');
     await expect(page).toHaveURL(/\/reviews\/$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'All the work, rated and reviewed',
+      }),
     ).toBeVisible();
   });
 
@@ -1169,7 +1200,10 @@ test.describe('Sprint 2A Feature page', () => {
     await nextCta.click();
     await expect(page).toHaveURL(/\/reviews\/$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Reviews' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'All the work, rated and reviewed',
+      }),
     ).toBeVisible();
 
     await page.goBack();
@@ -1552,5 +1586,431 @@ test.describe('Sprint 2A Feature review corrections', () => {
       .first()
       .evaluate((el) => el.textContent?.trim().slice(0, 11));
     expect(firstParagraphText).toBe('Lorem ipsum');
+  });
+});
+
+test.describe('Sprint 2B Reviews page', () => {
+  test('Reviews renders the golden-master anatomy: folio, headline, deck, four taxonomy labels, six review rows, and closing note', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    const response = await page.goto('/reviews/');
+    expect(response?.ok()).toBeTruthy();
+
+    await expect(page.locator('.reviews-kicker')).toHaveText('Reviews / p.18');
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'All the work, rated and reviewed',
+      }),
+    ).toBeVisible();
+    await expect(page.locator('.reviews-deck')).toBeVisible();
+
+    const taxonomy = page.locator('.reviews-taxonomy__label');
+    await expect(taxonomy).toHaveCount(4);
+    await expect(taxonomy.nth(0)).toHaveText('All');
+    await expect(taxonomy.nth(1)).toHaveText('AI & automation');
+    await expect(taxonomy.nth(2)).toHaveText('Web');
+    await expect(taxonomy.nth(3)).toHaveText('Mobile');
+
+    const rows = page.locator('li.review-row-item');
+    await expect(rows).toHaveCount(6);
+    await expect(page.locator('h2.review-row__title')).toHaveCount(6);
+
+    await expect(page.locator('.reviews-closing-note')).toBeVisible();
+    await expect(page.locator('footer.newsstand-bottom-chrome')).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Primary' })
+        .getByRole('link', { name: 'Reviews', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('All six Reviews rows are native links to /feature/, and only the first row shows the "Read the feature" CTA', async ({
+    page,
+  }) => {
+    await page.goto('/reviews/');
+
+    const rowLinks = page.locator('a.review-row');
+    await expect(rowLinks).toHaveCount(6);
+
+    const count = await rowLinks.count();
+    for (let i = 0; i < count; i++) {
+      await expect(rowLinks.nth(i)).toHaveAttribute('href', '/feature/');
+    }
+
+    await expect(rowLinks.nth(0).locator('.review-row__cta')).toHaveText(
+      'Read the feature →',
+    );
+    for (let i = 1; i < count; i++) {
+      await expect(rowLinks.nth(i).locator('.review-row__cta')).toHaveCount(0);
+    }
+  });
+
+  test('Reviews images expose explicit dimensions and decorative (non-truthful placeholder) alt text', async ({
+    page,
+  }) => {
+    await page.goto('/reviews/');
+
+    const images = page.locator('.review-row__image img');
+    await expect(images).toHaveCount(6);
+
+    const count = await images.count();
+    for (let i = 0; i < count; i++) {
+      const image = images.nth(i);
+      await expect(image).toHaveAttribute('width', '600');
+      await expect(image).toHaveAttribute('height', '400');
+      await expect(image).toHaveAttribute('alt', '');
+    }
+  });
+
+  test('Reviews star ratings expose an accessible textual equivalent without relying on repeated glyphs alone', async ({
+    page,
+  }) => {
+    await page.goto('/reviews/');
+
+    const firstRow = page.locator('li.review-row-item').first();
+    await expect(firstRow.locator('.review-row__rating')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+    await expect(firstRow.getByText('5 out of 5 stars')).toHaveCount(1);
+
+    const thirdRow = page.locator('li.review-row-item').nth(2);
+    await expect(thirdRow.getByText('4 out of 5 stars')).toHaveCount(1);
+  });
+
+  test('Reviews taxonomy labels remain non-interactive text, not fake controls', async ({
+    page,
+  }) => {
+    await page.goto('/reviews/');
+
+    const taxonomy = page.locator('.reviews-taxonomy__label');
+    await expect(taxonomy).toHaveCount(4);
+
+    const tagNames = await taxonomy.evaluateAll((els) =>
+      els.map((el) => el.tagName.toLowerCase()),
+    );
+    expect(tagNames).toEqual(['span', 'span', 'span', 'span']);
+
+    const roles = await taxonomy.evaluateAll((els) =>
+      els.map((el) => el.getAttribute('role')),
+    );
+    expect(roles.every((role) => role === null)).toBe(true);
+
+    const tabindexes = await taxonomy.evaluateAll((els) =>
+      els.map((el) => el.getAttribute('tabindex')),
+    );
+    expect(tabindexes.every((value) => value === null)).toBe(true);
+
+    await expect(page.getByRole('button')).toHaveCount(0);
+
+    // Source-faithful visual affordance only (reviews.css): an outline
+    // label (e.g. "Web") lifts and turns yellow on hover, darker yellow and
+    // pressed-down on active — while remaining the same non-interactive
+    // span verified above. A regression here (e.g. losing the hover rule)
+    // would silently fall back to no visual change at all.
+    const outlineLabel = page.getByText('Web', { exact: true });
+    const restBackground = await outlineLabel.evaluate(
+      (el) => getComputedStyle(el).backgroundColor,
+    );
+    expect(restBackground).toBe('rgba(0, 0, 0, 0)');
+
+    await outlineLabel.hover();
+    await expect(async () => {
+      const hoverStyle = await outlineLabel.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return {
+          background: style.backgroundColor,
+          transform: style.transform,
+        };
+      });
+      expect(hoverStyle.background).toBe('rgb(255, 230, 0)'); // --color-highlight
+      expect(hoverStyle.transform).toContain('-2'); // translateY(-2px)
+    }).toPass({ timeout: 2000 });
+
+    const box = await outlineLabel.boundingBox();
+    if (!box) throw new Error('taxonomy label bounding box unavailable');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    try {
+      await expect(async () => {
+        const activeStyle = await outlineLabel.evaluate((el) => {
+          const style = getComputedStyle(el);
+          return {
+            background: style.backgroundColor,
+            transform: style.transform,
+          };
+        });
+        expect(activeStyle.background).toBe('rgb(242, 217, 0)'); // --color-highlight-active
+        expect(activeStyle.transform).toContain('2'); // translateY(2px) scale(.96)
+      }).toPass({ timeout: 2000 });
+    } finally {
+      await page.mouse.up();
+    }
+
+    // The "All" active-style label uses the same transform-only affordance
+    // (background stays ink, no background transition).
+    const activeAllLabel = page.getByText('All', { exact: true });
+    const allBox = await activeAllLabel.boundingBox();
+    if (!allBox) throw new Error('"All" label bounding box unavailable');
+    await page.mouse.move(
+      allBox.x + allBox.width / 2,
+      allBox.y + allBox.height / 2,
+    );
+    await expect(async () => {
+      const transform = await activeAllLabel.evaluate(
+        (el) => getComputedStyle(el).transform,
+      );
+      expect(transform).toContain('-2');
+    }).toPass({ timeout: 2000 });
+  });
+
+  test('Reviews has no positive tabindex anywhere on the page', async ({
+    page,
+  }) => {
+    await page.goto('/reviews/');
+
+    const positiveTabindexCount = await page
+      .locator('[tabindex]')
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+            .length,
+      );
+
+    expect(positiveTabindexCount).toBe(0);
+  });
+
+  test('A Reviews row link is keyboard reachable, shows a visible focus ring, and behaves as a native link', async ({
+    page,
+  }) => {
+    await page.goto('/reviews/');
+
+    const firstRow = page.locator('a.review-row').first();
+    await firstRow.focus();
+    await expect(firstRow).toBeFocused();
+
+    const outlineStyle = await firstRow.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        outlineStyle: style.outlineStyle,
+        outlineWidth: style.outlineWidth,
+      };
+    });
+    expect(outlineStyle.outlineStyle).toBe('solid');
+    expect(parseFloat(outlineStyle.outlineWidth)).toBeGreaterThan(0);
+
+    await firstRow.press('Enter');
+    await expect(page).toHaveURL(/\/feature\/$/);
+  });
+
+  test('Reviews -> Feature navigation via a row click works, and Back returns to Reviews', async ({
+    page,
+  }) => {
+    await page.goto('/reviews/');
+    const firstRow = page.locator('a.review-row').first();
+
+    await firstRow.click();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'The inbox that learned to answer itself',
+      }),
+    ).toBeVisible();
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/reviews\/$/);
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'All the work, rated and reviewed',
+      }),
+    ).toBeVisible();
+
+    await page.goForward();
+    await expect(page).toHaveURL(/\/feature\/$/);
+  });
+});
+
+test.describe('Sprint 2B Reviews interaction lifecycle', () => {
+  test('Reviews interaction modules initialize exactly once on direct load and resolve visible content', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/reviews/');
+
+    await expect(page.locator('li.review-row-item')).toHaveCount(6);
+    for (const row of await page.locator('a.review-row').all()) {
+      await expect(row).toBeVisible();
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Repeated ClientRouter navigation into and out of Reviews stays console-clean', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    for (let visit = 0; visit < 3; visit++) {
+      await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+      await expect(page).toHaveURL(/\/reviews\/$/);
+      await expect(
+        page.getByRole('heading', {
+          level: 1,
+          name: 'All the work, rated and reviewed',
+        }),
+      ).toBeVisible();
+
+      await nav.getByRole('link', { name: 'Feature', exact: true }).click();
+      await expect(page).toHaveURL(/\/feature\/$/);
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Desktop cursor preview shows over a review row and hides on exit, without persisting after navigation', async ({
+    page,
+  }, testInfo) => {
+    if (testInfo.project.name !== 'desktop') {
+      test.skip(true, 'cursor preview only applies above the 900px threshold');
+    }
+
+    await page.goto('/reviews/');
+    const plate = page.locator('[data-cursor-preview]');
+    const firstRow = page.locator('a.review-row').first();
+
+    await expect(plate).not.toHaveClass(/reviews-cursor-preview--visible/);
+
+    const box = await firstRow.boundingBox();
+    if (!box) throw new Error('review row bounding box unavailable');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+
+    await expect(plate).toHaveClass(/reviews-cursor-preview--visible/);
+    await expect(plate).toHaveText('Read the case file →');
+
+    await page.mouse.move(box.x + box.width / 2, box.y - 40);
+    await expect(plate).not.toHaveClass(/reviews-cursor-preview--visible/);
+
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(plate).toHaveClass(/reviews-cursor-preview--visible/);
+
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+    await nav.getByRole('link', { name: 'Feature', exact: true }).click();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await expect(page.locator('[data-cursor-preview]')).toHaveCount(0);
+  });
+
+  test('Re-entering Reviews does not duplicate cursor-preview behavior', async ({
+    page,
+  }, testInfo) => {
+    if (testInfo.project.name !== 'desktop') {
+      test.skip(true, 'cursor preview only applies above the 900px threshold');
+    }
+
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    // Each client-side navigation contributes one before-swap/page-load
+    // pair; the interaction controller (and therefore cursor-preview's own
+    // pointermove listener) only attaches once its destination page-load
+    // has actually fired — `toHaveURL` can resolve slightly ahead of that,
+    // so this waits for the settled fire count rather than racing it (same
+    // rationale as the Sprint 1F lifecycle tests above).
+    let expectedFires = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleFires: string[] }).__lifecycleFires
+          .length,
+    );
+
+    for (let visit = 0; visit < 2; visit++) {
+      await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+      expectedFires += 2;
+      await waitForFireCount(page, expectedFires);
+      await expect(page).toHaveURL(/\/reviews\/$/);
+      await expect(page.locator('[data-transition-wipe]')).not.toHaveClass(
+        /is-active/,
+        { timeout: 2000 },
+      );
+
+      const plate = page.locator('[data-cursor-preview]');
+      await expect(plate).toHaveCount(1);
+
+      const firstRow = page.locator('a.review-row').first();
+      const box = await firstRow.boundingBox();
+      if (!box) throw new Error('review row bounding box unavailable');
+      // Move away first: on the second visit the pointer is already
+      // resting at this exact position from the prior visit's move, and a
+      // move to an unchanged position does not reliably re-dispatch
+      // `pointermove`.
+      await page.mouse.move(0, 0);
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await expect(plate).toHaveClass(/reviews-cursor-preview--visible/);
+
+      await nav.getByRole('link', { name: 'Feature', exact: true }).click();
+      expectedFires += 2;
+      await waitForFireCount(page, expectedFires);
+      await expect(page).toHaveURL(/\/feature\/$/);
+    }
+  });
+
+  test('Reviews content stays fully visible under reduced motion, and the cursor-preview plate never becomes visible', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/reviews/');
+
+    const rows = page.locator('a.review-row');
+    await expect(rows).toHaveCount(6);
+    const count = await rows.count();
+    for (let i = 0; i < count; i++) {
+      await expect(rows.nth(i)).toBeVisible();
+      const opacity = await rows
+        .nth(i)
+        .evaluate((node) => getComputedStyle(node).opacity);
+      expect(opacity).toBe('1');
+    }
+
+    const plate = page.locator('[data-cursor-preview]');
+    const box = await rows.first().boundingBox();
+    if (box) {
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    }
+    await expect(plate).not.toHaveClass(/reviews-cursor-preview--visible/);
+
+    await page.goBack().catch(() => {});
+    await page.goto('/reviews/');
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'All the work, rated and reviewed',
+      }),
+    ).toBeVisible();
+
+    expect(consoleErrors).toEqual([]);
   });
 });

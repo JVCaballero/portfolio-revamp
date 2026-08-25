@@ -24,3 +24,16 @@ test('Feature shell full-page visual regression', async ({ page }) => {
     fullPage: true,
   });
 });
+
+test('Reviews shell full-page visual regression', async ({ page }) => {
+  // Reduced motion settles scroll-reveal to its resting, fully-visible
+  // final state (scroll-reveal.ts) and disables the cursor-preview plate
+  // entirely (cursor-preview.ts), so the snapshot captures deterministic
+  // layout rather than an arbitrary mid-reveal frame.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/reviews/');
+
+  await expect(page).toHaveScreenshot('reviews-shell.png', {
+    fullPage: true,
+  });
+});
