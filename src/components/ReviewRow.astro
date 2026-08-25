@@ -1,0 +1,74 @@
+---
+/*
+  Sprint 2B — one repeated Reviews row. Reproduces the immutable golden
+  master's review-row anatomy (reference/newsstand-original/source/
+  Newsstand - Full Site.dc.html, the `isWork` sc-if block, ~lines 256-314):
+  grayscale 4:3 image, title + star rating, metadata, summary, and a
+  vertically-ruled Verdict column, with an optional row-one
+  "Read the feature →" CTA line.
+
+  The source calls goFeature for every row; production replaces that
+  prototype callback with a real native anchor wrapping the whole row
+  (href="/feature/"), per the approved Sprint 2B interface-copy/semantics
+  contract — no per-row detail route exists.
+
+  data-preview is a plain interaction marker for cursor-preview.ts, not an
+  image-preview source: the immutable source's own data-preview attribute
+  only gates a static "Read the case file →" plate, it never drives an
+  image-following cursor.
+*/
+interface Props {
+  title: string;
+  rating: number;
+  meta: string;
+  summary: string;
+  verdictTitle: string;
+  imageSrc: string;
+  showReadFeature?: boolean;
+}
+
+const {
+  title,
+  rating,
+  meta,
+  summary,
+  verdictTitle,
+  imageSrc,
+  showReadFeature = false,
+} = Astro.props;
+
+const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+---
+
+<li class="review-row-item">
+  <a class="review-row" href="/feature/" data-reveal data-preview>
+    <div class="review-row__image">
+      <img
+        src={imageSrc}
+        width="600"
+        height="400"
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+    <div class="review-row__main">
+      <div class="review-row__title-line">
+        <h2 class="review-row__title">{title}</h2>
+        <span class="review-row__rating" aria-hidden="true">{stars}</span>
+        <span class="reviews-visually-hidden">{rating} out of 5 stars</span>
+      </div>
+      <p class="review-row__meta">{meta}</p>
+      <p class="review-row__summary">{summary}</p>
+    </div>
+    <div class="review-row__verdict">
+      <p class="review-row__verdict-label">Verdict</p>
+      <p class="review-row__verdict-title">{verdictTitle}</p>
+      {
+        showReadFeature && (
+          <p class="review-row__cta">Read the feature &rarr;</p>
+        )
+      }
+    </div>
+  </a>
+</li>

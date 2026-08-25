@@ -12,6 +12,7 @@ import { scrollReveal } from './scroll-reveal';
 import { parallax } from './parallax';
 import { countUp } from './count-up';
 import { magneticNavigation } from './magnetic-navigation';
+import { cursorPreview } from './cursor-preview';
 
 export interface InteractionContext {
   signal: AbortSignal;
@@ -24,14 +25,15 @@ export interface InteractionModule {
   init: (context: InteractionContext) => void | (() => void);
 }
 
-// Sprint 2A adds the first four Feature interaction modules. Modules are
-// explicitly imported and listed here as they are implemented — no
-// automatic discovery.
+// Sprint 2A adds the first four Feature interaction modules; Sprint 2B adds
+// Reviews' cursor-preview. Modules are explicitly imported and listed here
+// as they are implemented — no automatic discovery.
 const MODULES: InteractionModule[] = [
   scrollReveal,
   parallax,
   countUp,
   magneticNavigation,
+  cursorPreview,
 ];
 
 declare global {

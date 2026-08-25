@@ -90,3 +90,94 @@ letter-spacing:.2em;text-transform:uppercase;opacity:.85`).
 - **Final-QA reminder:** re-verify this exception still matches the golden
   master exactly (same opacity, same color, same background) during the
   post-Sprint-2 holistic design QA.
+
+## Sprint 2B — Reviews
+
+### 3. Reviews small Newsstand-red editorial text
+
+- **Date:** 2026-08-12.
+- **Route / component:** `/reviews/` — `.reviews-kicker` ("Reviews / p.18"),
+  `.review-row__rating` (the six star-rating strings), and
+  `.review-row__cta` (the row-one "Read the feature →" line),
+  `src/pages/reviews/index.astro`, `src/components/ReviewRow.astro`,
+  `src/styles/reviews.css`.
+- **Immutable source behavior/design:** Small bold Newsstand-red text
+  (`#e2231a`) directly on the paper background (`#efe9dc`) — the kicker at
+  ~11px bold Space Mono/0.24em tracking, the rating strings at 15px bold
+  Space Mono, and the row-one CTA at ~10px bold Space Mono/0.14em tracking
+  (`Newsstand - Full Site.dc.html`, ~lines 244, 259, 263).
+- **Production behavior/design:** Preserved exactly — same color pairing,
+  sizes, weights, and tracking for all three node types. No color, size,
+  typography, or hierarchy change was made.
+- **Reason for deviation:** The exact color pairing produces ~3.87:1
+  contrast at rest, which fails the WCAG 2.2 AA normal-text threshold
+  (4.5:1); it degrades further under a review row's own hover (~3.46:1) and
+  active (~3.21:1) background swap. Changing the red, background, source
+  typography, or hierarchy would visibly redesign the immutable Newsstand
+  golden master, which is outside this checkpoint's authorized scope.
+- **Classification:** accessibility.
+- **Status:** accepted permanent design-preservation exception, pending
+  final holistic QA.
+- **Approval source:** explicitly approved by the project owner during the
+  Sprint 2B architecture review (approved architecture map referenced at
+  the top of the Sprint 2B implementation task).
+- **Exact files/nodes affected:** `.reviews-kicker`,
+  `.review-row__rating`, and `.review-row__cta` in
+  `src/styles/reviews.css`; the corresponding nodes in
+  `src/pages/reviews/index.astro` and `src/components/ReviewRow.astro`.
+- **Testing:** `tests/accessibility.spec.ts` adds a narrowly-scoped,
+  Reviews-specific contrast expectation for exactly these three node types
+  (foreground `rgb(226, 35, 26)` on background `rgb(239, 233, 220)`,
+  ratio ≈3.87:1 at rest). `.review-row__rating` is `aria-hidden="true"` (its
+  accessible equivalent is a separate visually-hidden "N out of 5 stars"
+  node), so Axe's `color-contrast` rule never reports it directly — its
+  color identity is still verified from real computed style, since sighted
+  users see it regardless of aria-hidden. It does not modify, broaden, or
+  otherwise touch the existing Cover or Feature exceptions, and does not
+  disable Axe's `color-contrast` rule page-wide — any other Reviews
+  contrast violation still fails the test.
+- **Final-QA reminder:** re-verify this exception still matches the golden
+  master exactly (no drift in color/size/weight) during the post-Sprint-2
+  holistic design QA.
+
+### 4. Reviews muted metadata and Verdict labels, hover/active row states only
+
+- **Date:** 2026-08-12.
+- **Route / component:** `/reviews/` — `.review-row__meta` (the six review
+  metadata lines) and `.review-row__verdict-label` (the six small "Verdict"
+  labels), `src/components/ReviewRow.astro`, `src/styles/reviews.css`,
+  scoped to the parent `.review-row`'s `:hover` and `:active` states only.
+- **Immutable source behavior/design:** Muted metadata color (`#6f6656`) on
+  the paper background (`#efe9dc`), which itself swaps to a slightly darker
+  tone while the row is hovered (`#e5ddcc`) or pressed (`#ded5c2`)
+  (`Newsstand - Full Site.dc.html`, ~lines 256, 260, 263).
+- **Production behavior/design:** Preserved exactly — same muted-metadata
+  color, same row hover/active background values, same typography.
+- **Reason for deviation:** Resting contrast (~4.68:1) passes WCAG 2.2 AA
+  and is not part of this exception. Only the row's own hover (~4.19:1) and
+  active (~3.88:1) background swap drags these two node types under the
+  4.5:1 AA threshold. Changing the muted-metadata color or the row
+  hover/active background would visibly redesign an accepted golden-master
+  interaction, which is outside this checkpoint's authorized scope.
+- **Classification:** accessibility.
+- **Status:** accepted permanent design-preservation exception, pending
+  final holistic QA. Route scoped, selector scoped, and state scoped — the
+  resting state passes and is not allowlisted.
+- **Approval source:** explicitly approved by the project owner during the
+  Sprint 2B architecture review (approved architecture map referenced at
+  the top of the Sprint 2B implementation task).
+- **Exact files/nodes affected:** `.review-row__meta` and
+  `.review-row__verdict-label` in `src/styles/reviews.css`, only while an
+  ancestor `.review-row` is `:hover`/`:active`; the corresponding nodes in
+  `src/components/ReviewRow.astro`.
+- **Testing:** `tests/accessibility.spec.ts` adds deterministic
+  hover-state and active-state contrast checks for exactly these two node
+  types (foreground `rgb(111, 102, 86)`), verified against the row's
+  computed hover/active background — a resting-state-only Axe scan cannot
+  prove this exception, since the resting state passes. It does not modify,
+  broaden, or otherwise touch the existing Cover, Feature, or Reviews
+  exception #3 above, and does not disable Axe's `color-contrast` rule
+  page-wide, nor does it broaden this to muted metadata site-wide.
+- **Final-QA reminder:** re-verify this exception still matches the golden
+  master exactly (no drift in color/background) during the post-Sprint-2
+  holistic design QA.

@@ -346,6 +346,198 @@ test('Feature route has no automated WCAG A/AA violations beyond the documented 
   });
 });
 
+/*
+  Sprint 2B — Reviews' own, separately-approved contrast exceptions. Both
+  are NARROWLY scoped, exact-node additions kept independent from the
+  Cover and Feature exceptions above: neither adds to, modifies, or
+  otherwise touches EXPECTED_CONTRAST_EXCEPTION_TARGETS or the Feature
+  target set, and both target a different route entirely. See
+  DESIGN_DEVIATIONS.md, "Sprint 2B — Reviews" for the full record of both.
+
+  1. Reviews small Newsstand-red editorial text (`.reviews-kicker`,
+     `.review-row__rating`, `.review-row__cta`) reuses the exact same
+     golden-master red-on-paper pairing as the Cover/Feature exception
+     targets (`#e2231a` on `#efe9dc`, ~3.86:1) at rest. `.review-row__rating`
+     is `aria-hidden="true"` (its accessible equivalent is a separate
+     visually-hidden "N out of 5 stars" node), so Axe's `color-contrast`
+     rule — which only ever scans nodes exposed to the accessibility tree —
+     never reports it; its color identity is still verified directly below,
+     since sighted users see it regardless of aria-hidden.
+  2. Reviews muted metadata/Verdict labels (`.review-row__meta`,
+     `.review-row__verdict-label`) pass at rest (~4.68:1) — the resting
+     state is deliberately NOT allowlisted — but fail once an ancestor
+     `.review-row` is hovered (~4.19:1) or pressed (~3.88:1), since the row
+     background itself swaps. Axe's own scan only ever samples the resting
+     DOM, so this exception is verified with deterministic hover/active
+     state checks below rather than relying on Axe to catch it.
+*/
+const REVIEWS_RED_TEXT_SELECTORS = [
+  '.reviews-kicker',
+  '.review-row__cta',
+].sort();
+const REVIEWS_RED_TEXT_SELECTORS_INCLUDING_ARIA_HIDDEN = [
+  ...REVIEWS_RED_TEXT_SELECTORS,
+  '.review-row__rating',
+];
+
+test('Reviews route has no automated WCAG A/AA violations beyond the documented golden-master contrast exceptions (Cover/Feature exceptions untouched)', async ({
+  page,
+}, testInfo) => {
+  // Reviews' scroll-reveal module hides [data-reveal] rows until they
+  // scroll into view or reduced motion is detected — same rationale as the
+  // Feature scan above: settle to the resting, fully-visible state first so
+  // Axe never pixel-samples a mid-fade frame.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/reviews/');
+
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+
+  const colorContrastViolation = results.violations.find(
+    (violation) => violation.id === 'color-contrast',
+  );
+  const otherViolations = results.violations.filter(
+    (violation) => violation.id !== 'color-contrast',
+  );
+
+  // Every non-color-contrast violation still fails this test — headings,
+  // landmarks, list, and link semantics are all covered by Axe's own rule
+  // set, not hand-rolled here.
+  expect(otherViolations).toEqual([]);
+
+  const nodes = colorContrastViolation?.nodes ?? [];
+  const targets = nodes.map((node) => node.target.join(' ')).sort();
+
+  // Exactly the two Axe-visible Reviews red-text node types at rest — no
+  // more, no fewer, no different ones. `.review-row__rating` is aria-hidden
+  // and never appears in an Axe scan (see file comment above); the
+  // muted-metadata/Verdict-label exception below is hover/active-only and
+  // therefore never appears in this resting-state scan either.
+  expect(targets).toEqual(REVIEWS_RED_TEXT_SELECTORS);
+
+  // Color identity is verified for all three red-text node types,
+  // including the aria-hidden rating — sighted users see it regardless of
+  // whether Axe's accessibility-tree-scoped scan reports it.
+  for (const selector of REVIEWS_RED_TEXT_SELECTORS_INCLUDING_ARIA_HIDDEN) {
+    const foreground = await getComputedForeground(page, selector);
+    const background = await getEffectiveBackground(page, selector);
+    expect(foreground).toEqual(EXPECTED_FOREGROUND_RGB);
+    expect(background).toEqual(EXPECTED_BACKGROUND_RGB);
+    const ratio = contrastRatio(foreground, background);
+    expect(ratio).toBeGreaterThan(EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE);
+    expect(ratio).toBeLessThan(EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE);
+  }
+
+  testInfo.annotations.push({
+    type: 'known-issue',
+    description:
+      `Sprint 2B approved Reviews contrast exception #1: red editorial ` +
+      `text (rgb(226, 35, 26) on rgb(239, 233, 220), ~${EXPECTED_CONTRAST_RATIO}:1) ` +
+      `on ${REVIEWS_RED_TEXT_SELECTORS_INCLUDING_ARIA_HIDDEN.join(', ')} ` +
+      `(the rating is aria-hidden and not itself flagged by Axe). Needs 4.5:1. See ` +
+      `DESIGN_DEVIATIONS.md for the approval record and exception #2 ` +
+      `(muted metadata/Verdict labels, hover/active row states only, ` +
+      `verified separately below). The Cover and Feature exceptions above ` +
+      `remain separate, untouched target sets.`,
+  });
+});
+
+test('Reviews muted metadata and Verdict labels pass contrast at rest, and only their approved hover/active exception applies', async ({
+  page,
+}) => {
+  await page.goto('/reviews/');
+
+  const firstRow = page.locator('a.review-row').first();
+  const meta = firstRow.locator('.review-row__meta');
+  const verdictLabel = firstRow.locator('.review-row__verdict-label');
+
+  async function contrastFor(locator: ReturnType<Page['locator']>) {
+    const foreground = await locator.evaluate(
+      (el) => getComputedStyle(el).color,
+    );
+    const background = await locator.evaluate((el) => {
+      let node: Element | null = el;
+      while (node) {
+        const bg = getComputedStyle(node).backgroundColor;
+        const match = bg.match(/rgba?\(([^)]+)\)/);
+        if (match) {
+          const parts = match[1].split(',').map((p) => parseFloat(p.trim()));
+          if ((parts[3] ?? 1) > 0) return bg;
+        }
+        node = node.parentElement;
+      }
+      throw new Error('no opaque ancestor background found');
+    });
+    const [fr, fg, fb] = parseRgb(foreground);
+    const [br, bg, bb] = parseRgb(background);
+    return {
+      ratio: contrastRatio([fr, fg, fb], [br, bg, bb]),
+      foreground: [fr, fg, fb] as [number, number, number],
+      background: [br, bg, bb] as [number, number, number],
+    };
+  }
+
+  const EXPECTED_MUTED_RGB: [number, number, number] = [111, 102, 86]; // #6f6656
+  const AA_NORMAL_TEXT_THRESHOLD = 4.5;
+
+  const metaRest = await contrastFor(meta);
+  expect(metaRest.foreground).toEqual(EXPECTED_MUTED_RGB);
+  expect(metaRest.ratio).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_THRESHOLD);
+
+  const verdictRest = await contrastFor(verdictLabel);
+  expect(verdictRest.foreground).toEqual(EXPECTED_MUTED_RGB);
+  expect(verdictRest.ratio).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_THRESHOLD);
+
+  await firstRow.hover();
+  const metaHover = await contrastFor(meta);
+  expect(metaHover.background).toEqual([229, 221, 204]); // #e5ddcc
+  expect(metaHover.ratio).toBeLessThan(AA_NORMAL_TEXT_THRESHOLD);
+  expect(metaHover.ratio).toBeGreaterThan(4.0);
+
+  const verdictHover = await contrastFor(verdictLabel);
+  expect(verdictHover.background).toEqual([229, 221, 204]);
+  expect(verdictHover.ratio).toBeLessThan(AA_NORMAL_TEXT_THRESHOLD);
+
+  // Active state: hold the pointer down on the row (still hovering from
+  // above) to trigger :active, then release — mouse.up() runs even if an
+  // assertion above throws is not guaranteed, so this is wrapped to always
+  // clean up the pressed state before the test ends.
+  const box = await firstRow.boundingBox();
+  if (!box) throw new Error('review row bounding box unavailable');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  try {
+    // The row's background/padding transition over .34s (normal motion);
+    // sampling immediately after mousedown can catch an interpolated
+    // mid-transition color instead of the settled :active value.
+    await page.waitForTimeout(400);
+    const EXPECTED_ACTIVE_RATIO = 3.88;
+
+    const metaActive = await contrastFor(meta);
+    expect(metaActive.background).toEqual([222, 213, 194]); // #ded5c2
+    expect(metaActive.ratio).toBeLessThan(AA_NORMAL_TEXT_THRESHOLD);
+    expect(metaActive.ratio).toBeGreaterThan(
+      EXPECTED_ACTIVE_RATIO - CONTRAST_TOLERANCE,
+    );
+    expect(metaActive.ratio).toBeLessThan(
+      EXPECTED_ACTIVE_RATIO + CONTRAST_TOLERANCE,
+    );
+
+    const verdictActive = await contrastFor(verdictLabel);
+    expect(verdictActive.background).toEqual([222, 213, 194]);
+    expect(verdictActive.ratio).toBeLessThan(AA_NORMAL_TEXT_THRESHOLD);
+    expect(verdictActive.ratio).toBeGreaterThan(
+      EXPECTED_ACTIVE_RATIO - CONTRAST_TOLERANCE,
+    );
+    expect(verdictActive.ratio).toBeLessThan(
+      EXPECTED_ACTIVE_RATIO + CONTRAST_TOLERANCE,
+    );
+  } finally {
+    await page.mouse.up();
+  }
+});
+
 test('Feature exposes exactly one h1, real section headings in order, and figure/figcaption + list semantics for its editorial content', async ({
   page,
 }) => {
@@ -373,4 +565,32 @@ test('Feature exposes exactly one h1, real section headings in order, and figure
   await expect(page.locator('dl.feature-spec__list')).toBeVisible();
   await expect(page.locator('ol.feature-build')).toBeVisible();
   await expect(page.getByRole('complementary')).toBeVisible();
+});
+
+test('Reviews exposes exactly one h1, six h2 review titles, a semantic repeated-content list, and six keyboard-reachable links in logical focus order', async ({
+  page,
+}) => {
+  await page.goto('/reviews/');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: 'All the work, rated and reviewed',
+    }),
+  ).toBeVisible();
+
+  const h2s = await page.getByRole('heading', { level: 2 }).allTextContents();
+  expect(h2s).toHaveLength(6);
+
+  await expect(
+    page.getByRole('list').filter({ hasText: 'Support Autopilot' }),
+  ).toBeVisible();
+  await expect(page.locator('li.review-row-item')).toHaveCount(6);
+
+  const reviewLinks = page.locator('a.review-row');
+  await expect(reviewLinks).toHaveCount(6);
+  for (const link of await reviewLinks.all()) {
+    await expect(link).toHaveAttribute('href', '/feature/');
+  }
 });

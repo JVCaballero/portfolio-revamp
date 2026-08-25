@@ -1,13 +1,150 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+/*
+  Sprint 2B Reviews shell — static reproduction of the immutable golden
+  master's Reviews ("all the work, rated and reviewed") page (reference/
+  newsstand-original/source/Newsstand - Full Site.dc.html, the `isWork`
+  sc-if block, ~lines 242-321).
 
-const title = 'Reviews | CABALLERO!';
-const description = 'Reviews route shell for the CABALLERO! portfolio revamp.';
+  Content classification (Sprint 2B content-shell rule — see
+  DESIGN_DEVIATIONS.md and AGENTS.md):
+  - CLASS 1, structural/interface copy ("Reviews / p.18", the four taxonomy
+    labels, "Verdict", "Read the feature →") is production-final visual
+    language.
+  - CLASS 2, everything else below (headline, deck, all six project
+    records — names, metadata, summaries, verdicts, ratings — and the
+    handwritten closing note) is source-faithful reference/demo copy
+    carried over verbatim to preserve composition and density. None of it
+    is verified production content. It arrives for real in a later content
+    checkpoint. The Lorem ipsum fragments inside each summary are literal
+    golden-master placeholder text, not a Sprint 2B shortcut.
+
+  The six remote picsum.photos placeholder images stay remote and
+  temporary (see AGENTS.md asset policy) — not copied into the repo, not
+  moved to src/assets or public, not run through Astro's Image component.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ReviewRow from '../../components/ReviewRow.astro';
+import '../../styles/reviews.css';
+
+const title = 'All the work, rated and reviewed | CABALLERO!';
+const description =
+  'Reviews / p.18 — six things built end to end, rated and reviewed. Demo content pending final Sprint 2 review.';
+
+interface ReviewRecord {
+  title: string;
+  rating: number;
+  meta: string;
+  summary: string;
+  verdictTitle: string;
+  imageSeed: string;
+  showReadFeature?: boolean;
+}
+
+const reviews: ReviewRecord[] = [
+  {
+    title: 'Support Autopilot',
+    rating: 5,
+    meta: '2026 · n8n + LLM · solo build · 7 weeks',
+    summary:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Routes first, model second, human presses send — sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, deliberately boring, which is why it survived the year.',
+    verdictTitle: "The one I'd show first",
+    imageSeed: 'caballero-rev1',
+    showReadFeature: true,
+  },
+  {
+    title: 'Clinic Booking, Offline',
+    rating: 4,
+    meta: '2025 · React Native · lead engineer · 4 months',
+    summary:
+      'Ut enim ad minim veniam, quis nostrud exercitation ullamco. Everything writes locally and reconciles later; laboris nisi ut aliquip ex ea commodo consequat, so the reception desk never waits on a spinner.',
+    verdictTitle: 'Docked half a star for the sync bug of March',
+    imageSeed: 'caballero-rev2',
+  },
+  {
+    title: 'Marketplace, Zero to Live',
+    rating: 4,
+    meta: '2024 · Next.js + Postgres · sole engineer · 11 weeks',
+    summary:
+      'Duis aute irure dolor in reprehenderit — payments, listings, moderation and a deploy pipeline they could run themselves, in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    verdictTitle: 'Fast, honest, slightly over-engineered',
+    imageSeed: 'caballero-rev3',
+  },
+  {
+    title: "A Bot That Says “I Don't Know”",
+    rating: 4,
+    meta: '2024 · RAG + guardrails · 6 weeks',
+    summary:
+      "Excepteur sint occaecat cupidatat non proident. The interesting artefact isn't the bot, it's the 200-row evaluation sheet behind it — sunt in culpa qui officia deserunt mollit anim.",
+    verdictTitle: 'Refusal is a feature',
+    imageSeed: 'caballero-rev4',
+  },
+  {
+    title: 'Ops Dashboard Rebuild',
+    rating: 3,
+    meta: '2023 · React + charts · team of three',
+    summary:
+      'Nine spreadsheets replaced by one screen. Shipped on time; three stars because we designed for the manager who asked, not the eight people who used it daily — id est laborum.',
+    verdictTitle: 'A lesson, kept on the shelf on purpose',
+    imageSeed: 'caballero-rev5',
+  },
+  {
+    title: 'Bandstand',
+    rating: 4,
+    meta: 'Ongoing · side project · scores & rehearsal calls',
+    summary:
+      'Sheet music, parts and call times for forty musicians, built because I was the one maintaining the group chat. Real users, real complaints, no roadmap — quis nostrum exercitationem.',
+    verdictTitle: 'The group chat is, of course, still going',
+    imageSeed: 'caballero-rev6',
+  },
+];
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="container">
-    <h1>Reviews</h1>
-    <p data-route="reviews">Reviews content is coming in a later sprint.</p>
+  <div class="reviews-page container">
+    <p class="reviews-kicker">Reviews / p.18</p>
+    <h1 class="reviews-headline">All the work, rated and reviewed</h1>
+    <p class="reviews-deck">
+      Six things I built end to end. Star ratings are mine, and I am a harsh
+      critic of my own past decisions.
+    </p>
+
+    <div class="reviews-taxonomy">
+      <span class="reviews-taxonomy__label reviews-taxonomy__label--active"
+        >All</span
+      >
+      <span class="reviews-taxonomy__label reviews-taxonomy__label--outline"
+        >AI &amp; automation</span
+      >
+      <span class="reviews-taxonomy__label reviews-taxonomy__label--outline"
+        >Web</span
+      >
+      <span class="reviews-taxonomy__label reviews-taxonomy__label--outline"
+        >Mobile</span
+      >
+    </div>
+
+    <ul class="reviews-list">
+      {
+        reviews.map((review) => (
+          <ReviewRow
+            title={review.title}
+            rating={review.rating}
+            meta={review.meta}
+            summary={review.summary}
+            verdictTitle={review.verdictTitle}
+            imageSrc={`https://picsum.photos/seed/${review.imageSeed}/600/400`}
+            showReadFeature={review.showReadFeature}
+          />
+        ))
+      }
+    </ul>
+
+    <p class="reviews-closing-note">
+      every row opens the same case-file layout — click any of them.
+    </p>
+  </div>
+
+  <div class="reviews-cursor-preview" data-cursor-preview>
+    Read the case file &rarr;
   </div>
 </BaseLayout>

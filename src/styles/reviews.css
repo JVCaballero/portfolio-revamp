@@ -1,0 +1,351 @@
+/*
+  Sprint 2B Reviews shell. Scoped beneath the Reviews-owned .reviews-page
+  root. Every rule is derived from the immutable golden master
+  (reference/newsstand-original/source/Newsstand - Full Site.dc.html, the
+  `isWork` sc-if block, ~lines 242-321) and mapped onto accepted tokens only
+  where both the value AND the semantic role already match (see tokens.css).
+  One-off source values (headline clamp, image/gap clamps, taxonomy-chip
+  padding, handwritten-note rotation) stay literal at the point of use
+  rather than being forced through a misleading alias.
+
+  No Reviews-specific width breakpoints exist here on purpose: the source
+  has none, and the row layout adapts entirely through intrinsic flex/wrap
+  (see DESIGN_DEVIATIONS.md — no entry needed, this is source-faithful, not
+  a deviation).
+*/
+
+.reviews-page {
+  animation: reviews-fade-in var(--duration-lift) var(--ease-editorial) both;
+  padding-block: var(--space-fluid-sm) var(--space-fluid-md);
+}
+
+/* ---------------------------------------------------------------------
+   Folio/kicker, headline, deck, taxonomy row.
+   --------------------------------------------------------------------- */
+
+/* Approved Sprint 2B design-preservation exception #1a (kicker): this exact
+   node (source-faithful red-on-paper kicker) fails WCAG AA normal-text
+   contrast (~3.87:1) at rest. See DESIGN_DEVIATIONS.md and
+   tests/accessibility.spec.ts. */
+.reviews-kicker {
+  margin: 0 0 var(--space-8);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.reviews-headline {
+  margin: 0 0 var(--space-12);
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(34px, 7.4vw, 82px);
+  line-height: var(--leading-display-page);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.reviews-deck {
+  margin: 0 0 var(--space-20);
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: var(--font-size-intro-fluid);
+  line-height: var(--leading-body);
+  max-width: var(--measure-60);
+}
+
+.reviews-taxonomy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin: 0 0 var(--space-20);
+  padding: 0;
+  list-style: none;
+}
+
+.reviews-taxonomy__label {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  /* Source-faithful visual affordance only — these remain non-interactive
+     spans (no role, no tabindex, no click handler, no filtering state). */
+  cursor: pointer;
+  transition: transform var(--duration-hover) var(--ease-standard);
+}
+
+.reviews-taxonomy__label--active {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  padding: 7px 12px;
+}
+
+.reviews-taxonomy__label--active:hover {
+  transform: translateY(-2px);
+}
+
+.reviews-taxonomy__label--active:active {
+  transform: translateY(2px) scale(0.96);
+}
+
+.reviews-taxonomy__label--outline {
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding: 5px 11px;
+  transition:
+    background var(--duration-hover) var(--ease-standard),
+    transform var(--duration-hover) var(--ease-standard);
+}
+
+.reviews-taxonomy__label--outline:hover {
+  background: var(--color-highlight);
+  transform: translateY(-2px);
+}
+
+.reviews-taxonomy__label--outline:active {
+  background: var(--color-highlight-active);
+  transform: translateY(2px) scale(0.96);
+}
+
+/* ---------------------------------------------------------------------
+   Review list.
+   --------------------------------------------------------------------- */
+
+.reviews-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.review-row-item {
+  margin: 0;
+}
+
+.review-row {
+  display: flex;
+  gap: clamp(14px, 2.4vw, 22px);
+  flex-wrap: wrap;
+  padding: var(--space-18) var(--space-10);
+  color: inherit;
+  border-bottom: var(--border-width-hairline) var(--border-style-solid)
+    var(--color-rule-soft);
+  transition:
+    background var(--duration-transform) var(--ease-standard),
+    padding-left var(--duration-transform) var(--ease-editorial);
+}
+
+.review-row:hover {
+  color: inherit;
+  background: var(--color-paper-hover);
+  padding-left: var(--space-20);
+}
+
+.review-row:active {
+  background: var(--color-paper-active);
+  padding-left: 26px;
+}
+
+.review-row-item:last-child .review-row {
+  border-bottom: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.review-row__image {
+  flex: 0 0 clamp(130px, 20vw, 210px);
+  aspect-ratio: 4 / 3;
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  overflow: hidden;
+}
+
+.review-row__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(1) contrast(1.05);
+}
+
+.review-row__main {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.review-row__title-line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-12);
+  flex-wrap: wrap;
+}
+
+.review-row__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-heading-md);
+  line-height: var(--leading-normal);
+  text-transform: uppercase;
+}
+
+/* Approved Sprint 2B design-preservation exception #1b (star rating): same
+   source-faithful red pairing as the kicker, at 15px bold. See
+   DESIGN_DEVIATIONS.md. */
+.review-row__rating {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-15);
+  color: var(--color-accent);
+}
+
+/* Approved Sprint 2B design-preservation exception #2 (muted metadata):
+   resting contrast passes; only the hover/active parent-row background
+   swap below drags it under AA. See DESIGN_DEVIATIONS.md. */
+.review-row__meta {
+  margin: 5px 0 var(--space-8);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+  font-size: var(--font-size-mono-fluid-tag);
+  letter-spacing: var(--tracking-metadata);
+  text-transform: uppercase;
+  color: var(--color-muted-metadata);
+}
+
+.review-row__summary {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-dek-fluid);
+  line-height: var(--leading-body-relaxed);
+  max-width: var(--measure-60);
+}
+
+.review-row__verdict {
+  flex: 1 1 170px;
+  min-width: 0;
+  border-left: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding-left: var(--space-14);
+}
+
+/* Approved Sprint 2B design-preservation exception #2 (Verdict label):
+   same muted-metadata hover/active contrast gap as .review-row__meta. See
+   DESIGN_DEVIATIONS.md. */
+.review-row__verdict-label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-9-5);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-muted-metadata);
+}
+
+.review-row__verdict-title {
+  margin: 5px 0 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-heading-xs);
+  line-height: var(--leading-heading-loose);
+  text-transform: uppercase;
+}
+
+/* Approved Sprint 2B design-preservation exception #1c (row-one CTA): same
+   source-faithful red pairing as the kicker, at 10px bold. See
+   DESIGN_DEVIATIONS.md. */
+.review-row__cta {
+  margin: var(--space-10) 0 0;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-tag);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------------
+   Handwritten closing annotation.
+   --------------------------------------------------------------------- */
+
+.reviews-closing-note {
+  /* Explicit all-sides margin, not just margin-top: the project doesn't
+     reset UA paragraph margins, so a <p> here would otherwise keep its
+     default bottom margin and add unauthorized space before the shared
+     bottom chrome (source is a plain div with margin-top:16px only). */
+  margin: var(--space-16) 0 0;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-normal);
+  color: var(--color-handwriting);
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: var(--leading-copy-compact);
+  transform: rotate(-0.6deg);
+}
+
+/* ---------------------------------------------------------------------
+   Visually-hidden accessible text (star-rating equivalent). Reviews-local
+   rather than a new global utility — no other route needs this yet.
+   --------------------------------------------------------------------- */
+
+.reviews-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------------
+   Cursor-preview plate (cursor-preview.ts). Reproduces the immutable
+   source's fixed-position plate (Newsstand - Full Site.dc.html, ~line 759).
+   --------------------------------------------------------------------- */
+
+.reviews-cursor-preview {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: var(--z-cursor-preview);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(14px, 14px) rotate(-4deg);
+  transition: opacity var(--duration-sm) var(--ease-standard);
+  background: var(--color-highlight);
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding: 6px 9px;
+  box-shadow: var(--shadow-hard-md);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-9-5);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.reviews-cursor-preview--visible {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------
+   Reviews-local animation.
+   --------------------------------------------------------------------- */
+
+@keyframes reviews-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
