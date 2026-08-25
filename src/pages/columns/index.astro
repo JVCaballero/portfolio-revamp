@@ -1,13 +1,205 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+/*
+  Sprint 2D Columns Index shell — static reproduction of the immutable
+  golden master's Columns listing view (reference/newsstand-original/
+  source/Newsstand - Full Site.dc.html, the `isColumns` sc-if block's
+  `listingColumns` branch, ~lines 474-503). The sibling `readingColumn`
+  branch (~lines 401-472, the article-detail template) is NOT reproduced
+  here — that is the immutable detail template Sprint 2D explicitly does
+  not build; see src/pages/columns/[slug]/index.astro and
+  DESIGN_DEVIATIONS.md, "Sprint 2D — Columns" entry 3.
 
-const title = 'Columns | CABALLERO!';
-const description = 'Columns route shell for the CABALLERO! portfolio revamp.';
+  Content classification (Sprint 2 content-shell rule — see
+  DESIGN_DEVIATIONS.md and AGENTS.md):
+  - CLASS 1, structural/interface copy ("Columns / p.26", "More columns",
+    "LATEST · ESSAY", the per-item CTA/kicker patterns) is production-final
+    visual language.
+  - CLASS 2, everything else below (headline, the lead essay and all four
+    secondary column records — kickers, titles, excerpts, dates, read
+    times — and the handwritten closing note) is source-faithful
+    reference/demo copy carried over verbatim to preserve composition and
+    density. None of it is verified production content — it will be
+    replaced with real copy in a later content checkpoint. The Lorem ipsum
+    fragment inside the lead excerpt is literal golden-master placeholder
+    text, not a Sprint 2D shortcut.
+
+  The one remote picsum.photos placeholder image (lead only — the source
+  has no secondary-row images) stays remote and temporary (see AGENTS.md
+  asset policy) — not copied into the repo, not moved to src/assets or
+  public, not run through Astro's Image component.
+
+  data-cue is a plain interaction marker for cursor-preview.ts (extended in
+  this sprint to read it), not a navigation mechanism — the immutable
+  source's own data-cue attribute only ever gates a static-per-row plate
+  label, it never drives page navigation itself. Real navigation is via the
+  native <a href="/columns/<slug>/"> wrapping each card/row.
+
+  Each secondary row's data-reveal lives on its <li> wrapper, not on the
+  interactive <a> itself, even though the immutable source markup puts
+  reveal state and hover transform/opacity on that same row node (see
+  DESIGN_DEVIATIONS.md entry 10, approved). The immutable prototype puts
+  reveal state and hover transform/opacity on the same row node, but its
+  generated pseudo-style runtime promotes hover declarations with
+  !important. Production avoids recreating that plumbing: the
+  non-interactive li owns reveal state while the child anchor owns
+  hover/active transform and opacity. This preserves the settled visual
+  and interaction behavior without specificity hacks. Reviews and
+  Interview never hit this because their own [data-reveal] rows use
+  background-color hover effects instead.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/columns.css';
+
+const title = 'Words, rants and gadget reviews | CABALLERO!';
+const description =
+  'Columns / p.26 — words, rants and gadget reviews. Demo content pending final Sprint 2 review.';
+
+interface LeadColumn {
+  slug: string;
+  badge: string;
+  title: string;
+  excerpt: string;
+  dateIso: string;
+  dateLabel: string;
+  readLabel: string;
+  cue: string;
+}
+
+interface ColumnRow {
+  slug: string;
+  kicker: string;
+  title: string;
+  excerpt: string;
+  dateIso: string;
+  dateLabel: string;
+  readLabel: string;
+  cue: string;
+}
+
+const lead: LeadColumn = {
+  slug: 'your-automation-doesnt-need-a-model',
+  badge: 'LATEST · ESSAY',
+  title: "Your automation doesn't need a model",
+  excerpt:
+    "Lorem ipsum dolor sit amet, four of the six things your team does every day are lookups wearing a costume. Consectetur adipiscing elit — here's how I find them before anybody writes a prompt, and why the client who hears this first ends up paying for less software and getting more.",
+  dateIso: '2026-07',
+  dateLabel: 'July 2026',
+  readLabel: '6 min read',
+  cue: 'Read the essay →',
+};
+
+const rows: ColumnRow[] = [
+  {
+    slug: 'six-months-with-a-mechanical-keyboard-i-regret',
+    kicker: 'Gadget review',
+    title: 'Six months with a mechanical keyboard I regret',
+    excerpt: 'Beautiful, loud, and a genuine liability on client calls.',
+    dateIso: '2026-06',
+    dateLabel: 'June 2026',
+    readLabel: '4 min',
+    cue: 'Read the review →',
+  },
+  {
+    slug: 'what-conducting-taught-me-about-standups',
+    kicker: 'Column',
+    title: 'What conducting taught me about standups',
+    excerpt: 'Nobody needs the whole score. Everybody needs the downbeat.',
+    dateIso: '2026-05',
+    dateLabel: 'May 2026',
+    readLabel: '5 min',
+    cue: 'Read the column →',
+  },
+  {
+    slug: 'gacha-ui-is-better-than-your-products-ui',
+    kicker: 'Rant',
+    title: "Gacha UI is better than your product's UI",
+    excerpt: 'Ruthlessly paced, obsessively measured, and shameless about it.',
+    dateIso: '2026-04',
+    dateLabel: 'April 2026',
+    readLabel: '7 min',
+    cue: 'Read the rant →',
+  },
+  {
+    slug: 'the-eval-sheet-is-the-deliverable',
+    kicker: 'Notebook',
+    title: 'The eval sheet is the deliverable',
+    excerpt: 'Two hundred rows that outlived three prompt rewrites.',
+    dateIso: '2026-03',
+    dateLabel: 'March 2026',
+    readLabel: '5 min',
+    cue: 'Read the notebook →',
+  },
+];
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="container">
-    <h1>Columns</h1>
-    <p data-route="columns">Columns content is coming in a later sprint.</p>
+  <div class="columns-page container">
+    <p class="columns-kicker">Columns / p.26</p>
+    <h1 class="columns-headline">Words, rants and gadget reviews</h1>
+
+    <div class="columns-split">
+      <article class="columns-lead">
+        <a
+          class="columns-lead__link"
+          href={`/columns/${lead.slug}/`}
+          data-cue={lead.cue}
+        >
+          <div class="columns-lead__image" data-reveal>
+            <img
+              src="https://picsum.photos/seed/caballero-column/1200/675"
+              width="1200"
+              height="675"
+              alt=""
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+          <span class="columns-lead__badge">{lead.badge}</span>
+          <h2 class="columns-lead__title">{lead.title}</h2>
+          <p class="columns-lead__excerpt">{lead.excerpt}</p>
+          <div class="columns-lead__footer">
+            <span class="columns-lead__meta">
+              <time datetime={lead.dateIso}>{lead.dateLabel}</time> &middot; {
+                lead.readLabel
+              }
+            </span>
+            <span class="columns-lead__cta">{lead.cue}</span>
+          </div>
+        </a>
+      </article>
+
+      <div class="columns-more">
+        <h2 class="columns-more__heading">More columns</h2>
+        <ul class="columns-more__list">
+          {
+            rows.map((row) => (
+              <li class="columns-more__item" data-reveal>
+                <a
+                  class="columns-more__row"
+                  href={`/columns/${row.slug}/`}
+                  data-cue={row.cue}
+                >
+                  <span class="columns-more__kicker">{row.kicker}</span>
+                  <h3 class="columns-more__title">{row.title}</h3>
+                  <p class="columns-more__excerpt">{row.excerpt}</p>
+                  <p class="columns-more__date">
+                    <time datetime={row.dateIso}>{row.dateLabel}</time> &middot;{' '}
+                    {row.readLabel}
+                  </p>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+
+        <p class="columns-hand-note">
+          every headline here opens — the essay is the one worth your five
+          minutes.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="columns-cursor-preview" data-cursor-preview aria-hidden="true">
   </div>
 </BaseLayout>

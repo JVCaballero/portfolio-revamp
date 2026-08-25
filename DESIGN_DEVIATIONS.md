@@ -281,3 +281,202 @@ Site.dc.html`, the three résumé/tour timeline rows, ~lines 368-370).
 - **Final-QA reminder:** re-verify this exception still matches the golden
   master exactly (no drift in color/background) during the post-Sprint-2
   holistic design QA.
+
+## Sprint 2D — Columns
+
+### 7. Columns small Newsstand-red editorial text
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/columns/` — `.columns-kicker` ("Columns /
+  p.26"), `.columns-lead__cta` (the lead "Read the essay →" line), and
+  `.columns-more__kicker` (the four sidebar category kickers — "Gadget
+  review", "Column", "Rant", "Notebook"), `src/pages/columns/index.astro`,
+  `src/styles/columns.css`.
+- **Immutable source behavior/design:** Small bold Newsstand-red text
+  (`#e2231a`) directly on the paper background (`#efe9dc`) — the kicker at
+  ~11px bold Space Mono/0.24em tracking, the lead CTA at ~10px bold Space
+  Mono/0.16em tracking, and the sidebar category kickers at ~9.5px bold
+  Space Mono/0.16em tracking (`Newsstand - Full Site.dc.html`, ~lines 476,
+  487, 462/493-496).
+- **Production behavior/design:** Preserved exactly — same color pairing,
+  sizes, weights, and tracking for all three node types. No color, size,
+  typography, or hierarchy change was made.
+- **Reason for deviation:** The exact color pairing produces ~3.87:1
+  contrast at rest, which fails the WCAG 2.2 AA normal-text threshold
+  (4.5:1). Changing the red, the paper background, or the affected node's
+  size/weight would visibly redesign the immutable Newsstand golden
+  master, which is outside this checkpoint's authorized scope. This does
+  not broaden the equivalent Sprint 2A/2B/2C exceptions above — it is a
+  separate, Columns-scoped selector set on a separate route.
+- **Classification:** accessibility.
+- **Status:** accepted permanent design-preservation exception, pending
+  final holistic QA.
+- **Approval source:** explicitly approved by the project owner during the
+  Sprint 2D architecture review (approved architecture map referenced at
+  the top of the Sprint 2D implementation task).
+- **Exact files/nodes affected:** `.columns-kicker`, `.columns-lead__cta`,
+  and `.columns-more__kicker` in `src/styles/columns.css`; the
+  corresponding nodes in `src/pages/columns/index.astro`.
+- **Testing:** `tests/accessibility.spec.ts` adds a narrowly-scoped,
+  Columns-specific contrast expectation for exactly these node types
+  (foreground `rgb(226, 35, 26)` on background `rgb(239, 233, 220)`, ratio
+  ≈3.87:1 at rest). It does not modify, broaden, or otherwise touch the
+  existing Cover, Feature, Reviews, or Interview exceptions, and does not
+  disable Axe's `color-contrast` rule page-wide — any other Columns
+  contrast violation still fails the test.
+- **Final-QA reminder:** re-verify this exception still matches the golden
+  master exactly (no drift in color/size/weight) during the post-Sprint-2
+  holistic design QA.
+
+### 8. More Columns hover/active opacity
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/columns/` — `.columns-more__row` (the four
+  secondary column rows), scoped to that row's own `:hover` and `:active`
+  states only, `src/pages/columns/index.astro`, `src/styles/columns.css`.
+- **Immutable source behavior/design:** Each secondary row applies
+  `opacity:.72` to itself (the whole row, including its title, excerpt,
+  and date/read-time text) while hovered, plus a translateX shift on hover
+  and active (`Newsstand - Full Site.dc.html`, ~lines 493-496).
+- **Production behavior/design:** Preserved exactly — same `opacity: .72`
+  hover value and translateX shift, applied to the whole row.
+- **Reason for deviation:** The row's own hover opacity multiplies against
+  every text color inside it (title, excerpt color `#544a3d`, muted
+  date/read-time color `#6f6656`), reducing their effective contrast
+  against the paper background below what each color achieves at full
+  opacity. Removing the opacity, recoloring the row's text specifically
+  during hover, or raising the opacity to satisfy contrast would change an
+  accepted golden-master interaction's feel, which is outside this
+  checkpoint's authorized scope.
+- **Classification:** accessibility.
+- **Status:** accepted permanent design-preservation exception, pending
+  final holistic QA. Route scoped, selector scoped, and state scoped — the
+  resting state is unaffected and is not allowlisted.
+- **Approval source:** explicitly approved by the project owner during the
+  Sprint 2D architecture review (approved architecture map referenced at
+  the top of the Sprint 2D implementation task).
+- **Exact files/nodes affected:** `.columns-more__row` in
+  `src/styles/columns.css`, only while the row itself is `:hover`/`:active`;
+  the corresponding nodes in `src/pages/columns/index.astro`.
+- **Testing:** `tests/accessibility.spec.ts` verifies the row's hover
+  opacity value and its effect on the row's text colors is scoped to
+  exactly `.columns-more__row`'s own hover/active states, and does not
+  disable Axe's `color-contrast` rule page-wide — any other Columns
+  contrast violation still fails the test.
+- **Final-QA reminder:** re-verify this exception still matches the golden
+  master exactly (no drift in opacity value) during the post-Sprint-2
+  holistic design QA. A later, explicit design decision may change this
+  interaction's feel; this entry does not authorize that on its own.
+
+### 9. Temporary Columns [slug] route-integrity shell
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/columns/<slug>/` for the five temporary demo
+  slugs (`your-automation-doesnt-need-a-model`,
+  `six-months-with-a-mechanical-keyboard-i-regret`,
+  `what-conducting-taught-me-about-standups`,
+  `gacha-ui-is-better-than-your-products-ui`,
+  `the-eval-sheet-is-the-deliverable`), `src/pages/columns/[slug]/index.astro`.
+- **Immutable source behavior/design:** Opening a column in the golden
+  master swaps to a full article-detail view — hero image, byline/date/
+  read-time bar, two-column prose, a pull quote, a "Tour dates"-style
+  prev/next module, and a "More columns" sidebar (`Newsstand - Full
+Site.dc.html`, the `isColumns` sc-if block's `readingColumn` branch,
+  ~lines 401-472).
+- **Production behavior/design:** Each of the five demo slugs resolves to
+  a real, direct `/columns/<slug>/` URL that renders a minimal, `noindex`
+  placeholder shell (kicker, the column's own title as an h1, one
+  paragraph stating the reading view is deferred, and a link back to
+  `/columns/`) instead of the immutable article-detail template. The
+  route survives reload, is Back/Forward-safe, and keeps the shared
+  Columns navigation state active.
+- **Immutable source detail view (correction):** the golden master contains
+  an individual-column detail experience, but Sprint 2D intentionally
+  provides only a temporary noindex route-integrity shell. Sprint 2E will
+  reproduce the approved detail-page system.
+- **Reason for deviation:** Sprint 2E's production article template has not
+  yet run, and its content architecture is explicitly deferred, not
+  pre-decided, by Sprint 2D. Sprint 2E will inspect the immutable
+  individual-column template and determine the smallest durable content
+  architecture then. Building the production template now would be
+  premature infrastructure outside this checkpoint's approved scope. A
+  route that resolves and behaves correctly is still required so the
+  Columns index's five article links are real, navigable, native anchors
+  rather than dead or fake links.
+- **Classification:** temporary implementation deviation, not a permanent
+  design decision.
+- **Status:** temporary — expected to be superseded by the Sprint 2E
+  production article template. Not part of the post-Sprint-2 holistic
+  design QA's golden-master comparison (this temporary shell is explicitly
+  not attempting to match the golden master's own detail view).
+- **Approval source:** explicitly approved by the project owner during the
+  Sprint 2D architecture review (approved architecture map referenced at
+  the top of the Sprint 2D implementation task).
+- **Exact files/nodes affected:** `src/pages/columns/[slug]/index.astro`;
+  the `.columns-detail-shell*`, `.columns-detail__kicker`, and
+  `.columns-detail__back` selectors in `src/styles/columns.css`. Correction
+  pass (2026-08-26): this shell was found reusing `.columns-kicker`, which
+  imports the Columns Index's approved red-on-paper contrast exception
+  (entry 7) onto a node that exception was never approved for. Fixed by
+  giving the shell its own `.columns-detail__kicker` and
+  `.columns-detail__back` (resting state), both using `--color-ink` instead
+  of the accent red — no new accessibility exception was introduced, and
+  the Index's existing exception was not broadened.
+- **Testing:** `tests/smoke.spec.ts` covers all five slugs resolving
+  directly, `noindex`, active Columns navigation, reload, Back/Forward,
+  and the back-to-index link. `tests/accessibility.spec.ts` adds a
+  representative Axe A/AA scan of one detail route
+  (`/columns/your-automation-doesnt-need-a-model/`), confirming no new
+  contrast exception is needed there.
+- **Final-QA reminder:** remove or fully rewrite this entry once Sprint 2E
+  replaces this shell with the production article template.
+
+### 10. More Columns reveal-wrapper placement (implementation deviation, approved)
+
+- **Date:** 2026-08-26 (correction pass).
+- **Route / component:** `/columns/` — each secondary column row,
+  `src/pages/columns/index.astro`.
+- **Immutable source behavior/design:** The source markup places reveal
+  state and hover transform/opacity on the same row node, and the
+  prototype's own runtime generates per-element hover pseudo-class rules
+  with `!important`, which is what lets its hover transform/opacity
+  declarations override that same node's reveal inline state.
+- **Production behavior/design:** Production deliberately does not port
+  that prototype specificity plumbing. The non-interactive `<li
+class="columns-more__item" data-reveal>` owns reveal state (the
+  scroll-reveal module's inline `opacity`/`transform`); the child `<a
+class="columns-more__row">` owns its own `:hover`/`:active` transform and
+  opacity via ordinary stylesheet rules. Because the anchor is a descendant
+  of the `<li>`, it fades up with its parent during reveal, so the settled
+  visual, stagger, reading order, and hover/active states all remain
+  faithful to the source.
+- **Reason for deviation:** Astro/production CSS has no equivalent to the
+  prototype's generated `!important` pseudo-style runtime, and recreating
+  that machinery purely to keep reveal and hover on the same node would be
+  a specificity hack, not a faithful reproduction. Putting both on the
+  same node without that machinery would let scroll-reveal.ts's inline
+  `opacity:1`/`transform:none` (which, being inline, always outranks a
+  stylesheet `:hover` rule on the same element regardless of specificity)
+  permanently defeat the row's own hover dim/shift after the first reveal.
+  Moving reveal state one level up to the `<li>` avoids that outcome
+  without changing what's visible.
+- **Classification:** approved implementation deviation, not a visual
+  redesign.
+- **Status:** accepted, pending final holistic QA. One known, accepted
+  edge case: hovering a row while its initial reveal animation is still in
+  progress may compose slightly differently than the prototype, since the
+  two states now animate on different nodes; this does not affect the
+  settled (post-reveal) appearance or behavior.
+- **Approval source:** explicitly approved by the project owner during the
+  Sprint 2D correction-pass review, following GPT-5.6 Sol — High's review
+  of the initial Sprint 2D implementation.
+- **Exact files/nodes affected:** `li.columns-more__item` and
+  `a.columns-more__row` in `src/pages/columns/index.astro`; no CSS
+  selector changes were required in `src/styles/columns.css`.
+- **Testing:** `tests/smoke.spec.ts` and `tests/accessibility.spec.ts`
+  exercise reveal, hover, and active states on the secondary rows; see the
+  file-level comment in `src/pages/columns/index.astro` for the
+  implementation rationale.
+- **Final-QA reminder:** re-verify this remains the correct approach if
+  Sprint 2E or a later pass changes how reveal or row hover is
+  implemented site-wide.
