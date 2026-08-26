@@ -4,18 +4,26 @@
   should reach for --font-display / --font-heading / etc., never the
   provider-specific family name directly.
 
-  Space Mono 600 quirk: the golden master's own Google Fonts request only
-  ever provides Space Mono 400 and 700 (see astro.config.mjs), yet one
-  folio-style label asks for font-weight 600. That is preserved source
-  behavior, not a bug — the browser substitutes the nearest available
-  weight. --font-mono still resolves to the same family; the weight number
-  is set at the point of use, same as the original export.
+  --font-mono deliberately does NOT point at Space Mono, the golden
+  master's own choice. Post-Sprint-2, the project owner asked for every
+  mono-styled element sitewide (folio/kicker lines, badges, the "ISSUE 05
+  · AUG 2026" folio bar, the "OPEN TO WORK" badge, the Dispatch/footer
+  bands, etc.) to use an authentic vintage-typewriter face instead,
+  referencing an actual Royal Quiet Deluxe. Courier Prime was chosen for
+  its real 400/700 weights (see astro.config.mjs) — every existing
+  font-weight:700 mono label sitewide gets a true bold face, not a
+  browser-synthesized fake one. This is a deliberate, approved departure
+  from the golden master's own typography (see DESIGN_DEVIATIONS.md), not
+  a fidelity bug. The former "Space Mono 600 quirk" note (about one folio
+  label requesting a weight the source's own Google Fonts request never
+  actually provided) no longer applies now that the family itself has
+  changed — that quirk was specific to Space Mono's own available faces.
 */
 
 :root {
   --font-display: var(--font-archivo-black), sans-serif;
   --font-heading: var(--font-barlow-condensed), sans-serif;
   --font-body: var(--font-source-serif-4), serif;
-  --font-mono: var(--font-space-mono), monospace;
+  --font-mono: var(--font-courier-prime), monospace;
   --font-hand: var(--font-architects-daughter), cursive;
 }
