@@ -122,8 +122,8 @@ test('Shared Newsstand navigation matches the approved primary chrome', async ({
 
   const brand = page.getByRole('link', { name: 'CABALLERO!', exact: true });
   await expect(brand).toHaveAttribute('href', '/');
-  await expect(page.getByText('Issue 05 · Aug 2026')).toBeVisible();
-  await expect(page.getByText('Open to work · Nov 2026')).toBeVisible();
+  await expect(page.getByText('Latest issue · 2026')).toBeVisible();
+  await expect(page.getByText('Open to work · Remote ready')).toBeVisible();
 
   const nav = page.getByRole('navigation', { name: 'Primary' });
   await expect(nav.getByRole('link')).toHaveCount(primaryNavigation.length);
