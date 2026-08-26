@@ -4,10 +4,14 @@
   [slug] route-integrity shell, which shares the '/columns/' prefix but
   currently has no [data-reveal] targets of its own), Sprint 2F to
   B-Sides (its four project cards each carry [data-reveal], matching the
-  golden master's own `data-reveal="1"` on each card div), and Sprint 2G
-  to Rotation (its five cards — three status cards and two list cards —
-  each carry [data-reveal], matching the golden master's own
-  `data-reveal="1"` on each card div).
+  golden master's own `data-reveal="1"` on each card div), Sprint 2G to
+  Rotation (its five cards — three status cards and two list cards — each
+  carry [data-reveal], matching the golden master's own `data-reveal="1"`
+  on each card div), and Sprint 2H to Letters (its two right-column
+  cards — "Currently taking" and "Also accepting" — each carry
+  [data-reveal], matching the golden master's own `data-reveal="1"` on
+  each card div; the red panel and its contents deliberately do NOT carry
+  [data-reveal], matching the source exactly).
   Mirrors the golden master's sweep()/reveal() pair (reference/newsstand-
   original/index.html, the compiled runtime's IntersectionObserver setup
   and stagger logic): elements marked [data-reveal] fade up on entering
@@ -36,6 +40,7 @@ const PATHNAME_PREFIXES = [
   '/columns/',
   '/b-sides/',
   '/rotation/',
+  '/letters/',
 ];
 const SELECTOR = '[data-reveal]';
 const ROOT_MARGIN = '0px 0px -6% 0px';

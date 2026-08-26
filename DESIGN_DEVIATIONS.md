@@ -731,3 +731,251 @@ Site.dc.html`, the `isBsides` sc-if block, ~lines 516, 522, 528, 534).
 - **Final-QA reminder:** re-verify this exception still matches the golden
   master exactly (no drift in color/size/weight) during the post-Sprint-2
   holistic design QA.
+
+## Sprint 2H — Letters
+
+### 16. Real contact information: email, GitHub, and LinkedIn (NOT a "pending review" placeholder deviation)
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/letters/` — the three contact rows in
+  `.letters-contact`, `src/pages/letters/index.astro`.
+- **Immutable source behavior/design:** The golden master displays three
+  literal, hardcoded strings with identical visual treatment:
+  `HELLO@JVCABALLERO.DEV`, `GITHUB.COM/JVCABALLERO`, and
+  `LINKEDIN.COM/IN/JVCABALLERO` (`Newsstand - Full Site.dc.html`, the
+  `isLetters` sc-if block, ~lines 589-591).
+- **Production behavior/design:** The displayed email address is changed
+  to the real, final address `JVCABALLERO@TUTA.IO` (`mailto:jvcaballero@tuta.io`),
+  reproducing the source's own literal-uppercase display convention
+  rather than its exact string. The GitHub and LinkedIn rows keep the
+  source's exact display strings (`GITHUB.COM/JVCABALLERO`,
+  `LINKEDIN.COM/IN/JVCABALLERO`) but now point to the real profile URLs
+  (`https://github.com/JVCaballero`,
+  `https://linkedin.com/in/john-vincent-c-06814b111`).
+- **Reason for deviation:** This is explicitly NOT the "temporary demo
+  content pending final Sprint 2 review" framing used for every other
+  piece of copy on this page (and every other page in this codebase).
+  Letters' entire purpose is to be a genuinely working contact surface —
+  shipping a fictional or placeholder address/profile here would defeat
+  the page's own point and could mislead a real visitor into attempting
+  to contact a non-existent or wrong destination. The project owner
+  explicitly decided, for this sprint only, that the three contact
+  mechanisms (and only these three — the "Currently taking"/"Also
+  accepting" service-offering copy and both handwritten notes stay
+  golden-master demo content, same framing as every other page) are real,
+  final, production content, not a placeholder.
+- **Classification:** approved real-content substitution, not a "pending
+  review" placeholder and not a visual redesign (the display treatment,
+  typography, and layout are all preserved exactly).
+- **Status:** accepted, real production content — not subject to the
+  post-Sprint-2 holistic "placeholder content" QA sweep the same way the
+  rest of this page's copy is. Still subject to ordinary visual/behavioral
+  QA (does it look right, does it work).
+- **Approval source:** project owner, Sprint 2H implementation task
+  (explicit instruction, not inferred).
+- **Exact files/nodes affected:** the three `<a class="letters-contact__link">`
+  nodes in `src/pages/letters/index.astro`.
+- **Testing:** `tests/smoke.spec.ts` asserts the exact real email address,
+  `mailto:` href, GitHub URL, and LinkedIn URL verbatim.
+- **Final-QA reminder:** if the real email address, GitHub username, or
+  LinkedIn profile slug ever changes, update this entry, the page, and the
+  smoke test together — these three values are treated as real contact
+  information, not demo copy, so a drift here is a real defect, not a
+  content-review backlog item.
+
+### 17. GitHub and LinkedIn rows upgraded from inert styled text to real, functional external links
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/letters/` — the GitHub and LinkedIn rows in
+  `.letters-contact`, `src/pages/letters/index.astro`.
+- **Immutable source behavior/design:** Both rows are bare
+  `<span style="cursor:pointer;...">` elements with the exact same visual
+  treatment (hover/active transform + color swap) as the email span, but
+  no `onClick` and no `href` at all — visually identical, but genuinely
+  inert (`Newsstand - Full Site.dc.html`, ~lines 590-591).
+- **Production behavior/design:** Both become real `<a href="...">`
+  elements with `target="_blank" rel="noopener noreferrer"`, keeping the
+  exact same visual treatment (hover→yellow+translateX(4px),
+  active→ink+scale(.98)+translateX(8px), word-break:break-all, same
+  font/weight/tracking).
+- **Reason for deviation:** A production portfolio page that visually
+  presents two contact methods as clickable, styled-identically-to-email
+  rows, but which do nothing when clicked, is a worse outcome than making
+  them real links — this is squarely "replace the prototype plumbing,
+  preserve the experience," the same principle already applied to the
+  email row's click-to-copy mechanism (entry 18 below). The visual
+  experience is unchanged; only the underlying inert-span-with-no-target
+  is upgraded to a real anchor.
+- **Classification:** approved implementation/functionality upgrade, not
+  a visual redesign.
+- **Status:** accepted, project owner's explicit Sprint 2H decision.
+- **Approval source:** project owner, Sprint 2H implementation task.
+- **Exact files/nodes affected:** the two `<a class="letters-contact__link">`
+  nodes (GitHub, LinkedIn) in `src/pages/letters/index.astro`.
+- **Testing:** `tests/smoke.spec.ts` verifies both links' `href`, `target`,
+  and `rel` attributes, and that no `<span onclick>` or `href="#"` pattern
+  exists anywhere on the page.
+- **Final-QA reminder:** re-verify these remain real, correctly-targeted
+  external links if the visual contact-row treatment is ever revisited
+  site-wide.
+
+### 18. Email click-to-copy: real `mailto:` anchor with progressive-enhancement clipboard copy, replacing a non-functional `<span onClick>`
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/letters/` — the email row,
+  `src/pages/letters/index.astro`,
+  `src/scripts/interactions/clipboard-copy.ts`.
+- **Immutable source behavior/design:** `<span onClick="{{ copyEmail }}"
+style="cursor:pointer;...">HELLO@JVCABALLERO.DEV</span>` — a bare span,
+  not a real link, not natively focusable or keyboard-operable, with a
+  template-runtime `copyEmail` handler this codebase does not and cannot
+  execute. Clicking it in the golden master sets a `copied` flag that
+  reveals a "copied! now tell me the actual problem →" line with a
+  `dv-scrawl` entrance animation (~line 594).
+- **Production behavior/design:** A real `<a href="mailto:jvcaballero@tuta.io"
+data-copy-email="jvcaballero@tuta.io">` — keyboard-focusable, works with
+  zero JavaScript via the native `mailto:` fallback. `clipboard-copy.ts`
+  (new interaction module, registered in `interaction-controller.ts`)
+  progressively enhances the click: if `navigator.clipboard.writeText` is
+  available, the click is intercepted (`preventDefault`), the real
+  address is copied, and the golden master's own "copied!" line
+  (reproduced verbatim, including its `dv-scrawl`-equivalent entrance
+  animation) is shown and announced via `aria-live="polite"`. If the
+  Clipboard API is unavailable, or the copy promise rejects, the click is
+  left alone (or the module falls back to `window.location.href`) and the
+  native mailto navigation proceeds — no false "copied!" confirmation is
+  ever shown for a copy that didn't happen.
+- **Reason for deviation:** The source's mechanism (`onClick` on a bare
+  span, driven by prototype-runtime template plumbing) cannot be
+  reproduced as-is in static production Astro — there is no `copyEmail`
+  handler to call. "Preserve the experience; replace the prototype
+  plumbing" is this codebase's core operating rule (AGENTS.md): the
+  visible experience (a stylized address that copies itself when clicked,
+  with a confirmation message) is preserved exactly, while the
+  underlying mechanism is upgraded to something real — keyboard-
+  accessible, works with no JS, and actually copies the real address
+  rather than doing nothing.
+- **Classification:** approved implementation deviation (progressive-
+  enhancement upgrade), not a visual redesign.
+- **Status:** accepted, project owner's explicit Sprint 2H decision.
+- **Approval source:** project owner, Sprint 2H implementation task.
+- **Exact files/nodes affected:** the `<a class="letters-contact__link"
+data-copy-email>` node in `src/pages/letters/index.astro`; the new
+  `src/scripts/interactions/clipboard-copy.ts` module; its one-line
+  registration in `src/scripts/interactions/interaction-controller.ts`'s
+  `MODULES` array (the one expected exception to leaving that file
+  alone — its own header comment describes exactly this kind of
+  extension).
+- **Testing:** `tests/smoke.spec.ts` grants Playwright's
+  `clipboard-read`/`clipboard-write` context permissions and verifies
+  `navigator.clipboard.readText()` returns the real address after a click,
+  that the mailto navigation is intercepted, that the confirmation shows
+  and is `aria-live="polite"`, that it auto-hides and can be re-triggered,
+  and that the no-Clipboard-API fallback path leaves the link as a
+  working mailto anchor without a false confirmation.
+- **Final-QA reminder:** re-verify this remains the correct approach if a
+  later pass changes how progressive-enhancement click interactions are
+  implemented site-wide.
+
+### 19. Letters kicker red-on-paper contrast (extends entries 1, 3, 5, 7, 13, 15) and a new route-scoped focus-visible override for the red panel
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/letters/` — `.letters-kicker` ("Letters /
+  p.34") and `.letters-contact__link:focus-visible` (the three contact
+  links), `src/pages/letters/index.astro`, `src/styles/letters.css`.
+- **Immutable source behavior/design:** Small bold Newsstand-red text
+  (`#e2231a`) directly on the paper background (`#efe9dc`), ~11px bold
+  Space Mono, uppercase, 0.24em tracking — the same folio/kicker treatment
+  already documented for every other page's kicker (`Newsstand - Full
+Site.dc.html`, the `isLetters` sc-if block, ~line 581). The source has no
+  keyboard-focus concept at all.
+- **Production behavior/design:** The kicker is preserved exactly — same
+  color pairing, size, weight, and tracking. Separately (not a golden-
+  master-derived value at all), this codebase's global `:focus-visible`
+  outline (`src/styles/global.css`) is Newsstand red — identical to this
+  page's own red panel background, which would render an invisible focus
+  ring for the three contact links while they sit on that panel.
+  `.letters-contact__link:focus-visible` gets a narrowly-scoped override to
+  an ink (`#17130f`) outline instead, visible against the red panel.
+- **Reason for deviation:** The kicker portion is identical reasoning to
+  entries 1, 3, 5, 7, 13, and 15 — this exact color pairing produces
+  ~3.87:1 contrast, which fails WCAG 2.2 AA normal-text (4.5:1); changing
+  the red or paper background would visibly redesign the immutable
+  golden master. The focus-visible portion is a distinct, narrow
+  accessibility necessity introduced by this page's own background color,
+  not a golden-master value at all (the source has no focus treatment to
+  preserve or deviate from) — a real, new accessibility problem the global
+  default would otherwise create on this one route.
+- **Classification:** the kicker portion is an accessibility exception
+  extension (not a new category); the focus-visible portion is an
+  accessibility necessity/addition, not a design deviation from the
+  golden master.
+- **Status:** accepted permanent design-preservation exception (kicker)
+  plus accepted accessibility addition (focus-visible override), pending
+  final holistic QA for the kicker portion only — the focus-visible
+  override is a production-only addition with no golden-master equivalent
+  to re-check against.
+- **Approval source:** project owner, Sprint 2H implementation task.
+- **Exact files/nodes affected:** `.letters-kicker` and
+  `.letters-contact__link:focus-visible` in `src/styles/letters.css`; the
+  corresponding nodes in `src/pages/letters/index.astro`.
+- **Testing:** `tests/accessibility.spec.ts` adds a narrowly-scoped,
+  Letters-specific contrast expectation for the kicker (foreground
+  `rgb(226, 35, 26)` on background `rgb(239, 233, 220)`, ratio ≈3.87:1),
+  a pass-through test confirming the red panel's white-on-red text, the
+  yellow "Also accepting" card's ink-on-yellow text, and the muted
+  "✗ Unpaid..." line all pass WCAG AA at rest, and a dedicated
+  focus-visible test confirming all three contact links resolve to an ink
+  (not red) outline when focused. It does not modify, broaden, or
+  otherwise touch the Cover, Feature, Reviews, Interview, Columns,
+  B-Sides, or Rotation exceptions, and does not disable Axe's
+  `color-contrast` rule page-wide.
+- **Final-QA reminder:** re-verify the kicker exception still matches the
+  golden master exactly (no drift in color/size/weight); re-verify the
+  focus-visible override is still necessary if the global default focus
+  treatment ever changes.
+
+### 20. Letters handwritten hint contrast on the red panel (`.letters-hand-note`)
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/letters/` — `.letters-hand-note` ("tap the
+  address — it copies itself"), `src/pages/letters/index.astro`,
+  `src/styles/letters.css`.
+- **Immutable source behavior/design:** The handwritten hint uses a
+  dedicated lighter-red handwriting color (`#ffd9d6`) directly on the red
+  panel background (`#e2231a`), at `clamp(16px,2vw,19px)`/1.3 Architects
+  Daughter, weight 400 (`Newsstand - Full Site.dc.html`, the `isLetters`
+  sc-if block, ~line 597).
+- **Production behavior/design:** Preserved exactly — same
+  `--color-handwriting-on-red` value, same size, weight, line-height, and
+  `rotate(-1deg)` treatment.
+- **Reason for deviation:** This exact color pairing produces ~3.60:1
+  contrast, which fails the WCAG 2.2 AA normal-text threshold (4.5:1) —
+  the text does not meet the large-text exemption either (max 19px at
+  weight 400 is below the 24px-regular/18.66px-bold large-text
+  thresholds). This is the first page to actually use the
+  `--color-handwriting-on-red` token (it was extracted into tokens.css
+  during an earlier sprint's token pass but had no consumer until this
+  one). Changing the color or the red panel background would visibly
+  redesign an accepted golden-master handwriting treatment, which is
+  outside this checkpoint's authorized scope.
+- **Classification:** accessibility (new exception target — a red-panel-
+  specific handwriting pairing, not an extension of the small-red-on-
+  paper kicker exceptions above, which use a different foreground/
+  background pair entirely).
+- **Status:** accepted permanent design-preservation exception, pending
+  final holistic QA.
+- **Approval source:** project owner, Sprint 2H implementation task.
+- **Exact files/nodes affected:** `.letters-hand-note` in
+  `src/styles/letters.css`; the single `<p class="letters-hand-note">`
+  node in `src/pages/letters/index.astro`.
+- **Testing:** `tests/accessibility.spec.ts` adds a narrowly-scoped,
+  Letters-specific contrast expectation for exactly this node (foreground
+  `rgb(255, 217, 214)` on background `rgb(226, 35, 26)`, ratio ≈3.60:1).
+  It does not modify, broaden, or otherwise touch the kicker exception
+  above or any other page's exceptions, and does not disable Axe's
+  `color-contrast` rule page-wide — any other Letters contrast violation
+  still fails the test.
+- **Final-QA reminder:** re-verify this exception still matches the golden
+  master exactly (no drift in color/size/weight) during the post-Sprint-2
+  holistic design QA.

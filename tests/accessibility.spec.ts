@@ -1808,3 +1808,235 @@ test('Rotation exposes exactly one h1 and five h2 card headings in order, with n
       .getByRole('link', { name: 'Rotation', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
 });
+
+/*
+  Sprint 2H — Letters (src/pages/letters/index.astro).
+
+  This page has two contrast exception targets at rest: the kicker
+  ("Letters / p.34" — the same established red-on-paper exception already
+  documented for every other page's kicker) and `.letters-hand-note`
+  ("tap the address — it copies itself" — a distinct handwriting-on-red
+  pairing, `--color-handwriting-on-red` on the red panel, the first real
+  consumer of that token; see DESIGN_DEVIATIONS.md entry 20). Nothing else
+  on this page fails at rest: the red panel's white-on-red body/statement
+  text, the yellow "Also accepting" card's ink-on-yellow text, and the
+  muted "✗ Unpaid..." ink-on-paper line (with no interactive hover/active
+  row background swap, unlike the Reviews/Interview muted-metadata
+  exceptions) all pass WCAG AA, verified in the dedicated pass-through test
+  below. This sprint also adds a route-scoped `:focus-visible` override for
+  the three contact links — the site-wide default focus outline color is
+  the same Newsstand red as this page's own panel background, which would
+  be genuinely invisible; the override to an ink outline is verified
+  directly.
+*/
+const LETTERS_RED_TEXT_SELECTORS = ['.letters-kicker'];
+const LETTERS_HAND_NOTE_SELECTOR = '.letters-hand-note';
+const LETTERS_HAND_NOTE_FOREGROUND_RGB: [number, number, number] = [
+  255, 217, 214,
+]; // #ffd9d6
+const LETTERS_HAND_NOTE_BACKGROUND_RGB: [number, number, number] = [
+  226, 35, 26,
+]; // #e2231a
+const LETTERS_HAND_NOTE_CONTRAST_RATIO = 3.6;
+
+test('Letters route has no automated WCAG A/AA violations beyond the documented golden-master kicker and hand-note exceptions (Cover/Feature/Reviews/Interview/Columns/B-Sides/Rotation exceptions untouched)', async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/letters/');
+
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+
+  const colorContrastViolation = results.violations.find(
+    (violation) => violation.id === 'color-contrast',
+  );
+  const otherViolations = results.violations.filter(
+    (violation) => violation.id !== 'color-contrast',
+  );
+  expect(otherViolations).toEqual([]);
+
+  const nodes = colorContrastViolation?.nodes ?? [];
+  const targets = nodes.map((node) => node.target.join(' '));
+
+  // Exactly two flagged nodes at rest: the kicker and the hand note.
+  expect(targets).toHaveLength(2);
+  expect(targets.filter((t) => t.includes('.letters-kicker'))).toHaveLength(1);
+  expect(
+    targets.filter((t) => t.includes(LETTERS_HAND_NOTE_SELECTOR)),
+  ).toHaveLength(1);
+
+  for (const selector of LETTERS_RED_TEXT_SELECTORS) {
+    const locator = page.locator(selector);
+    const count = await locator.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      const node = locator.nth(i);
+      const foreground = await node.evaluate(
+        (el) => getComputedStyle(el).color,
+      );
+      const [r, g, b] = parseRgb(foreground);
+      expect([r, g, b]).toEqual(EXPECTED_FOREGROUND_RGB);
+    }
+    const background = await getEffectiveBackground(page, selector);
+    expect(background).toEqual(EXPECTED_BACKGROUND_RGB);
+    const foreground = await getComputedForeground(page, selector);
+    const ratio = contrastRatio(foreground, background);
+    expect(ratio).toBeGreaterThan(EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE);
+    expect(ratio).toBeLessThan(EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE);
+  }
+
+  // Hand note: a distinct handwriting-on-red pairing, not the kicker's
+  // red-on-paper pairing — verified against its own expected values.
+  const handNoteForeground = await getComputedForeground(
+    page,
+    LETTERS_HAND_NOTE_SELECTOR,
+  );
+  expect(handNoteForeground).toEqual(LETTERS_HAND_NOTE_FOREGROUND_RGB);
+  const handNoteBackground = await getEffectiveBackground(
+    page,
+    LETTERS_HAND_NOTE_SELECTOR,
+  );
+  expect(handNoteBackground).toEqual(LETTERS_HAND_NOTE_BACKGROUND_RGB);
+  const handNoteRatio = contrastRatio(handNoteForeground, handNoteBackground);
+  expect(handNoteRatio).toBeGreaterThan(
+    LETTERS_HAND_NOTE_CONTRAST_RATIO - CONTRAST_TOLERANCE,
+  );
+  expect(handNoteRatio).toBeLessThan(
+    LETTERS_HAND_NOTE_CONTRAST_RATIO + CONTRAST_TOLERANCE,
+  );
+
+  testInfo.annotations.push({
+    type: 'known-issue',
+    description:
+      `Sprint 2H extends the already-approved red-on-paper kicker ` +
+      `exception (DESIGN_DEVIATIONS.md entries 1, 3, 5, 7, 13, 15) to ` +
+      `${LETTERS_RED_TEXT_SELECTORS.join(', ')}, and introduces a new, ` +
+      `distinct handwriting-on-red exception for ` +
+      `${LETTERS_HAND_NOTE_SELECTOR} (DESIGN_DEVIATIONS.md entry 20). No ` +
+      `other new exception category was introduced. The Cover, Feature, ` +
+      `Reviews, Interview, Columns, B-Sides, and Rotation exceptions above ` +
+      `remain separate, untouched target sets.`,
+  });
+});
+
+test('Letters red panel (white-on-red), yellow "Also accepting" card (ink-on-yellow), and the muted "✗ Unpaid..." line all pass WCAG AA contrast at rest, needing no new exception', async ({
+  page,
+}) => {
+  await page.goto('/letters/');
+
+  async function readContrast(locator: ReturnType<Page['locator']>) {
+    return locator.evaluate((el) => {
+      function relativeLuminanceLocal([r, g, b]: number[]): number {
+        const [rs, gs, bs] = [r, g, b].map((channel) => {
+          const c = channel / 255;
+          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+      }
+      function ratioOf(fg: number[], bg: number[]): number {
+        const l1 = relativeLuminanceLocal(fg);
+        const l2 = relativeLuminanceLocal(bg);
+        const [lighter, darker] = l1 > l2 ? [l1, l2] : [l2, l1];
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+      const parseRgbLocal = (value: string) =>
+        (value.match(/[\d.]+/g) ?? []).map(Number).slice(0, 3);
+
+      const style = getComputedStyle(el);
+      const fg = parseRgbLocal(style.color);
+      let bgEl: Element | null = el;
+      let bg = [239, 233, 220];
+      while (bgEl) {
+        const bgc = getComputedStyle(bgEl).backgroundColor;
+        const match = bgc.match(/rgba?\(([^)]+)\)/);
+        if (match) {
+          const parts = match[1].split(',').map((part) => parseFloat(part));
+          if ((parts[3] ?? 1) > 0) {
+            bg = parts.slice(0, 3);
+            break;
+          }
+        }
+        bgEl = bgEl.parentElement;
+      }
+      return ratioOf(fg, bg);
+    });
+  }
+
+  const panelIntro = page.locator('.letters-panel__intro');
+  expect(await readContrast(panelIntro)).toBeGreaterThanOrEqual(4.5);
+
+  // .letters-hand-note is NOT checked here — it is its own documented
+  // contrast exception (DESIGN_DEVIATIONS.md entry 20), verified in the
+  // Axe test above, not part of this pass-through set.
+
+  const acceptingCard = page.locator('.letters-card--highlight');
+  const acceptingHeading = acceptingCard.locator('.letters-card__heading');
+  expect(await readContrast(acceptingHeading)).toBeGreaterThanOrEqual(4.5);
+  const acceptingBody = acceptingCard.locator('p');
+  expect(await readContrast(acceptingBody)).toBeGreaterThanOrEqual(4.5);
+
+  const excludedLine = page.locator('.letters-taking__excluded');
+  expect(await readContrast(excludedLine)).toBeGreaterThanOrEqual(4.5);
+});
+
+test('Letters contact links show a visible, non-red-on-red focus ring against the red panel background', async ({
+  page,
+}) => {
+  await page.goto('/letters/');
+
+  const links = page.locator('.letters-contact__link');
+  await expect(links).toHaveCount(3);
+
+  for (let i = 0; i < 3; i++) {
+    const link = links.nth(i);
+    await link.focus();
+    await expect(link).toBeFocused();
+    const outline = await link.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return {
+        color: style.outlineColor,
+        width: style.outlineWidth,
+        style: style.outlineStyle,
+      };
+    });
+    expect(outline.style).not.toBe('none');
+    expect(outline.width).not.toBe('0px');
+    // The global default focus outline is Newsstand red (rgb(226, 35, 26)),
+    // identical to this panel's own background — that would be invisible.
+    // The route-scoped override must resolve to the ink color instead.
+    expect(outline.color).toBe('rgb(23, 19, 15)');
+  }
+});
+
+test('Letters exposes exactly one h1 and two h2 card headings in order, with no positive tabindex anywhere', async ({
+  page,
+}) => {
+  await page.goto('/letters/');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Write to the editor' }),
+  ).toBeVisible();
+
+  const h2s = (
+    await page.getByRole('heading', { level: 2 }).allTextContents()
+  ).map((text) => text.replace(/\s+/g, ' ').trim());
+  expect(h2s).toEqual(['Currently taking', 'Also accepting']);
+
+  const positiveTabindexCount = await page
+    .locator('[tabindex]')
+    .evaluateAll(
+      (nodes) =>
+        nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+          .length,
+    );
+  expect(positiveTabindexCount).toBe(0);
+
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Primary' })
+      .getByRole('link', { name: 'Letters', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+});

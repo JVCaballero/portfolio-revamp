@@ -39,7 +39,11 @@ const routes = [
     heading: "This month's rotation",
     activeLabel: 'Rotation',
   },
-  { href: '/letters/', heading: 'Letters', activeLabel: 'Letters' },
+  {
+    href: '/letters/',
+    heading: 'Write to the editor',
+    activeLabel: 'Letters',
+  },
   { href: '/resume/', heading: 'Resume', activeLabel: null },
 ] as const;
 
@@ -1039,7 +1043,7 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
   });
 
   // Feature, Reviews, Interview, and Columns are still exercised here (as
-  // hops on the way to Letters) but have real page-specific interaction
+  // hops on the way to Rotation) but have real page-specific interaction
   // work of their own — Feature's four Sprint 2A modules, Reviews' Sprint
   // 2B scroll-reveal/cursor-preview, Interview's Sprint 2C scroll-reveal/
   // magnetic-navigation, and Columns' Sprint 2D scroll-reveal/cursor-
@@ -1047,7 +1051,10 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
   // "Sprint 2A Feature interaction lifecycle", "Sprint 2B Reviews
   // interaction lifecycle", "Sprint 2C Interview interaction lifecycle",
   // and "Sprint 2D Columns interaction lifecycle" below, not by this
-  // generic console-cleanliness pass-through.
+  // generic console-cleanliness pass-through. Letters is deliberately
+  // excluded from this hop chain as of Sprint 2H — it now has its own
+  // page-specific interaction module (clipboard-copy.ts), covered by
+  // "Sprint 2H Letters interaction lifecycle" below.
   test('Routes with no active interaction work navigate cleanly with no console errors', async ({
     page,
   }) => {
@@ -1060,17 +1067,11 @@ test.describe('Sprint 1F interaction controller lifecycle', () => {
     await page.goto('/');
     const nav = page.getByRole('navigation', { name: 'Primary' });
 
-    for (const label of [
-      'Feature',
-      'Reviews',
-      'B-Sides',
-      'Rotation',
-      'Letters',
-    ]) {
+    for (const label of ['Feature', 'Reviews', 'B-Sides', 'Rotation']) {
       await nav.getByRole('link', { name: label, exact: true }).click();
     }
 
-    await expect(page).toHaveURL(/\/letters\/$/);
+    await expect(page).toHaveURL(/\/rotation\/$/);
     expect(consoleErrors).toEqual([]);
   });
 });
@@ -3769,6 +3770,325 @@ test.describe('Sprint 2G Rotation interaction lifecycle', () => {
       await expect(page).toHaveURL(/\/rotation\/$/);
       await expect(
         page.getByRole('heading', { level: 1, name: "This month's rotation" }),
+      ).toBeVisible();
+
+      await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+      await expect(page).toHaveURL(/\/reviews\/$/);
+    }
+
+    const registrations = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleRegistrations: string[] })
+          .__lifecycleRegistrations,
+    );
+    expect(registrationCount(registrations, 'astro:before-swap')).toBe(1);
+
+    expect(consoleErrors).toEqual([]);
+  });
+});
+
+test.describe('Sprint 2H Letters page', () => {
+  const EMAIL = 'jvcaballero@tuta.io';
+  const EMAIL_DISPLAY = 'JVCABALLERO@TUTA.IO';
+  const GITHUB_URL = 'https://github.com/JVCaballero';
+  const GITHUB_DISPLAY = 'GITHUB.COM/JVCABALLERO';
+  const LINKEDIN_URL = 'https://linkedin.com/in/john-vincent-c-06814b111';
+  const LINKEDIN_DISPLAY = 'LINKEDIN.COM/IN/JVCABALLERO';
+
+  test('Letters renders the golden-master anatomy: kicker, headline, red panel, real contact links, hand note, and both right-column cards', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    const response = await page.goto('/letters/');
+    expect(response?.ok()).toBeTruthy();
+
+    await expect(page.locator('.letters-kicker')).toHaveText('Letters / p.34');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Write to the editor' }),
+    ).toBeVisible();
+
+    await expect(page.locator('.letters-panel__statement')).toHaveText(
+      "Got a weird problem in an unglamorous industry? That's the good stuff.",
+    );
+    await expect(page.locator('.letters-panel__intro')).toContainText(
+      'Contract or full-time, web or mobile',
+    );
+
+    const emailLink = page.locator('[data-copy-email]');
+    await expect(emailLink).toHaveText(EMAIL_DISPLAY);
+    await expect(emailLink).toHaveAttribute('href', `mailto:${EMAIL}`);
+    await expect(emailLink).toHaveAttribute('data-copy-email', EMAIL);
+    await expect(emailLink).not.toHaveAttribute('target');
+
+    const githubLink = page.getByRole('link', { name: GITHUB_DISPLAY });
+    await expect(githubLink).toHaveAttribute('href', GITHUB_URL);
+    await expect(githubLink).toHaveAttribute('target', '_blank');
+    await expect(githubLink).toHaveAttribute('rel', 'noopener noreferrer');
+
+    const linkedinLink = page.getByRole('link', { name: LINKEDIN_DISPLAY });
+    await expect(linkedinLink).toHaveAttribute('href', LINKEDIN_URL);
+    await expect(linkedinLink).toHaveAttribute('target', '_blank');
+    await expect(linkedinLink).toHaveAttribute('rel', 'noopener noreferrer');
+
+    await expect(page.locator('.letters-contact li')).toHaveCount(3);
+
+    const confirmation = page.locator('[data-copy-confirmation]');
+    await expect(confirmation).toBeHidden();
+    await expect(confirmation).toHaveAttribute('aria-live', 'polite');
+
+    await expect(page.locator('.letters-hand-note')).toHaveText(
+      'tap the address — it copies itself',
+    );
+
+    const takingCard = page.locator('.letters-card').nth(0);
+    await expect(
+      takingCard.getByRole('heading', { level: 2, name: 'Currently taking' }),
+    ).toBeVisible();
+    const takingItems = takingCard.locator('.letters-taking li');
+    await expect(takingItems).toHaveCount(4);
+    await expect(takingItems.nth(0)).toContainText('Contract builds from');
+    await expect(takingItems.nth(0).locator('strong')).toHaveText(
+      'November 2026',
+    );
+    await expect(takingItems.nth(1)).toContainText('AI workflow audits');
+    await expect(takingItems.nth(2)).toContainText(
+      'Rescue jobs on stalled products',
+    );
+    await expect(takingItems.nth(3)).toContainText('Unpaid');
+    await expect(takingItems.nth(3)).toHaveClass(/letters-taking__excluded/);
+
+    const acceptingCard = page.locator('.letters-card').nth(1);
+    await expect(
+      acceptingCard.getByRole('heading', { level: 2, name: 'Also accepting' }),
+    ).toBeVisible();
+    await expect(acceptingCard).toContainText('Gig bookings');
+    await expect(acceptingCard).toHaveClass(/letters-card--highlight/);
+
+    await expect(page.locator('footer.newsstand-bottom-chrome')).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Primary' })
+        .getByRole('link', { name: 'Letters', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Letters contact links are real, native anchors — no span onClick, no href="#", no positive tabindex', async ({
+    page,
+  }) => {
+    await page.goto('/letters/');
+
+    const contactLinks = page.locator('.letters-contact__link');
+    await expect(contactLinks).toHaveCount(3);
+    for (const link of await contactLinks.all()) {
+      const tagName = await link.evaluate((el) => el.tagName);
+      expect(tagName).toBe('A');
+      const href = await link.getAttribute('href');
+      expect(href).not.toBe('#');
+      expect(href).toBeTruthy();
+    }
+
+    const onclickCount = await page.locator('[onclick]').count();
+    expect(onclickCount).toBe(0);
+
+    const positiveTabindexCount = await page
+      .locator('[tabindex]')
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+            .length,
+      );
+    expect(positiveTabindexCount).toBe(0);
+  });
+
+  test('Direct reload of /letters/ keeps the same URL and re-renders the page', async ({
+    page,
+  }) => {
+    const response = await page.goto('/letters/');
+    expect(response?.ok()).toBeTruthy();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Write to the editor' }),
+    ).toBeVisible();
+
+    const reloadResponse = await page.reload();
+    expect(reloadResponse?.ok()).toBeTruthy();
+    expect(new URL(page.url()).pathname).toBe('/letters/');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Write to the editor' }),
+    ).toBeVisible();
+  });
+});
+
+test.describe('Sprint 2H Letters interaction lifecycle', () => {
+  const EMAIL = 'jvcaballero@tuta.io';
+
+  test('Letters scroll-reveal targets initialize exactly once on direct load and resolve visible content', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/letters/');
+
+    const reveals = page.locator('[data-reveal]');
+    await expect(reveals).toHaveCount(2);
+    for (const el of await reveals.all()) {
+      await expect(el).toBeVisible();
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Letters content stays fully visible under reduced motion, with all reveal targets resolved to opacity 1', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/letters/');
+
+    const reveals = page.locator('[data-reveal]');
+    const count = await reveals.count();
+    expect(count).toBe(2);
+    for (let i = 0; i < count; i++) {
+      await expect(reveals.nth(i)).toBeVisible();
+      const opacity = await reveals
+        .nth(i)
+        .evaluate((node) => getComputedStyle(node).opacity);
+      expect(opacity).toBe('1');
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Clicking the email address copies the real address to the clipboard, intercepts the mailto navigation, and shows/announces the "copied!" confirmation', async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/letters/');
+
+    const emailLink = page.locator('[data-copy-email]');
+    const confirmation = page.locator('[data-copy-confirmation]');
+    await expect(confirmation).toBeHidden();
+
+    await emailLink.click();
+
+    // The click must be intercepted (preventDefault) rather than navigating
+    // to a mailto: URL, which Chromium would otherwise attempt to hand off
+    // to an external protocol handler and could stall the test.
+    await expect(page).toHaveURL(/\/letters\/$/);
+
+    const copiedText = await page.evaluate(() =>
+      navigator.clipboard.readText(),
+    );
+    expect(copiedText).toBe(EMAIL);
+
+    await expect(confirmation).toBeVisible();
+    await expect(confirmation).toHaveText(
+      'copied! now tell me the actual problem →',
+    );
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('The "copied!" confirmation auto-hides after its timeout and can be re-triggered by a second click', async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto('/letters/');
+
+    const emailLink = page.locator('[data-copy-email]');
+    const confirmation = page.locator('[data-copy-confirmation]');
+
+    await emailLink.click();
+    await expect(confirmation).toBeVisible();
+    await expect(confirmation).toBeHidden({ timeout: 6000 });
+
+    await emailLink.click();
+    await expect(confirmation).toBeVisible();
+  });
+
+  test('Without clipboard permission, clicking the email address does not show a false "copied!" confirmation and the link remains a real mailto anchor', async ({
+    page,
+    context,
+  }) => {
+    // Simulate an unsupported/unavailable Clipboard API by deleting it
+    // before the page's own scripts run, exercising the module's
+    // no-Clipboard-API fallback branch (the click must be left alone so
+    // the native mailto: navigation proceeds).
+    await context.clearPermissions();
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: undefined,
+        configurable: true,
+      });
+    });
+
+    await page.goto('/letters/');
+
+    const emailLink = page.locator('[data-copy-email]');
+    const confirmation = page.locator('[data-copy-confirmation]');
+    await expect(emailLink).toHaveAttribute('href', `mailto:${EMAIL}`);
+
+    await emailLink.click();
+    await page.waitForTimeout(500);
+
+    await expect(confirmation).toBeHidden();
+  });
+
+  test('Letters contact links show a visible focus ring against the red panel background', async ({
+    page,
+  }) => {
+    await page.goto('/letters/');
+
+    const emailLink = page.locator('[data-copy-email]');
+    await emailLink.focus();
+    await expect(emailLink).toBeFocused();
+
+    const outline = await emailLink.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { color: style.outlineColor, width: style.outlineWidth };
+    });
+    expect(outline.width).not.toBe('0px');
+    // The override must not be the invisible-on-red global default
+    // (--color-red, rgb(226, 35, 26)) — it must be the ink override.
+    expect(outline.color).toBe('rgb(23, 19, 15)');
+  });
+
+  test('Repeated ClientRouter navigation into and out of Letters stays console-clean without accumulating controller listeners', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    for (let visit = 0; visit < 3; visit++) {
+      await nav.getByRole('link', { name: 'Letters', exact: true }).click();
+      await expect(page).toHaveURL(/\/letters\/$/);
+      await expect(
+        page.getByRole('heading', { level: 1, name: 'Write to the editor' }),
       ).toBeVisible();
 
       await nav.getByRole('link', { name: 'Reviews', exact: true }).click();

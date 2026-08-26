@@ -117,3 +117,20 @@ test('Rotation shell full-page visual regression', async ({ page }) => {
     fullPage: true,
   });
 });
+
+test('Letters shell full-page visual regression', async ({ page }) => {
+  // Reduced motion settles scroll-reveal to its resting, fully-visible
+  // final state (scroll-reveal.ts) — Letters has no cursor-preview plate
+  // and no remote images. The "copied!" confirmation is a transient,
+  // post-interaction state (src/scripts/interactions/clipboard-copy.ts)
+  // and is never triggered here, so the baseline captures its default
+  // `hidden` state rather than an arbitrary post-click frame.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/letters/');
+
+  await expect(page.locator('[data-copy-confirmation]')).toBeHidden();
+
+  await expect(page).toHaveScreenshot('letters-shell.png', {
+    fullPage: true,
+  });
+});

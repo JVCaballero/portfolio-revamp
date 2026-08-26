@@ -1,13 +1,198 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+/*
+  Sprint 2H Letters — static reproduction of the immutable golden master's
+  Letters view (reference/newsstand-original/source/Newsstand - Full
+  Site.dc.html, the `isLetters` sc-if block, ~lines 579-611).
 
-const title = 'Letters | CABALLERO!';
-const description = 'Letters route shell for the CABALLERO! portfolio revamp.';
+  Content classification (Sprint 2 content-shell rule — see
+  DESIGN_DEVIATIONS.md and AGENTS.md):
+  - CLASS 1, structural/interface copy: the "Letters / p.34" kicker
+    pattern, the "Currently taking" / "Also accepting" card taxonomy.
+  - CLASS 2, demo/fictional content pending final Sprint 2 review: the red
+    panel's pull-statement and intro copy, the "Currently taking" list, the
+    "Also accepting" card body, and both handwritten notes. Reproduced
+    verbatim from the golden master's own final copy, character-for-
+    character, same as every prior sprint's page-local content.
+  - CLASS 3, real-content substitution (project owner's explicit Sprint 2H
+    decision, NOT a placeholder pending review): the three contact
+    mechanisms. Unlike every other page's copy, this page's whole point is
+    to be a genuinely working contact surface, so the email address, the
+    GitHub link, and the LinkedIn link are the real, final values —
+    jvcaballero@tuta.io, https://github.com/JVCaballero, and
+    https://linkedin.com/in/john-vincent-c-06814b111 — displayed in the
+    source's own literal-uppercase display convention (e.g.
+    "JVCABALLERO@TUTA.IO"). See DESIGN_DEVIATIONS.md for the full writeup.
+
+  Content storage: page-local, matching every prior sprint's precedent —
+  there is no `letters` Content Collection scaffold in
+  src/content.config.ts, and this sprint does not introduce one.
+
+  GitHub/LinkedIn upgrade: the source's GITHUB.COM/JVCABALLERO and
+  LINKEDIN.COM/IN/JVCABALLERO spans carry the exact same visual treatment
+  as the email span, but no `onClick` at all — inert, decorative text.
+  Production upgrades both to real, functional, external `<a>` links
+  (`target="_blank" rel="noopener noreferrer"`), per the project owner's
+  explicit Sprint 2H decision — a faithful-looking-but-nonfunctional
+  contact row would be a worse production outcome than a real link with
+  the identical visual treatment.
+
+  Email mechanism ("replace the prototype plumbing, preserve the
+  experience"): the source's email span is a bare `<span onClick={{
+  copyEmail }}>` — no href, not a real link, and not keyboard-operable at
+  all (a `<span>` with a template onClick is not natively focusable).
+  Production replaces it with a real `<a href="mailto:jvcaballero@tuta.io"
+  data-copy-email>` — keyboard-focusable, works with no JS via the mailto
+  fallback — whose click handler is progressively enhanced by
+  src/scripts/interactions/clipboard-copy.ts: if `navigator.clipboard` is
+  available, the click is intercepted, the real address is copied, and the
+  "copied!" confirmation (already present, verbatim, in the golden master)
+  is shown and announced via aria-live. If the Clipboard API is
+  unavailable, or the copy attempt itself fails, the mailto navigation
+  proceeds untouched and no confirmation is shown. Do NOT use
+  `<span onClick>` — every contact method here is a real, native,
+  keyboard-operable anchor.
+
+  Heading hierarchy: one <h1> ("Write to the editor"). The two right-column
+  cards each get an <h2> ("Currently taking" / "Also accepting"), matching
+  the established B-Sides/Rotation card-heading precedent — no other
+  heading exists on this page. The red panel's large statement line reads
+  as conversational pull-quote-style copy, not a section heading (it has no
+  heading role in the source, and nothing on the page is "under" it in a
+  document-outline sense), so it is a plain <p>.
+
+  Contact list: a <ul>/<li> of the three contact methods (not a <div>
+  stack, as the source uses) — each item is semantically equivalent (one
+  contact method), so list semantics are the more accurate reproduction
+  than three sibling paragraphs.
+
+  "Currently taking" list: the ▸/✗ glyphs are literal source characters,
+  reproduced verbatim as inline text (not a real <li> marker) exactly as
+  the source's own div-per-line markup implies — there is no separate,
+  redundant list-marker glyph to conflict with real <li> markers, since
+  this is a plain <ul> with `list-style:none` and the glyph is the line's
+  own leading character, read by a screen reader as ordinary text (which is
+  accurate: it is not decorative, it is the actual "included/excluded"
+  signal for that line).
+
+  scroll-reveal.ts is extended in this sprint to also match the
+  '/letters/' prefix (see src/scripts/interactions/scroll-reveal.ts). The
+  two right-column cards carry `data-reveal`, matching the golden master's
+  own `data-reveal="1"` on each card div. The red panel and its contents do
+  NOT carry `data-reveal`, matching the source exactly.
+
+  New interaction module: src/scripts/interactions/clipboard-copy.ts,
+  registered in interaction-controller.ts's MODULES array (the one
+  expected exception to leaving that file alone — its own header comment
+  describes exactly this kind of extension).
+
+  Focus-visible note: the global `:focus-visible` outline
+  (src/styles/global.css) is red-on-whatever, which is invisible against
+  this page's own red panel background (`--color-red` outline on a
+  `--color-red` fill is the same color). `.letters-contact__link` gets a
+  narrowly-scoped `:focus-visible` override to an ink outline instead, so
+  all three contact links show a visible focus ring against the red panel
+  — a real, new accessibility necessity for this route only, not a design
+  deviation (the source has no keyboard-focus concept at all). See
+  src/styles/letters.css and DESIGN_DEVIATIONS.md.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/letters.css';
+
+const title = 'Write to the editor | CABALLERO!';
+const description =
+  'Letters / p.34 — write to the editor. Real contact methods: email, GitHub, and LinkedIn. Service-offering copy pending final Sprint 2 review.';
+
+const EMAIL = 'jvcaballero@tuta.io';
+const EMAIL_DISPLAY = 'JVCABALLERO@TUTA.IO';
+const GITHUB_URL = 'https://github.com/JVCaballero';
+const GITHUB_DISPLAY = 'GITHUB.COM/JVCABALLERO';
+const LINKEDIN_URL = 'https://linkedin.com/in/john-vincent-c-06814b111';
+const LINKEDIN_DISPLAY = 'LINKEDIN.COM/IN/JVCABALLERO';
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="container">
-    <h1>Letters</h1>
-    <p data-route="letters">Letters content is coming in a later sprint.</p>
+  <div class="letters-page container">
+    <p class="letters-kicker">Letters / p.34</p>
+    <h1 class="letters-headline">Write to the editor</h1>
+
+    <div class="letters-grid">
+      <div class="letters-panel">
+        <p class="letters-panel__statement">
+          Got a weird problem in an unglamorous industry? That's the good stuff.
+        </p>
+        <p class="letters-panel__intro">
+          Contract or full-time, web or mobile, greenfield or a decade-old mess
+          someone is embarrassed about. I read everything and reply within two
+          days &mdash; faster if you lead with the actual problem instead of the
+          tech stack.
+        </p>
+
+        <ul class="letters-contact">
+          <li>
+            <a
+              class="letters-contact__link"
+              href={`mailto:${EMAIL}`}
+              data-copy-email={EMAIL}
+            >
+              {EMAIL_DISPLAY}
+            </a>
+          </li>
+          <li>
+            <a
+              class="letters-contact__link"
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {GITHUB_DISPLAY}
+            </a>
+          </li>
+          <li>
+            <a
+              class="letters-contact__link"
+              href={LINKEDIN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {LINKEDIN_DISPLAY}
+            </a>
+          </li>
+        </ul>
+
+        <p
+          class="letters-copied"
+          data-copy-confirmation
+          role="status"
+          aria-live="polite"
+          hidden
+        >
+          copied! now tell me the actual problem &rarr;
+        </p>
+        <p class="letters-hand-note">
+          tap the address &mdash; it copies itself
+        </p>
+      </div>
+
+      <div class="letters-sidebar">
+        <div class="letters-card" data-reveal>
+          <h2 class="letters-card__heading">Currently taking</h2>
+          <ul class="letters-taking">
+            <li>&#9656; Contract builds from <strong>November 2026</strong></li>
+            <li>&#9656; AI workflow audits (2&ndash;3 weeks)</li>
+            <li>&#9656; Rescue jobs on stalled products</li>
+            <li class="letters-taking__excluded">
+              &#10007; Unpaid &ldquo;quick logo tweaks&rdquo;, respectfully
+            </li>
+          </ul>
+        </div>
+        <div class="letters-card letters-card--highlight" data-reveal>
+          <h2 class="letters-card__heading">Also accepting</h2>
+          <p>
+            Gig bookings, band arrangement requests, and strong opinions about
+            which gacha banner I should have skipped.
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 </BaseLayout>
