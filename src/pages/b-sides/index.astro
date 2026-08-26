@@ -1,13 +1,163 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+/*
+  Sprint 2F B-Sides — static reproduction of the immutable golden master's
+  B-Sides view (reference/newsstand-original/source/Newsstand - Full
+  Site.dc.html, the `isBsides` sc-if block, ~lines 508-538). Unlike every
+  other Sprint 2 page, this section of the source has NO template
+  placeholders at all (no `{{ }}` anywhere except the outer `sc-if`
+  control flow) — every piece of copy below (kicker, headline, intro, and
+  all four project cards' title/badge/description/tech-stack text) is the
+  golden master's own real, final, hardcoded content, reproduced verbatim
+  rather than authored fresh.
 
-const title = 'B-Sides | CABALLERO!';
-const description = 'B-Sides route shell for the CABALLERO! portfolio revamp.';
+  Content classification (Sprint 2 content-shell rule — see
+  DESIGN_DEVIATIONS.md and AGENTS.md):
+  - CLASS 1, structural/interface copy: the "B-Sides / p.28" kicker
+    pattern, and the badge-label taxonomy itself (IN USE / LIVE / WIP) as a
+    status convention.
+  - CLASS 2: the specific headline ("The playground"), intro paragraph, and
+    all four cards' specific copy (Bandstand, Pity Counter, Setlist, Shelf)
+    describe fictional/demo side-projects for this portfolio revamp and are
+    not verified production content about the real person's actual side
+    projects — same "pending final Sprint 2 review" framing as every prior
+    sprint's page-local content. Unlike every prior sprint, though, none of
+    this required new authorship: it is the golden master's own final copy,
+    transcribed character-for-character rather than invented.
+
+  Content storage: page-local, matching the precedent already set by
+  Feature/Reviews/Interview/Columns (index and detail) — NOT the (currently
+  unused) `b-sides` Content Collection scaffold in src/content.config.ts.
+  Where this copy is ultimately stored is deferred to a future unified
+  content checkpoint; this sprint does not decide it.
+
+  Non-interactive cards: the immutable source has no `onClick`/`data-cue`
+  anywhere in this section — these are static display cards, not links.
+  Production reproduces that faithfully: each card is a non-interactive
+  <article> inside a <ul>/<li>, never an <a>, with no invented click
+  target, href, or "read more" affordance. cursor-preview.ts is
+  deliberately NOT extended to '/b-sides/' for the same reason — there is
+  nothing here for it to activate on.
+
+  Image alt text: the source gives each picsum.photos placeholder a literal
+  alt (e.g. "Bandstand"), unlike other pages' placeholders. Every other
+  remote picsum.photos placeholder already shipped in this codebase
+  (Reviews, Interview, Columns index/detail) is treated as decorative
+  (`alt=""`) instead, since it carries no trustworthy editorial
+  information — it is a temporary stand-in image, not real project
+  photography. This page follows that same established convention rather
+  than the source's specific literal alt strings, a deliberate, minor,
+  documented deviation (see DESIGN_DEVIATIONS.md).
+
+  scroll-reveal.ts is extended in this sprint to also match the
+  '/b-sides/' prefix (see src/scripts/interactions/scroll-reveal.ts). Each
+  of the four cards carries `data-reveal`, matching the golden master's own
+  `data-reveal="1"` on each card div.
+
+  Image loading: only the first (inverted) card's image is `loading="eager"`
+  — matching this codebase's established convention of eagerly loading just
+  the page's single most prominent image (Columns lead, Columns detail hero,
+  Interview's first portrait) and lazy-loading the rest. The other three
+  cards stay `loading="lazy"`.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/b-sides.css';
+
+const title = 'The playground | CABALLERO!';
+const description =
+  'B-Sides / p.28 — things built for an audience of one. Demo content pending final Sprint 2 review.';
+
+type Badge = 'IN USE' | 'LIVE' | 'WIP';
+
+interface BSideCard {
+  seed: string;
+  title: string;
+  badge: Badge;
+  inverted: boolean;
+  description: string;
+  stack: string;
+}
+
+const cards: BSideCard[] = [
+  {
+    seed: 'caballero-bs1',
+    title: 'Bandstand',
+    badge: 'IN USE',
+    inverted: true,
+    description:
+      'Sheet music, parts and call times for forty musicians. Built because I was the one maintaining the group chat, and the group chat was losing.',
+    stack: 'Next.js · Postgres · PDF wrangling',
+  },
+  {
+    seed: 'caballero-bs2',
+    title: 'Pity Counter',
+    badge: 'LIVE',
+    inverted: false,
+    description:
+      'Four gacha games, one dashboard that tells the truth about my pull history. Wuthering Waves, Zenless Zone Zero, Genshin, Endfield. The numbers are not kind.',
+    stack: 'React · charts · denial',
+  },
+  {
+    seed: 'caballero-bs3',
+    title: 'Setlist',
+    badge: 'LIVE',
+    inverted: false,
+    description:
+      'Keys, capos and audience requests for acoustic bar nights. Written between two sets; its offline sync pattern ended up in a production clinic app.',
+    stack: 'React Native · offline-first',
+  },
+  {
+    seed: 'caballero-bs4',
+    title: 'Shelf',
+    badge: 'WIP',
+    inverted: false,
+    description:
+      'Manga backlog tracker with a working guilt meter. Currently telling me I am three volumes behind on four series.',
+    stack: 'Svelte · scraping · shame',
+  },
+];
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="container">
-    <h1>B-Sides</h1>
-    <p data-route="b-sides">B-Sides content is coming in a later sprint.</p>
+  <div class="bsides-page container">
+    <p class="bsides-kicker">B-Sides / p.28</p>
+    <h1 class="bsides-headline">The playground</h1>
+    <p class="bsides-intro">
+      Things built for an audience of one — me — which is how most of my best
+      patterns start.
+    </p>
+
+    <ul class="bsides-grid">
+      {
+        cards.map((card) => (
+          <li>
+            <article
+              class={`bsides-card${card.inverted ? ' bsides-card--inverted' : ''}`}
+              data-reveal
+            >
+              <div class="bsides-card__image">
+                <img
+                  src={`https://picsum.photos/seed/${card.seed}/800/500`}
+                  width="800"
+                  height="500"
+                  alt=""
+                  loading={card.inverted ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
+              </div>
+              <div class="bsides-card__head">
+                <h2 class="bsides-card__title">{card.title}</h2>
+                <span
+                  class={`bsides-card__badge bsides-card__badge--${card.badge === 'IN USE' ? 'in-use' : card.badge === 'LIVE' ? 'live' : 'wip'}`}
+                >
+                  {card.badge}
+                </span>
+              </div>
+              <p class="bsides-card__description">{card.description}</p>
+              <p class="bsides-card__stack">{card.stack}</p>
+            </article>
+          </li>
+        ))
+      }
+    </ul>
   </div>
 </BaseLayout>

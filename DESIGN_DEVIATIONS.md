@@ -575,3 +575,90 @@ Site.dc.html`, the `isColumns` sc-if block's `readingColumn` branch,
   node's resting/hover appearance.
 - **Final-QA reminder:** re-verify this remains the correct approach if a
   later pass changes how hero-style images are implemented site-wide.
+
+## Sprint 2F — B-Sides
+
+### 13. B-Sides kicker red-on-paper contrast (extends entries 1, 3, 5, 7)
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/b-sides/` — `.bsides-kicker` ("B-Sides / p.28"),
+  `src/pages/b-sides/index.astro`, `src/styles/b-sides.css`.
+- **Immutable source behavior/design:** Small bold Newsstand-red text
+  (`#e2231a`) directly on the paper background (`#efe9dc`), ~11px bold
+  Space Mono, uppercase, 0.24em tracking — the same folio/kicker treatment
+  already documented for every other page's kicker (`Newsstand - Full
+Site.dc.html`, the `isBsides` sc-if block, ~line 510).
+- **Production behavior/design:** Preserved exactly — same color pairing,
+  size, weight, and tracking. No color, size, typography, or hierarchy
+  change was made.
+- **Reason for deviation:** Identical to the reasoning already accepted for
+  entries 1, 3, 5, and 7 — this exact color pairing produces ~3.87:1
+  contrast, which fails the WCAG 2.2 AA normal-text threshold (4.5:1).
+  Changing the red or the paper background would visibly redesign the
+  immutable Newsstand golden master, which is outside this checkpoint's
+  authorized scope. This is a straightforward extension of already-approved
+  reasoning to this route's equivalent node, not a new accessibility
+  trade-off requiring separate sign-off.
+- **Classification:** accessibility (exception extension, not a new
+  exception category).
+- **Status:** accepted permanent design-preservation exception, pending
+  final holistic QA. Route scoped and selector scoped.
+- **Approval source:** project owner, Sprint 2F implementation task.
+- **Exact files/nodes affected:** `.bsides-kicker` in
+  `src/styles/b-sides.css`; the single `<p class="bsides-kicker">` node in
+  `src/pages/b-sides/index.astro`.
+- **Testing:** `tests/accessibility.spec.ts` adds a narrowly-scoped,
+  B-Sides-specific contrast expectation for exactly this node (foreground
+  `rgb(226, 35, 26)` on background `rgb(239, 233, 220)`, ratio ≈3.87:1). It
+  does not modify, broaden, or otherwise touch the existing Cover, Feature,
+  Reviews, Interview, or Columns exceptions, and does not disable Axe's
+  `color-contrast` rule page-wide — any other B-Sides contrast violation
+  still fails the test. The same test also independently verifies (and
+  requires passing, not just "no Axe flag") the three badge treatments (IN
+  USE ink-on-yellow, LIVE white-on-red ~4.68:1, WIP ink-on-paper outline)
+  and the inverted card's opacity-.75 tech-stack line (paper-on-ink,
+  ~8.9:1) — none of these needed a new exception, and the test fails if any
+  of them ever regresses below AA.
+- **Final-QA reminder:** re-verify this exception still matches the golden
+  master exactly (no drift in color/size/weight) during the post-Sprint-2
+  holistic design QA.
+
+### 14. B-Sides card images: decorative `alt=""` instead of the source's literal alt text
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/b-sides/` — the four `.bsides-card__image img`
+  nodes, `src/pages/b-sides/index.astro`.
+- **Immutable source behavior/design:** Each of the four picsum.photos
+  placeholder images carries a literal `alt` attribute naming the project
+  ("Bandstand", "Pity Counter", "Setlist", "Shelf") (`Newsstand - Full
+Site.dc.html`, the `isBsides` sc-if block, ~lines 516, 522, 528, 534).
+  Unlike every other page's picsum.photos placeholders, this is the one
+  section of the source where the literal alt text is not itself a
+  template placeholder — it is real, final golden-master copy.
+- **Production behavior/design:** All four images use `alt=""` (decorative)
+  instead, with explicit `width="800"` `height="500"` matching the source's
+  `16/10` aspect ratio.
+- **Reason for deviation:** Every other remote picsum.photos placeholder
+  already shipped in this codebase (Reviews' review-row thumbnails,
+  Interview's two portraits, the Columns index lead image, the Columns
+  detail hero) is treated as decorative `alt=""`, because the image itself
+  is a temporary, unrelated stock photo carrying no trustworthy editorial
+  information — captioning it with a literal project name would assert a
+  connection between the placeholder photo and the named project that does
+  not actually exist. Reproducing the source's literal alt strings here
+  instead of following that established, codebase-wide convention would
+  introduce a one-off inconsistency for no accessibility benefit: a screen
+  reader user would be told "Bandstand" is depicted in an image that is
+  actually an unrelated stock photo of something else entirely.
+- **Classification:** approved implementation deviation, not a visual
+  redesign (this affects no sighted-visible behavior at all).
+- **Status:** accepted, pending final holistic QA.
+- **Approval source:** project owner, Sprint 2F implementation task,
+  applying the same established reasoning as Sprint 2E entry 12's
+  `<img>`-vs-background-image implementation choice.
+- **Exact files/nodes affected:** the four `<img>` nodes inside
+  `.bsides-card__image` in `src/pages/b-sides/index.astro`.
+- **Testing:** `tests/smoke.spec.ts` verifies each of the four card images
+  has explicit `width="800"` `height="500"` and `alt=""`.
+- **Final-QA reminder:** re-verify this remains the correct approach if a
+  later pass changes how placeholder-image alt text is handled site-wide.

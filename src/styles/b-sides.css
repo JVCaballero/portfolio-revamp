@@ -1,0 +1,226 @@
+/*
+  Sprint 2F B-Sides — static reproduction of the immutable golden master's
+  B-Sides view (reference/newsstand-original/source/Newsstand - Full
+  Site.dc.html, the `isBsides` sc-if block, ~lines 508-538). Every rule
+  below is derived from that block and mapped onto accepted tokens only
+  where both the value AND the semantic role already match (see
+  tokens.css). One-off source values (the `290px` grid minimum, `18px`
+  grid gap, the headline/card-title clamps, the `60ch` intro measure, the
+  `16/10` card image aspect ratio, `3px 6px` badge padding) stay literal
+  at the point of use rather than being forced through a misleading
+  alias — matching the precedent set in columns.css/interview.css/
+  reviews.css.
+
+  No B-Sides-specific width breakpoints exist here on purpose: the source
+  has none — the card grid is `repeat(auto-fit, minmax(min(100%,290px),1fr))`,
+  fully intrinsic, verified at 1440x900/768x1024/390x844.
+*/
+
+.bsides-page {
+  animation: bsides-fade-in var(--duration-lift) var(--ease-editorial) both;
+  padding-block: var(--space-fluid-sm) var(--space-fluid-md);
+}
+
+/* ---------------------------------------------------------------------
+   Folio/kicker, headline, intro standfirst.
+   --------------------------------------------------------------------- */
+
+/* Approved Sprint 2F design-preservation exception (small Newsstand-red
+   B-Sides text): this exact node (source-faithful red-on-paper kicker)
+   fails WCAG AA normal-text contrast (~3.87:1) at rest, the same
+   established pairing already documented for every other page's kicker
+   (DESIGN_DEVIATIONS.md entries 1, 3, 5, 7). See DESIGN_DEVIATIONS.md and
+   tests/accessibility.spec.ts. */
+.bsides-kicker {
+  margin: 0 0 var(--space-8);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.bsides-headline {
+  margin: 0 0 var(--space-10);
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(34px, 7.4vw, 82px);
+  line-height: var(--leading-display-page);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+}
+
+.bsides-intro {
+  margin: 0 0 var(--space-24);
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: var(--font-size-intro-fluid);
+  line-height: var(--leading-body);
+  max-width: var(--measure-60);
+}
+
+/* ---------------------------------------------------------------------
+   Card grid.
+   --------------------------------------------------------------------- */
+
+.bsides-grid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: var(--space-18);
+}
+
+.bsides-card {
+  display: block;
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding: var(--space-18);
+  transition:
+    transform var(--duration-card) var(--ease-editorial),
+    box-shadow var(--duration-card) var(--ease-standard),
+    background var(--duration-card) var(--ease-standard);
+}
+
+.bsides-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-hard-2xl);
+  background: var(--color-highlight);
+}
+
+.bsides-card:active {
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+/* The only inverted/dark card (Bandstand) — hover/active shadows use the
+   red accent instead of ink, and it never swaps to the yellow highlight
+   background the three paper cards use. */
+.bsides-card--inverted {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.bsides-card--inverted:hover {
+  box-shadow: var(--shadow-hard-2xl-red);
+  background: var(--color-ink);
+}
+
+.bsides-card--inverted:active {
+  box-shadow: var(--shadow-hard-sm-red);
+}
+
+.bsides-card__image {
+  aspect-ratio: 16 / 10;
+  border: var(--border-width-hairline) var(--border-style-solid)
+    var(--color-muted-metadata);
+  overflow: hidden;
+  margin-bottom: var(--space-14);
+}
+
+.bsides-card--inverted .bsides-card__image {
+  border-color: var(--color-muted-metadata);
+}
+
+.bsides-card:not(.bsides-card--inverted) .bsides-card__image {
+  border-color: var(--color-rule-muted);
+}
+
+.bsides-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(1) contrast(1.05);
+}
+
+.bsides-card--inverted .bsides-card__image img {
+  filter: grayscale(1) contrast(1.1) brightness(0.9);
+}
+
+.bsides-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-10);
+  flex-wrap: wrap;
+}
+
+.bsides-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(28px, 4vw, 38px);
+  line-height: var(--leading-display-compact);
+  text-transform: uppercase;
+}
+
+.bsides-card__badge {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-9-5);
+  letter-spacing: var(--tracking-tag);
+  padding: 3px 6px;
+}
+
+.bsides-card__badge--in-use {
+  background: var(--color-highlight);
+  color: var(--color-ink);
+}
+
+.bsides-card__badge--live {
+  background: var(--color-red);
+  color: var(--color-white);
+}
+
+.bsides-card__badge--wip {
+  border: var(--border-width-hairline) var(--border-style-solid)
+    var(--color-ink);
+  color: inherit;
+}
+
+.bsides-card__description {
+  margin: var(--space-8) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--leading-body-relaxed);
+}
+
+.bsides-card__stack {
+  margin: var(--space-10) 0 0;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+  font-size: var(--font-size-mono-10-5);
+  letter-spacing: var(--tracking-utility);
+  text-transform: uppercase;
+  color: var(--color-muted-metadata);
+}
+
+/* Approved Sprint 2F design-preservation exception: on the inverted card
+   only, the tech-stack line uses paper-colored text at opacity .75 on the
+   ink background instead of the muted-metadata color the three paper
+   cards use — verified to remain a passing AA contrast (~8.9:1) even after
+   the opacity blend, so no accessibility exception entry is needed for
+   this node. See DESIGN_DEVIATIONS.md. */
+.bsides-card--inverted .bsides-card__stack {
+  color: var(--color-paper);
+  opacity: 0.75;
+}
+
+/* ---------------------------------------------------------------------
+   B-Sides-local animation.
+   --------------------------------------------------------------------- */
+
+@keyframes bsides-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

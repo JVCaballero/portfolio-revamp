@@ -1369,3 +1369,180 @@ test('Columns detail exposes one h1, the section heading and "More columns" as h
       .getByRole('link', { name: 'Columns', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
 });
+
+/*
+  Sprint 2F — B-Sides (src/pages/b-sides/index.astro).
+
+  This page's only red-on-paper node is its kicker ("B-Sides / p.28"),
+  which reuses the same already-approved pairing documented for every
+  other page's kicker (DESIGN_DEVIATIONS.md entries 1, 3, 5, 7). No other
+  new contrast exception is required: the three badge treatments (IN USE
+  ink-on-yellow, LIVE white-on-red, WIP ink-on-paper outline) and the
+  inverted card's opacity-.75 tech-stack line were all independently
+  verified to pass WCAG AA at rest before this test was written (LIVE's
+  white-on-red measures ~4.68:1; the opacity-blended paper-on-ink text
+  measures ~8.9:1) — see the dedicated pass-through test below, which
+  fails if any of those four ever regresses instead of silently assuming
+  they still pass.
+*/
+const BSIDES_RED_TEXT_SELECTORS = ['.bsides-kicker'];
+
+test('B-Sides route has no automated WCAG A/AA violations beyond the documented golden-master kicker exception (Cover/Feature/Reviews/Interview/Columns exceptions untouched)', async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/b-sides/');
+
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+
+  const colorContrastViolation = results.violations.find(
+    (violation) => violation.id === 'color-contrast',
+  );
+  const otherViolations = results.violations.filter(
+    (violation) => violation.id !== 'color-contrast',
+  );
+  expect(otherViolations).toEqual([]);
+
+  const nodes = colorContrastViolation?.nodes ?? [];
+  const targets = nodes.map((node) => node.target.join(' '));
+
+  // Exactly one flagged node at rest: the kicker. The three badge
+  // treatments and the inverted card's tech-stack line all pass AA and
+  // must never appear here — if any of them regressed below AA, this
+  // assertion would fail rather than silently absorbing a new violation.
+  expect(targets).toHaveLength(1);
+  expect(targets.filter((t) => t.includes('.bsides-kicker'))).toHaveLength(1);
+
+  for (const selector of BSIDES_RED_TEXT_SELECTORS) {
+    const locator = page.locator(selector);
+    const count = await locator.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      const node = locator.nth(i);
+      const foreground = await node.evaluate(
+        (el) => getComputedStyle(el).color,
+      );
+      const [r, g, b] = parseRgb(foreground);
+      expect([r, g, b]).toEqual(EXPECTED_FOREGROUND_RGB);
+    }
+    const background = await getEffectiveBackground(page, selector);
+    expect(background).toEqual(EXPECTED_BACKGROUND_RGB);
+    const foreground = await getComputedForeground(page, selector);
+    const ratio = contrastRatio(foreground, background);
+    expect(ratio).toBeGreaterThan(EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE);
+    expect(ratio).toBeLessThan(EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE);
+  }
+
+  testInfo.annotations.push({
+    type: 'known-issue',
+    description:
+      `Sprint 2F extends the already-approved red-on-paper kicker ` +
+      `exception (DESIGN_DEVIATIONS.md entries 1, 3, 5, 7) to ` +
+      `${BSIDES_RED_TEXT_SELECTORS.join(', ')} ` +
+      `(rgb(226, 35, 26) on rgb(239, 233, 220), ~${EXPECTED_CONTRAST_RATIO}:1). ` +
+      `No new exception category was introduced. The Cover, Feature, ` +
+      `Reviews, Interview, and Columns exceptions above remain separate, ` +
+      `untouched target sets.`,
+  });
+});
+
+test('B-Sides badge treatments and the inverted card tech-stack line all pass WCAG AA contrast at rest, needing no new exception', async ({
+  page,
+}) => {
+  await page.goto('/b-sides/');
+
+  const cards = page.locator('article.bsides-card');
+
+  async function readContrast(locator: ReturnType<Page['locator']>) {
+    return locator.evaluate((el) => {
+      function relativeLuminanceLocal([r, g, b]: number[]): number {
+        const [rs, gs, bs] = [r, g, b].map((channel) => {
+          const c = channel / 255;
+          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+      }
+      function ratioOf(fg: number[], bg: number[]): number {
+        const l1 = relativeLuminanceLocal(fg);
+        const l2 = relativeLuminanceLocal(bg);
+        const [lighter, darker] = l1 > l2 ? [l1, l2] : [l2, l1];
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+      const parseRgbLocal = (value: string) =>
+        (value.match(/[\d.]+/g) ?? []).map(Number).slice(0, 3);
+
+      const style = getComputedStyle(el);
+      const fg = parseRgbLocal(style.color);
+      let bgEl: Element | null = el;
+      let bg = [239, 233, 220];
+      while (bgEl) {
+        const bgc = getComputedStyle(bgEl).backgroundColor;
+        const match = bgc.match(/rgba?\(([^)]+)\)/);
+        if (match) {
+          const parts = match[1].split(',').map((part) => parseFloat(part));
+          if ((parts[3] ?? 1) > 0) {
+            bg = parts.slice(0, 3);
+            break;
+          }
+        }
+        bgEl = bgEl.parentElement;
+      }
+      const opacity = parseFloat(style.opacity);
+      if (opacity < 1) {
+        fg[0] = opacity * fg[0] + (1 - opacity) * bg[0];
+        fg[1] = opacity * fg[1] + (1 - opacity) * bg[1];
+        fg[2] = opacity * fg[2] + (1 - opacity) * bg[2];
+      }
+      return ratioOf(fg, bg);
+    });
+  }
+
+  // Card 1 — Bandstand (inverted): IN USE badge, ink-on-yellow.
+  const inUseBadge = cards.nth(0).locator('.bsides-card__badge');
+  expect(await readContrast(inUseBadge)).toBeGreaterThanOrEqual(4.5);
+
+  // Card 1's tech-stack line: paper-colored text at opacity .75 on ink.
+  const invertedStack = cards.nth(0).locator('.bsides-card__stack');
+  expect(await readContrast(invertedStack)).toBeGreaterThanOrEqual(4.5);
+
+  // Cards 2-3 — Pity Counter / Setlist: LIVE badge, white-on-red.
+  for (const index of [1, 2]) {
+    const liveBadge = cards.nth(index).locator('.bsides-card__badge');
+    expect(await readContrast(liveBadge)).toBeGreaterThanOrEqual(4.5);
+  }
+
+  // Card 4 — Shelf: WIP badge, outline-only, ink-on-paper.
+  const wipBadge = cards.nth(3).locator('.bsides-card__badge');
+  expect(await readContrast(wipBadge)).toBeGreaterThanOrEqual(4.5);
+});
+
+test('B-Sides exposes exactly one h1 and four h2 card titles in order, with no positive tabindex anywhere', async ({
+  page,
+}) => {
+  await page.goto('/b-sides/');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'The playground' }),
+  ).toBeVisible();
+
+  const h2s = await page.getByRole('heading', { level: 2 }).allTextContents();
+  expect(h2s).toEqual(['Bandstand', 'Pity Counter', 'Setlist', 'Shelf']);
+
+  const positiveTabindexCount = await page
+    .locator('[tabindex]')
+    .evaluateAll(
+      (nodes) =>
+        nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+          .length,
+    );
+  expect(positiveTabindexCount).toBe(0);
+
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Primary' })
+      .getByRole('link', { name: 'B-Sides', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+});
