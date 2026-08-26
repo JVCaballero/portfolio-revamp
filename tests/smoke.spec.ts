@@ -2577,7 +2577,7 @@ test.describe('Sprint 2D Columns page', () => {
   });
 });
 
-test.describe('Sprint 2D Columns [slug] temporary route-integrity shell', () => {
+test.describe('Sprint 2E Columns [slug] production article-detail template', () => {
   const slugs = [
     'your-automation-doesnt-need-a-model',
     'six-months-with-a-mechanical-keyboard-i-regret',
@@ -2586,7 +2586,27 @@ test.describe('Sprint 2D Columns [slug] temporary route-integrity shell', () => 
     'the-eval-sheet-is-the-deliverable',
   ];
 
-  test('Each of the five temporary demo slugs resolves directly, is noindex, and keeps Columns navigation active', async ({
+  const titles: Record<string, string> = {
+    'your-automation-doesnt-need-a-model':
+      "Your automation doesn't need a model",
+    'six-months-with-a-mechanical-keyboard-i-regret':
+      'Six months with a mechanical keyboard I regret',
+    'what-conducting-taught-me-about-standups':
+      'What conducting taught me about standups',
+    'gacha-ui-is-better-than-your-products-ui':
+      "Gacha UI is better than your product's UI",
+    'the-eval-sheet-is-the-deliverable': 'The eval sheet is the deliverable',
+  };
+
+  const kickers: Record<string, string> = {
+    'your-automation-doesnt-need-a-model': 'Essay',
+    'six-months-with-a-mechanical-keyboard-i-regret': 'Gadget review',
+    'what-conducting-taught-me-about-standups': 'Column',
+    'gacha-ui-is-better-than-your-products-ui': 'Rant',
+    'the-eval-sheet-is-the-deliverable': 'Notebook',
+  };
+
+  test('Each of the five demo slugs resolves directly, is indexable, and keeps Columns navigation active', async ({
     page,
   }) => {
     for (const slug of slugs) {
@@ -2594,14 +2614,16 @@ test.describe('Sprint 2D Columns [slug] temporary route-integrity shell', () => 
       expect(response?.ok()).toBeTruthy();
       expect(new URL(page.url()).pathname).toBe(`/columns/${slug}/`);
 
-      await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-        'content',
-        'noindex',
-      );
+      // No longer a temporary noindex shell — Sprint 2E's production
+      // template is real, indexable content.
+      await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
       await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
       await expect(page.locator('.columns-detail__kicker')).toHaveText(
-        'Columns / p.26',
+        `${kickers[slug]} / p.26`,
       );
+      await expect(
+        page.getByRole('heading', { level: 1, name: titles[slug] }),
+      ).toBeVisible();
 
       await expect(
         page
@@ -2611,7 +2633,157 @@ test.describe('Sprint 2D Columns [slug] temporary route-integrity shell', () => 
     }
   });
 
-  test('Direct reload of a Columns slug route keeps the same URL and re-renders the shell', async ({
+  test('Renders the golden-master anatomy: standfirst, meta bar, hero image, 4+5 paragraph prose, pull quote, section, signature, and sidebar', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/columns/your-automation-doesnt-need-a-model/');
+
+    await expect(page.locator('.columns-detail__standfirst')).toBeVisible();
+    await expect(page.locator('.columns-detail__meta')).toBeVisible();
+
+    const hero = page.locator('.columns-detail__hero img');
+    await expect(hero).toHaveAttribute('width', '1600');
+    await expect(hero).toHaveAttribute('height', '700');
+    await expect(hero).toHaveAttribute('alt', '');
+    await expect(page.locator('.columns-detail__caption')).toBeVisible();
+
+    const proseBlocks = page.locator('.columns-detail__prose');
+    await expect(proseBlocks).toHaveCount(2);
+    await expect(proseBlocks.nth(0).locator('p')).toHaveCount(4);
+    await expect(proseBlocks.nth(1).locator('p')).toHaveCount(5);
+
+    await expect(
+      page.locator('blockquote.columns-detail__quote'),
+    ).toBeVisible();
+    await expect(
+      page.locator('blockquote.columns-detail__quote cite'),
+    ).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
+    await expect(page.locator('.columns-detail__signature')).toHaveText(
+      '— J. V. Caballero',
+    );
+
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'More columns' }),
+    ).toBeVisible();
+    await expect(page.locator('.columns-detail__sidebar-row')).toHaveCount(4);
+
+    await expect(page.locator('footer.newsstand-bottom-chrome')).toBeVisible();
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('The lead column (first in order) has no Previous link/card, and the last column has no Next link/card', async ({
+    page,
+  }) => {
+    await page.goto('/columns/your-automation-doesnt-need-a-model/');
+    await expect(
+      page.locator('.columns-detail__prevnext-link--prev'),
+    ).toHaveCount(0);
+    await expect(page.locator('.columns-detail__card--prev')).toHaveCount(0);
+    await expect(
+      page.locator('.columns-detail__prevnext-link--next'),
+    ).toHaveCount(1);
+    await expect(page.locator('.columns-detail__card--next')).toHaveCount(1);
+    await expect(page.locator('.columns-detail__divider')).toHaveCount(0);
+
+    await page.goto('/columns/the-eval-sheet-is-the-deliverable/');
+    await expect(
+      page.locator('.columns-detail__prevnext-link--next'),
+    ).toHaveCount(0);
+    await expect(page.locator('.columns-detail__card--next')).toHaveCount(0);
+    await expect(
+      page.locator('.columns-detail__prevnext-link--prev'),
+    ).toHaveCount(1);
+    await expect(page.locator('.columns-detail__card--prev')).toHaveCount(1);
+    await expect(page.locator('.columns-detail__divider')).toHaveCount(0);
+  });
+
+  test('A middle column has both Previous and Next, pointing at its immediate neighbors in fixed order (no wraparound)', async ({
+    page,
+  }) => {
+    await page.goto('/columns/what-conducting-taught-me-about-standups/');
+
+    await expect(
+      page.locator('.columns-detail__prevnext-link--prev'),
+    ).toHaveAttribute(
+      'href',
+      '/columns/six-months-with-a-mechanical-keyboard-i-regret/',
+    );
+    await expect(
+      page.locator('.columns-detail__prevnext-link--next'),
+    ).toHaveAttribute(
+      'href',
+      '/columns/gacha-ui-is-better-than-your-products-ui/',
+    );
+    await expect(page.locator('.columns-detail__divider')).toHaveCount(1);
+
+    await expect(page.locator('.columns-detail__card--prev')).toHaveAttribute(
+      'href',
+      '/columns/six-months-with-a-mechanical-keyboard-i-regret/',
+    );
+    await expect(page.locator('.columns-detail__card--next')).toHaveAttribute(
+      'href',
+      '/columns/gacha-ui-is-better-than-your-products-ui/',
+    );
+  });
+
+  test('Sidebar "More columns" lists the other four columns in fixed order, each linking to its own route', async ({
+    page,
+  }) => {
+    await page.goto('/columns/your-automation-doesnt-need-a-model/');
+
+    const rows = page.locator('a.columns-detail__sidebar-row');
+    await expect(rows).toHaveCount(4);
+    const expectedHrefs = [
+      '/columns/six-months-with-a-mechanical-keyboard-i-regret/',
+      '/columns/what-conducting-taught-me-about-standups/',
+      '/columns/gacha-ui-is-better-than-your-products-ui/',
+      '/columns/the-eval-sheet-is-the-deliverable/',
+    ];
+    for (let i = 0; i < expectedHrefs.length; i++) {
+      await expect(rows.nth(i)).toHaveAttribute('href', expectedHrefs[i]);
+    }
+    // The current column never appears in its own "More columns" list.
+    await expect(
+      rows.filter({ hasText: "Your automation doesn't need a model" }),
+    ).toHaveCount(0);
+  });
+
+  test('Columns detail has no positive tabindex and no click-only div semantics', async ({
+    page,
+  }) => {
+    await page.goto('/columns/what-conducting-taught-me-about-standups/');
+
+    const positiveTabindexCount = await page
+      .locator('[tabindex]')
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+            .length,
+      );
+    expect(positiveTabindexCount).toBe(0);
+
+    // All navigation is real <a href> — top "All columns" link, prev/next
+    // (topbar + cards), the four sidebar rows, and the sidebar's own
+    // "Back to all columns" link.
+    const linkCount = await page
+      .locator(
+        'a.columns-detail__all, a.columns-detail__prevnext-link, ' +
+          'a.columns-detail__card, a.columns-detail__sidebar-row, ' +
+          'a.columns-detail__back',
+      )
+      .count();
+    // 1 (all) + 2 (prevnext, both present on this middle-order slug) +
+    // 2 (cards, both present) + 4 (sidebar rows) + 1 (back) = 10.
+    expect(linkCount).toBe(10);
+  });
+
+  test('Direct reload of a Columns slug route keeps the same URL and re-renders the template', async ({
     page,
   }) => {
     const response = await page.goto(
@@ -2656,10 +2828,13 @@ test.describe('Sprint 2D Columns [slug] temporary route-integrity shell', () => 
     );
   });
 
-  test('The Columns slug shell links back to the Columns index via a real anchor', async ({
+  test('The detail template links back to the Columns index via real anchors ("← All columns" and "Back to all columns →")', async ({
     page,
   }) => {
     await page.goto('/columns/what-conducting-taught-me-about-standups/');
+
+    const topLink = page.locator('a.columns-detail__all');
+    await expect(topLink).toHaveAttribute('href', '/columns/');
 
     const backLink = page.locator('a.columns-detail__back');
     await expect(backLink).toHaveAttribute('href', '/columns/');
@@ -2671,6 +2846,154 @@ test.describe('Sprint 2D Columns [slug] temporary route-integrity shell', () => 
         name: 'Words, rants and gadget reviews',
       }),
     ).toBeVisible();
+  });
+
+  test('Clicking a sidebar "More columns" row and a Next card navigate to the correct detail routes', async ({
+    page,
+  }) => {
+    await page.goto('/columns/your-automation-doesnt-need-a-model/');
+
+    await page.locator('a.columns-detail__sidebar-row').nth(1).click();
+    await expect(page).toHaveURL(
+      /\/columns\/what-conducting-taught-me-about-standups\/$/,
+    );
+
+    await page.locator('a.columns-detail__card--next').click();
+    await expect(page).toHaveURL(
+      /\/columns\/gacha-ui-is-better-than-your-products-ui\/$/,
+    );
+  });
+
+  test('Keyboard focus order on the detail template: back link, prev/next, then prev/next cards and sidebar rows, in document order', async ({
+    page,
+  }) => {
+    await page.goto('/columns/what-conducting-taught-me-about-standups/');
+
+    const allLink = page.locator('a.columns-detail__all');
+    await allLink.focus();
+    await expect(allLink).toBeFocused();
+    const outlineStyle = await allLink.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        outlineStyle: style.outlineStyle,
+        outlineWidth: style.outlineWidth,
+      };
+    });
+    expect(outlineStyle.outlineStyle).toBe('solid');
+    expect(parseFloat(outlineStyle.outlineWidth)).toBeGreaterThan(0);
+
+    await page.keyboard.press('Tab');
+    await expect(
+      page.locator('.columns-detail__prevnext-link--prev'),
+    ).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(
+      page.locator('.columns-detail__prevnext-link--next'),
+    ).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('.columns-detail__card--prev')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('.columns-detail__card--next')).toBeFocused();
+    for (let i = 0; i < 4; i++) {
+      await page.keyboard.press('Tab');
+      await expect(
+        page.locator('a.columns-detail__sidebar-row').nth(i),
+      ).toBeFocused();
+    }
+    await page.keyboard.press('Tab');
+    await expect(page.locator('a.columns-detail__back')).toBeFocused();
+  });
+});
+
+test.describe('Sprint 2E Columns detail interaction lifecycle', () => {
+  test('Columns detail template resolves data-reveal targets and stays console-clean', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/columns/your-automation-doesnt-need-a-model/');
+
+    await expect(page.locator('[data-reveal]')).toHaveCount(5);
+    for (const el of await page.locator('[data-reveal]').all()) {
+      await expect(el).toBeVisible();
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Desktop cursor preview activates on a Columns detail route over sidebar rows and prev/next cards', async ({
+    page,
+  }, testInfo) => {
+    if (testInfo.project.name !== 'desktop') {
+      test.skip(true, 'cursor preview only applies above the 900px threshold');
+    }
+
+    await page.goto('/columns/what-conducting-taught-me-about-standups/');
+    const plate = page.locator('[data-cursor-preview]');
+    await expect(plate).not.toHaveClass(/columns-cursor-preview--visible/);
+
+    // The full-width 16/7 hero pushes the sidebar/cards below the fold at
+    // this viewport height, so scroll each target into view first —
+    // otherwise a synthetic pointer move to its raw page coordinates lands
+    // outside the actual viewport and never hit-tests the element.
+    const row = page.locator('a.columns-detail__sidebar-row').first();
+    await row.scrollIntoViewIfNeeded();
+    const rowBox = await row.boundingBox();
+    if (!rowBox) throw new Error('sidebar row bounding box unavailable');
+    await page.mouse.move(
+      rowBox.x + rowBox.width / 2,
+      rowBox.y + rowBox.height / 2,
+    );
+    await expect(plate).toHaveClass(/columns-cursor-preview--visible/);
+    await expect(plate).toHaveText('Read the column →');
+
+    const card = page.locator('a.columns-detail__card--next');
+    await card.scrollIntoViewIfNeeded();
+    const cardBox = await card.boundingBox();
+    if (!cardBox) throw new Error('card bounding box unavailable');
+    await page.mouse.move(
+      cardBox.x + cardBox.width / 2,
+      cardBox.y + cardBox.height / 2,
+    );
+    await expect(plate).toHaveClass(/columns-cursor-preview--visible/);
+    await expect(plate).toHaveText('Read the column →');
+  });
+
+  test('Columns detail content stays fully visible under reduced motion, and the cursor-preview plate never becomes visible', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/columns/your-automation-doesnt-need-a-model/');
+
+    const reveals = page.locator('[data-reveal]');
+    const count = await reveals.count();
+    for (let i = 0; i < count; i++) {
+      await expect(reveals.nth(i)).toBeVisible();
+      const opacity = await reveals
+        .nth(i)
+        .evaluate((node) => getComputedStyle(node).opacity);
+      expect(opacity).toBe('1');
+    }
+
+    const plate = page.locator('[data-cursor-preview]');
+    const box = await page
+      .locator('a.columns-detail__sidebar-row')
+      .first()
+      .boundingBox();
+    if (box) {
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    }
+    await expect(plate).not.toHaveClass(/columns-cursor-preview--visible/);
+
+    expect(consoleErrors).toEqual([]);
   });
 });
 

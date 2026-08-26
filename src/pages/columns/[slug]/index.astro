@@ -1,83 +1,414 @@
 ---
 /*
-  Sprint 2D Columns [slug] — a temporary route-integrity shell only. This
-  is NOT Sprint 2E's production article template, and it deliberately does
-  NOT reproduce the immutable golden master's article-detail view
+  Sprint 2E Columns [slug] — production article-detail template, replacing
+  Sprint 2D's temporary noindex route-integrity shell. Static reproduction
+  of the immutable golden master's individual-column detail view
   (reference/newsstand-original/source/Newsstand - Full Site.dc.html, the
-  `isColumns` sc-if block's `readingColumn` branch, ~lines 401-472): no
-  hero hierarchy, no article body, no byline system, no sticky rail, no
-  prev/next navigation, no pull quote, no signature, no multi-column prose,
-  no article-specific asset system. Those all belong to Sprint 2E.
+  `isColumns` sc-if block's `readingColumn` branch, ~lines 401-472). See
+  DESIGN_DEVIATIONS.md, "Sprint 2E — Columns detail" for the retirement of
+  the former temporary-shell entry (#9) and the new hero-image
+  implementation entry.
 
-  What this route DOES guarantee, per the approved Sprint 2D architecture
-  (see DESIGN_DEVIATIONS.md, "Sprint 2D — Columns" entry 3): each of the
-  five demo slugs below resolves to a real, direct /columns/<slug>/ URL;
-  the page survives reload and is Back/Forward-safe; it keeps the shared
-  Columns navigation state active (NewsstandNavigation's own pathname
-  prefix match already covers this — no navigation change was needed); and
-  it is marked noindex, since these are temporary demo identifiers, not
-  approved permanent editorial identities or SEO URLs.
+  Content classification (Sprint 2 content-shell rule — see
+  DESIGN_DEVIATIONS.md and AGENTS.md):
+  - CLASS 1, structural/interface copy ("{{ kicker }} / p.26", "More
+    columns", "← All columns", "← Previous", "Next →", "← Previous column",
+    "Next column →", "Back to all columns →", "Words: John Vincent
+    Caballero", "Caballero! Issue 05") is production-final visual language.
+  - CLASS 2, everything else below (standfirst, hero caption, both prose
+    blocks, pull quote, section heading, and each column's kicker/title/
+    date/read values) is source-faithful reference/demo copy authored for
+    Sprint 2E, matching the practitioner voice already established by
+    Feature/Reviews/Interview/Columns-index. None of it is verified
+    production content — it will be replaced with real copy in a later
+    content checkpoint. Unlike the Columns Index's lead excerpt, none of
+    this copy carries a literal Lorem ipsum fragment.
 
-  The five slugs and their titles are the same demo identities already
-  used on the Columns index (src/pages/columns/index.astro) — reused
-  verbatim, not invented, so the link from the index to here is coherent.
+  Content storage: page-local, matching the precedent already set by
+  Feature/Reviews/Interview/Columns-index (see those files' own comments)
+  — NOT the (currently unused) `columns` Content Collection scaffold in
+  src/content.config.ts. Where this copy is ultimately stored is deferred
+  to a future unified content checkpoint; this sprint does not decide it.
+
+  Five demo slugs, one fixed order (COLUMNS below), matching the order
+  already established on the Columns index (src/pages/columns/index.astro):
+  lead essay first, then the four secondary rows in their existing order.
+  Previous/Next and the sidebar's "More columns" are all derived from
+  position in this single array — no wraparound (the first item has no
+  Previous, the last has no Next; both nodes are omitted entirely rather
+  than rendered disabled or dead).
+
+  Hero image: the golden master implements this as a CSS `background-image`
+  div with no <img> (~line 415 of the source). Every other page in this
+  codebase (Reviews, Interview, Columns index) uses a real <img> for
+  hero-style images instead, for explicit width/height layout stability and
+  accessible alt semantics. This template follows that established
+  production convention rather than the source's specific CSS mechanism —
+  same aspect ratio (16/7), same grayscale-hover treatment, same border/
+  frame. This is a deliberate, minor implementation choice, not a visual
+  redesign; documented in DESIGN_DEVIATIONS.md.
+
+  Remote picsum.photos placeholder images (one per column, matching the
+  established asset policy) stay remote and temporary — not copied into the
+  repo, not moved to src/assets or public, not run through Astro's Image
+  component. Same rationale as Feature/Reviews/Interview/Columns index.
+
+  scroll-reveal.ts already covers the '/columns/' prefix (Sprint 2D
+  anticipated detail routes) — no changes needed there. data-reveal is
+  placed on exactly the five nodes the golden master itself marks
+  data-reveal="1": the hero image wrapper, the first prose block, the pull
+  quote block, the section heading, and the second prose block. The
+  prev/next cards and sidebar rows are NOT marked data-reveal, matching the
+  source.
+
+  cursor-preview.ts (Sprint 2D) is extended in this sprint (see
+  src/scripts/interactions/cursor-preview.ts) to prefix-match '/columns/'
+  instead of exact-matching only '/columns/', so it now also activates on
+  every /columns/<slug>/ detail route for the prev/next cards' and sidebar
+  rows' data-cue plates. Reviews' own exact-match behavior is unchanged.
+
+  Approved contrast exceptions extended (not duplicated) from
+  DESIGN_DEVIATIONS.md entries 7 and 8: the detail-page kicker, the
+  top-bar "← All columns" link, the prev/next card kickers, the sidebar row
+  kickers, and the sidebar's "Back to all columns →" link all reuse the
+  same approved red-on-paper pairing (#e2231a on #efe9dc, ~3.87:1) the
+  Index already has an exception for; the sidebar row hover/active opacity
+  (.72) reuses the Index's "More columns" hover/active exception. See
+  DESIGN_DEVIATIONS.md for the full record — no new exception categories
+  were needed.
 */
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import '../../../styles/columns.css';
 
+interface ColumnDetail {
+  slug: string;
+  kicker: string;
+  title: string;
+  standfirst: string;
+  dateIso: string;
+  dateLabel: string;
+  readLabel: string;
+  heroSeed: string;
+  caption: string;
+  paras1: string[];
+  quote: string;
+  section: string;
+  paras2: string[];
+}
+
 export function getStaticPaths() {
   // Self-contained on purpose: Astro extracts getStaticPaths into its own
-  // build-time module, so its data lives entirely inside the function body
-  // rather than referencing an outer-scope const. The five slugs and their
-  // titles are the same demo identities already used on the Columns index
-  // (src/pages/columns/index.astro) — reused verbatim, not invented.
-  const columns = [
+  // build-time module, so its data must live entirely inside the function
+  // body rather than referencing an outer-scope const (confirmed by an
+  // earlier `COLUMNS is not defined` build failure when this lived at
+  // module scope) — same constraint the retired temporary shell's own
+  // getStaticPaths already documented. This is still the single source of
+  // truth for all five columns' detail content, order, and prev/next/
+  // sidebar derivation; no duplicate copy of this data exists elsewhere in
+  // this file.
+  const COLUMNS: ColumnDetail[] = [
     {
       slug: 'your-automation-doesnt-need-a-model',
+      kicker: 'Essay',
       title: "Your automation doesn't need a model",
+      standfirst:
+        'A field guide to spotting the lookups, routers, and retries hiding inside every automation request before you reach for an LLM.',
+      dateIso: '2026-07',
+      dateLabel: 'July 2026',
+      readLabel: '6 min read',
+      heroSeed: 'caballero-column-detail-1',
+      caption:
+        'The whiteboard after we crossed out the parts nobody needed a model for.',
+      paras1: [
+        'Every automation brief arrives sounding like it needs intelligence. Most of it needs a lookup table, a queue, and someone willing to say no to the fun part.',
+        "I start every engagement the same way: draw the happy path, then find every branch that's actually a rule someone already knows by heart.",
+        "The rule-based branches are usually eighty percent of the work. They're also the eighty percent nobody wants to build, because it's not the part that gets a demo.",
+        "Build that part first. It's boring, it's cheap, and it's the reason the model — when you finally add one — has to do far less guessing.",
+      ],
+      quote:
+        'The boring eighty percent is what makes the smart twenty percent survive contact with a client.',
+      section: 'Where the model earns its keep',
+      paras2: [
+        "Once the lookups are handled, what's left is genuinely ambiguous: free text, judgment calls, things a spreadsheet can't classify cleanly.",
+        "That's where a model belongs — not as a router, but as the last resort after the cheap paths have been exhausted.",
+        'I still wrap it in guardrails: a confidence threshold, a fallback to a human, an eval sheet that catches drift before a client does.',
+        'Clients rarely ask for that discipline up front. They ask for it after the first automation quietly does something weird in production.',
+        "So I build it in from day one. It's cheaper than the apology, and it means the model gets to do the interesting part instead of cleaning up after itself.",
+      ],
     },
     {
       slug: 'six-months-with-a-mechanical-keyboard-i-regret',
+      kicker: 'Gadget review',
       title: 'Six months with a mechanical keyboard I regret',
+      standfirst:
+        'Six months of thock, three keycap sets, and one increasingly permanent habit of muting myself before every keystroke on a client call.',
+      dateIso: '2026-06',
+      dateLabel: 'June 2026',
+      readLabel: '4 min',
+      heroSeed: 'caballero-column-detail-2',
+      caption:
+        "The board, mid-disassembly, somewhere around attempt number three at 'quieter'.",
+      paras1: [
+        'I bought the loudest switches in the lineup on purpose. Reviews warned me. I did not listen.',
+        "For solo work it's perfect — every keystroke sounds like a decision. For anything with a microphone nearby, it's a liability.",
+        'I tried lube, I tried films, I tried a different keycap profile. Each pass made it quieter and slightly less satisfying, which is its own kind of tax.',
+        "Six months in, I've landed on a compromise: loud board for deep work, silent membrane board within arm's reach for calls.",
+      ],
+      quote: 'Beautiful, loud, and a genuine liability on client calls.',
+      section: "What I'd tell past me",
+      paras2: [
+        'Buy the tactile switch, not the clicky one, if you will ever be on a call again in your life.',
+        'Budget an extra weekend for modding. It is not optional, it is part of the purchase.',
+        'Keycap sets are a trap disguised as a hobby. I own four now.',
+        "The desk mat matters more than anyone tells you — it's half the sound profile.",
+        'Would I buy it again? Yes, immediately, and I would still not listen to the reviews.',
+      ],
     },
     {
       slug: 'what-conducting-taught-me-about-standups',
+      kicker: 'Column',
       title: 'What conducting taught me about standups',
+      standfirst:
+        'Nobody in a rehearsal hall needs the whole score in front of them. They need the downbeat, the tempo, and permission to trust the person next to them.',
+      dateIso: '2026-05',
+      dateLabel: 'May 2026',
+      readLabel: '5 min',
+      heroSeed: 'caballero-column-detail-3',
+      caption:
+        'Baton in one hand, sprint board in the other — same job, different room.',
+      paras1: [
+        'A marching band has forty people who cannot see the whole field at once. A standup has six engineers who cannot see the whole system at once. The fix is the same: give everyone the downbeat, not the score.',
+        "Conductors don't explain the piece during the performance. They cue entrances. Good standups do the same — they're a cue, not a status report.",
+        'The worst rehearsals I have run were the ones where I tried to narrate every part instead of trusting the section leaders. The worst standups are identical.',
+        'Once I started treating standup as a cue system instead of a report-out, ours got shorter and the actual updates moved to where they belonged: a channel, not a meeting.',
+      ],
+      quote: 'Nobody needs the whole score. Everybody needs the downbeat.',
+      section: 'Tempo over detail',
+      paras2: [
+        "A section leader who's off by half a beat throws off forty people. An engineer who's blocked and says nothing does the same thing to a sprint.",
+        'So the only real question in either room is: is everyone still on tempo, and if not, who needs help catching up.',
+        'Everything else — the how, the why, the play-by-play — belongs in a doc, not the two minutes everyone has together.',
+        "I've started ending standups the way I end a rehearsal: one clear downbeat for tomorrow, not a summary of today.",
+        'It sounds obvious written down. It took a baton in my hand for about a decade before it actually stuck.',
+      ],
     },
     {
       slug: 'gacha-ui-is-better-than-your-products-ui',
+      kicker: 'Rant',
       title: "Gacha UI is better than your product's UI",
+      standfirst:
+        "Every tap in a gacha game is measured, paced, and rewarded on purpose. Most SaaS dashboards can't say the same about a single click.",
+      dateIso: '2026-04',
+      dateLabel: 'April 2026',
+      readLabel: '7 min',
+      heroSeed: 'caballero-column-detail-4',
+      caption: 'Ten-pull animation, paused mid-shimmer, for research purposes.',
+      paras1: [
+        'Gacha games are the most ruthlessly optimized interfaces on earth, and nobody in enterprise software wants to admit they should be studying them.',
+        'Every animation has a job: build anticipation, pay it off, and make the next pull feel inevitable. Most dashboards animate for decoration, not for purpose.',
+        'The pity counter is a masterclass in managing expectations under uncertainty — it tells you exactly how close you are to a guaranteed outcome. Most loading states tell you nothing.',
+        "I've stolen more interaction ideas from a ten-pull animation than from a year of B2B dashboard case studies.",
+      ],
+      quote: 'Ruthlessly paced, obsessively measured, and shameless about it.',
+      section: 'What actually transfers',
+      paras2: [
+        "Progress toward a goal should always be visible, even when the goal is far away — pity counters get this, progress bars usually don't.",
+        'Reward the click, not just the outcome. A confirmation state that feels like nothing is a missed opportunity, not a neutral default.',
+        'Pace your onboarding the way a game paces its first ten minutes: front-load the wins, not the paperwork.',
+        'None of this means gamify everything — it means take feedback and pacing as seriously as a studio that A/B tests pull rates for a living.',
+        "Your users already know what a well-paced interface feels like. They're just not getting one from you.",
+      ],
     },
     {
       slug: 'the-eval-sheet-is-the-deliverable',
+      kicker: 'Notebook',
       title: 'The eval sheet is the deliverable',
+      standfirst:
+        'Two hundred rows in a spreadsheet outlived three prompt rewrites, one model swap, and every slide deck we made about the project.',
+      dateIso: '2026-03',
+      dateLabel: 'March 2026',
+      readLabel: '5 min',
+      heroSeed: 'caballero-column-detail-5',
+      caption:
+        'Row 214, the one that finally explained why the model kept hedging.',
+      paras1: [
+        "Every LLM project I've shipped has the same actual deliverable, and it isn't the prompt. It's the eval sheet.",
+        'The prompt changes weekly. The model changes when a better one ships. The eval sheet — the list of real inputs and what a correct answer looks like — survives both.',
+        'I started keeping one for a client automation almost by accident, just to convince myself a rewrite had not broken anything. Two hundred rows later, it was the only artifact anyone still trusted.',
+        "It's not glamorous. Nobody puts an eval sheet in a pitch deck. But it's the thing that tells you the truth when a demo can't.",
+      ],
+      quote: 'Two hundred rows that outlived three prompt rewrites.',
+      section: 'What belongs in one',
+      paras2: [
+        'Real inputs, not made-up ones — pulled from actual usage, including the ugly edge cases nobody wants to admit happen weekly.',
+        'A correct answer for each row, written by a human who actually knows the domain, not inferred from what the model already outputs.',
+        'A pass/fail column, updated every time the prompt or model changes — not just when something breaks in production.',
+        "Enough rows to catch drift, not so many that nobody keeps it updated. I've found two hundred is usually the sweet spot.",
+        "Once it exists, every future rewrite has to prove it didn't regress. That's the whole point — it's not a test suite, it's a promise.",
+      ],
     },
   ];
 
-  return columns.map(({ slug, title }) => ({
-    params: { slug },
-    props: { title },
-  }));
+  return COLUMNS.map((column, index) => {
+    const prev = index > 0 ? COLUMNS[index - 1] : null;
+    const next = index < COLUMNS.length - 1 ? COLUMNS[index + 1] : null;
+    const others = COLUMNS.filter((_, i) => i !== index);
+    return {
+      params: { slug: column.slug },
+      props: { column, prev, next, others },
+    };
+  });
 }
 
 interface Props {
-  title: string;
+  column: ColumnDetail;
+  prev: ColumnDetail | null;
+  next: ColumnDetail | null;
+  others: ColumnDetail[];
 }
 
-const { title } = Astro.props as Props;
-const description = `Columns / p.26 — ${title}. This individual column's full template is deferred to a later checkpoint.`;
+const { column, prev, next, others } = Astro.props as Props;
+
+const title = `${column.title} | CABALLERO!`;
+const description = `${column.kicker} / p.26 — ${column.title}. ${column.standfirst}`;
 ---
 
-<BaseLayout title={`${title} | CABALLERO!`} description={description} noindex>
-  <div class="columns-detail-shell container">
-    <p class="columns-detail__kicker">Columns / p.26</p>
-    <h1 class="columns-detail-shell__title">{title}</h1>
-    <p class="columns-detail-shell__note">
-      This individual column's full reading view is deferred to a later
-      checkpoint. This page is a temporary placeholder that confirms the link
-      works, survives a reload, and responds correctly to your browser's Back
-      and Forward buttons.
+<BaseLayout title={title} description={description}>
+  <article class="columns-detail container">
+    <div class="columns-detail__topbar">
+      <a class="columns-detail__all" href="/columns/">← All columns</a>
+      {
+        (prev || next) && (
+          <nav class="columns-detail__prevnext" aria-label="Column navigation">
+            {prev && (
+              <a
+                class="columns-detail__prevnext-link columns-detail__prevnext-link--prev"
+                href={`/columns/${prev.slug}/`}
+              >
+                ← Previous
+              </a>
+            )}
+            {prev && next && (
+              <span class="columns-detail__divider" aria-hidden="true" />
+            )}
+            {next && (
+              <a
+                class="columns-detail__prevnext-link columns-detail__prevnext-link--next"
+                href={`/columns/${next.slug}/`}
+              >
+                Next →
+              </a>
+            )}
+          </nav>
+        )
+      }
+    </div>
+
+    <p class="columns-detail__kicker">{column.kicker} / p.26</p>
+    <h1 class="columns-detail__title">{column.title}</h1>
+    <p class="columns-detail__standfirst">{column.standfirst}</p>
+    <p class="columns-detail__meta">
+      <span><time datetime={column.dateIso}>{column.dateLabel}</time></span>
+      <span>{column.readLabel}</span>
+      <span>Words: John Vincent Caballero</span>
+      <span>Caballero! Issue 05</span>
     </p>
-    <a class="columns-detail__back" href="/columns/">← All columns</a>
+
+    <div class="columns-detail__hero" data-reveal>
+      <img
+        src={`https://picsum.photos/seed/${column.heroSeed}/1600/700`}
+        width="1600"
+        height="700"
+        alt=""
+        loading="eager"
+        decoding="async"
+      />
+    </div>
+    <p class="columns-detail__caption">{column.caption}</p>
+
+    <div class="columns-detail__layout">
+      <div class="columns-detail__body">
+        <div class="columns-detail__prose" data-reveal>
+          {column.paras1.map((para) => <p>{para}</p>)}
+        </div>
+
+        <blockquote class="columns-detail__quote" data-reveal>
+          <p>{column.quote}</p>
+        </blockquote>
+
+        <h2 class="columns-detail__section" data-reveal>{column.section}</h2>
+        <div class="columns-detail__prose" data-reveal>
+          {column.paras2.map((para) => <p>{para}</p>)}
+        </div>
+
+        <p class="columns-detail__signature">— J. V. Caballero</p>
+
+        {
+          (prev || next) && (
+            <nav
+              class="columns-detail__cards"
+              aria-label="More columns to read"
+            >
+              {prev && (
+                <a
+                  class="columns-detail__card columns-detail__card--prev"
+                  href={`/columns/${prev.slug}/`}
+                  data-cue="Read the column →"
+                >
+                  <span class="columns-detail__card-kicker">
+                    ← Previous column
+                  </span>
+                  <span class="columns-detail__card-title">{prev.title}</span>
+                </a>
+              )}
+              {next && (
+                <a
+                  class="columns-detail__card columns-detail__card--next"
+                  href={`/columns/${next.slug}/`}
+                  data-cue="Read the column →"
+                >
+                  <span class="columns-detail__card-kicker">Next column →</span>
+                  <span class="columns-detail__card-title">{next.title}</span>
+                </a>
+              )}
+            </nav>
+          )
+        }
+      </div>
+
+      <aside class="columns-detail__sidebar">
+        <h2 class="columns-detail__sidebar-heading">More columns</h2>
+        <ul class="columns-detail__sidebar-list">
+          {
+            others.map((item) => (
+              <li>
+                <a
+                  class="columns-detail__sidebar-row"
+                  href={`/columns/${item.slug}/`}
+                  data-cue="Read the column →"
+                >
+                  <span class="columns-detail__sidebar-kicker">
+                    {item.kicker}
+                  </span>
+                  <span class="columns-detail__sidebar-title">
+                    {item.title}
+                  </span>
+                  <span class="columns-detail__sidebar-date">
+                    <time datetime={item.dateIso}>{item.dateLabel}</time>{' '}
+                    &middot; {item.readLabel}
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <a class="columns-detail__back" href="/columns/">
+          Back to all columns →
+        </a>
+      </aside>
+    </div>
+  </article>
+
+  <div class="columns-cursor-preview" data-cursor-preview aria-hidden="true">
   </div>
 </BaseLayout>

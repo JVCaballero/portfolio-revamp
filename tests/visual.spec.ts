@@ -63,3 +63,21 @@ test('Columns shell full-page visual regression', async ({ page }) => {
     fullPage: true,
   });
 });
+
+test('Columns detail (production article template) full-page visual regression', async ({
+  page,
+}) => {
+  // Sprint 2E: one representative route stands in for all five demo
+  // slugs, since they all share the exact same template — the middle
+  // slug is used because it is the only one with both a Previous and a
+  // Next module present, giving the fullest layout coverage in one
+  // baseline. Reduced motion settles scroll-reveal to its resting,
+  // fully-visible final state and disables the cursor-preview plate
+  // entirely, same rationale as the Columns Index baseline above.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/columns/what-conducting-taught-me-about-standups/');
+
+  await expect(page).toHaveScreenshot('columns-detail-shell.png', {
+    fullPage: true,
+  });
+});

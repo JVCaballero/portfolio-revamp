@@ -368,68 +368,30 @@ Site.dc.html`, the three résumé/tour timeline rows, ~lines 368-370).
   holistic design QA. A later, explicit design decision may change this
   interaction's feel; this entry does not authorize that on its own.
 
-### 9. Temporary Columns [slug] route-integrity shell
+### 9. Temporary Columns [slug] route-integrity shell (RETIRED — superseded by Sprint 2E entries 11 and 12)
 
-- **Date:** 2026-08-26.
-- **Route / component:** `/columns/<slug>/` for the five temporary demo
-  slugs (`your-automation-doesnt-need-a-model`,
+- **Date:** 2026-08-26. **Retired:** 2026-08-26 (Sprint 2E).
+- **Route / component:** `/columns/<slug>/` for the five demo slugs
+  (`your-automation-doesnt-need-a-model`,
   `six-months-with-a-mechanical-keyboard-i-regret`,
   `what-conducting-taught-me-about-standups`,
   `gacha-ui-is-better-than-your-products-ui`,
   `the-eval-sheet-is-the-deliverable`), `src/pages/columns/[slug]/index.astro`.
-- **Immutable source behavior/design:** Opening a column in the golden
-  master swaps to a full article-detail view — hero image, byline/date/
-  read-time bar, two-column prose, a pull quote, a "Tour dates"-style
-  prev/next module, and a "More columns" sidebar (`Newsstand - Full
-Site.dc.html`, the `isColumns` sc-if block's `readingColumn` branch,
-  ~lines 401-472).
-- **Production behavior/design:** Each of the five demo slugs resolves to
-  a real, direct `/columns/<slug>/` URL that renders a minimal, `noindex`
-  placeholder shell (kicker, the column's own title as an h1, one
-  paragraph stating the reading view is deferred, and a link back to
-  `/columns/`) instead of the immutable article-detail template. The
-  route survives reload, is Back/Forward-safe, and keeps the shared
-  Columns navigation state active.
-- **Immutable source detail view (correction):** the golden master contains
-  an individual-column detail experience, but Sprint 2D intentionally
-  provides only a temporary noindex route-integrity shell. Sprint 2E will
-  reproduce the approved detail-page system.
-- **Reason for deviation:** Sprint 2E's production article template has not
-  yet run, and its content architecture is explicitly deferred, not
-  pre-decided, by Sprint 2D. Sprint 2E will inspect the immutable
-  individual-column template and determine the smallest durable content
-  architecture then. Building the production template now would be
-  premature infrastructure outside this checkpoint's approved scope. A
-  route that resolves and behaves correctly is still required so the
-  Columns index's five article links are real, navigable, native anchors
-  rather than dead or fake links.
-- **Classification:** temporary implementation deviation, not a permanent
-  design decision.
-- **Status:** temporary — expected to be superseded by the Sprint 2E
-  production article template. Not part of the post-Sprint-2 holistic
-  design QA's golden-master comparison (this temporary shell is explicitly
-  not attempting to match the golden master's own detail view).
-- **Approval source:** explicitly approved by the project owner during the
-  Sprint 2D architecture review (approved architecture map referenced at
-  the top of the Sprint 2D implementation task).
-- **Exact files/nodes affected:** `src/pages/columns/[slug]/index.astro`;
-  the `.columns-detail-shell*`, `.columns-detail__kicker`, and
-  `.columns-detail__back` selectors in `src/styles/columns.css`. Correction
-  pass (2026-08-26): this shell was found reusing `.columns-kicker`, which
-  imports the Columns Index's approved red-on-paper contrast exception
-  (entry 7) onto a node that exception was never approved for. Fixed by
-  giving the shell its own `.columns-detail__kicker` and
-  `.columns-detail__back` (resting state), both using `--color-ink` instead
-  of the accent red — no new accessibility exception was introduced, and
-  the Index's existing exception was not broadened.
-- **Testing:** `tests/smoke.spec.ts` covers all five slugs resolving
-  directly, `noindex`, active Columns navigation, reload, Back/Forward,
-  and the back-to-index link. `tests/accessibility.spec.ts` adds a
-  representative Axe A/AA scan of one detail route
-  (`/columns/your-automation-doesnt-need-a-model/`), confirming no new
-  contrast exception is needed there.
-- **Final-QA reminder:** remove or fully rewrite this entry once Sprint 2E
-  replaces this shell with the production article template.
+- **Status:** RETIRED. Sprint 2D intentionally shipped only a temporary,
+  `noindex` route-integrity shell on this route (no hero, no article body,
+  no byline system, no sticky rail, no prev/next navigation, no pull
+  quote, no signature, no multi-column prose), explicitly deferring the
+  production article-detail template to Sprint 2E. Sprint 2E has now
+  replaced that shell entirely with the real production template — see
+  entry 11 (production template + extended contrast exceptions) and entry
+  12 (hero-image implementation choice) below. This entry is kept for the
+  historical record only; its "Production behavior/design" description no
+  longer matches what ships on this route. Not part of the post-Sprint-2
+  holistic design QA's golden-master comparison in its retired form — see
+  entry 11 for the current golden-master comparison.
+- **Original approval source:** explicitly approved by the project owner
+  during the Sprint 2D architecture review (approved architecture map
+  referenced at the top of the Sprint 2D implementation task).
 
 ### 10. More Columns reveal-wrapper placement (implementation deviation, approved)
 
@@ -480,3 +442,136 @@ class="columns-more__row">` owns its own `:hover`/`:active` transform and
 - **Final-QA reminder:** re-verify this remains the correct approach if
   Sprint 2E or a later pass changes how reveal or row hover is
   implemented site-wide.
+
+## Sprint 2E — Columns detail
+
+### 11. Columns detail-template contrast exceptions (extends entries 7 and 8)
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/columns/<slug>/` (all five demo slugs, one
+  shared template), `src/pages/columns/[slug]/index.astro`,
+  `src/styles/columns.css`. This entry documents the production
+  article-detail template that replaces the retired temporary shell (see
+  entry 9 above) and confirms that reproducing it faithfully requires no
+  new accessibility exception categories beyond the two the Columns Index
+  already established.
+- **Immutable source behavior/design:** Opening a column in the golden
+  master swaps to a full article-detail view — a top bar ("← All columns"
+  plus "← Previous"/"Next →"), a folio kicker, headline, italic standfirst,
+  a byline/date/read-time meta bar, a hero image, a two-column prose block,
+  a pull quote, a second heading and prose block, a handwritten signature,
+  a prev/next card module, and a "More columns" sidebar (`Newsstand - Full
+Site.dc.html`, the `isColumns` sc-if block's `readingColumn` branch,
+  ~lines 401-472). Several of these nodes reuse the same small
+  Newsstand-red-on-paper text pairing (`#e2231a` on `#efe9dc`) already
+  documented for the Columns Index in entry 7, and the sidebar row reuses
+  the same `opacity: .72` hover/active treatment already documented in
+  entry 8.
+- **Production behavior/design:** Preserved exactly — same color pairing,
+  sizes, weights, and tracking for every affected node; same hover/active
+  opacity value and translateX shift on sidebar rows. No color, size,
+  typography, hierarchy, or interaction-feel change was made anywhere in
+  this template.
+- **Reason for deviation:** Identical to the reasoning already accepted for
+  entries 7 and 8 — changing the red, the paper background, the hover
+  opacity, or any affected node's size/weight would visibly redesign the
+  immutable Newsstand golden master, which is outside this checkpoint's
+  authorized scope. This is a straightforward extension of already-approved
+  reasoning to the equivalent nodes on a new, faithfully-reproduced route,
+  not a new accessibility trade-off requiring separate sign-off.
+- **Classification:** accessibility (exception extension, not a new
+  exception category).
+- **Status:** accepted permanent design-preservation exception, pending
+  final holistic QA. This does NOT broaden entries 7 or 8 to any node type
+  they did not already cover in spirit (small red editorial text; row
+  hover/active opacity) — it applies the same, already-approved reasoning
+  to this template's equivalent nodes.
+- **Approval source:** project owner, Sprint 2E implementation task (no
+  external reviewer this sprint; the exact CSS/markup below is subject to
+  independent review before this ships).
+- **Exact files/nodes affected (extends entry 7 — red-on-paper text):**
+  `.columns-detail__kicker` (the "{{ kicker }} / p.26" folio line, one per
+  route), `.columns-detail__all` (the top "← All columns" link),
+  `.columns-detail__card-kicker` (the prev/next cards' "← Previous
+  column" / "Next column →" labels, one or two per route depending on
+  position), `.columns-detail__sidebar-kicker` (the four "More columns"
+  row kickers), and `.columns-detail__back` ("Back to all columns →") —
+  all in `src/styles/columns.css`, with corresponding nodes in
+  `src/pages/columns/[slug]/index.astro`. Explicitly NOT included: the
+  top-bar "← Previous" / "Next →" links (`.columns-detail__prevnext-link`)
+  — these use the muted-metadata color (`#6f6656`) already documented for
+  Reviews/Interview (entries 4 and 6), which passes AA at rest and needs no
+  exception here.
+- **Exact files/nodes affected (extends entry 8 — row hover/active
+  opacity):** `.columns-detail__sidebar-row` in `src/styles/columns.css`,
+  only while the row itself is `:hover`/`:active`; in practice only its
+  `.columns-detail__sidebar-date` child (muted-metadata color) actually
+  drops below AA under the blend, since the row's title is ink-colored
+  (inherited, not muted) and stays above AA even at 0.72 opacity — the
+  same reason the Columns Index's own equivalent test never asserts its
+  title drops below AA either. Corresponding nodes in
+  `src/pages/columns/[slug]/index.astro`.
+- **Testing:** `tests/accessibility.spec.ts` adds a narrowly-scoped Axe
+  A/AA scan of one representative route (the middle of the five, the only
+  one with both a Previous and a Next module present, giving the fullest
+  exception surface in one scan), asserting the exact expected
+  color-contrast target set (nine nodes: one kicker, one "All columns"
+  link, two card kickers, four sidebar kickers, one back link) — no more,
+  no fewer, no different targets — plus a separate deterministic
+  hover/active opacity-blend check confirming the sidebar row's
+  `.columns-detail__sidebar-date` text drops below AA under hover/active
+  while its ink-colored title stays passing, mirroring the Columns Index's
+  own two-part testing pattern (entries 7 and 8). It does not modify,
+  broaden, or otherwise touch the Columns Index's own exceptions, the
+  Cover/Feature/Reviews/Interview exceptions, or disable Axe's
+  `color-contrast` rule page-wide.
+- **Final-QA reminder:** re-verify this exception still matches the golden
+  master exactly (no drift in color/size/weight/opacity) during the
+  post-Sprint-2 holistic design QA.
+
+### 12. Columns detail hero image: `<img>` instead of a CSS background-image div
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/columns/<slug>/` (all five demo slugs),
+  `.columns-detail__hero`, `src/pages/columns/[slug]/index.astro`,
+  `src/styles/columns.css`.
+- **Immutable source behavior/design:** The hero image is a plain `<div>`
+  with `background-image: {{ colImgCss }}`, `background-size: cover`,
+  `background-position: center`, inside an outer bordered/striped frame
+  div (`Newsstand - Full Site.dc.html`, ~line 415). There is no `<img>`
+  element and no `alt` text anywhere in this node.
+- **Production behavior/design:** A real `<img>` inside the same bordered/
+  striped `.columns-detail__hero` frame, with explicit `width="1600"`
+  `height="700"` (matching the source's `16/7` aspect ratio), `alt=""`
+  (decorative — the image is a temporary remote placeholder with no
+  trustworthy editorial information, same rationale as every other
+  placeholder image in this codebase), and the exact same grayscale-to-
+  color/scale hover treatment (`filter: grayscale(1) contrast(1.06)` at
+  rest, `filter: none; transform: scale(1.03)` on hover) applied to the
+  `<img>` itself rather than to a background-image div.
+- **Reason for deviation:** Every other hero-style image already shipped in
+  this codebase (Reviews' review-row thumbnails, Interview's two portrait
+  images, the Columns Index's lead image) uses a real `<img>`, not a CSS
+  background-image, specifically for explicit width/height layout
+  stability and accessible alt semantics — an `<img>` participates in the
+  accessibility tree and image-loading/decoding pipeline in ways a
+  background-image div does not. Reproducing the source's specific CSS
+  mechanism here instead of following that established production
+  convention would introduce an inconsistent, one-off pattern across an
+  otherwise-consistent set of sibling pages, for no visible benefit: the
+  aspect ratio, framing, grayscale-hover treatment, and cover/center
+  sizing are all preserved exactly.
+- **Classification:** approved implementation deviation, not a visual
+  redesign.
+- **Status:** accepted, pending final holistic QA.
+- **Approval source:** project owner, Sprint 2E implementation task.
+- **Exact files/nodes affected:** `.columns-detail__hero` and
+  `.columns-detail__hero img` in `src/styles/columns.css`; the single
+  `<div class="columns-detail__hero"><img .../></div>` node (one per
+  route) in `src/pages/columns/[slug]/index.astro`.
+- **Testing:** `tests/smoke.spec.ts` verifies the hero `<img>` has explicit
+  `width`/`height` and decorative `alt=""`; `tests/accessibility.spec.ts`
+  and `tests/visual.spec.ts` exercise the route as a whole, including this
+  node's resting/hover appearance.
+- **Final-QA reminder:** re-verify this remains the correct approach if a
+  later pass changes how hero-style images are implemented site-wide.

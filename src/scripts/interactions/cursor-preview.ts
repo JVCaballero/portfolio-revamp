@@ -19,6 +19,15 @@
   desktop-only threshold; only the visible-state class and the
   static-vs-dynamic label behavior are route-specific, kept in one small
   per-route config table rather than a second module.
+
+  Sprint 2E: Columns' route match is generalized from an exact `/columns/`
+  match to a prefix match, so the plate also activates on the production
+  article-detail template's own `/columns/<slug>/` routes (their prev/next
+  cards and sidebar rows carry the same data-cue attribute). Reviews has no
+  nested routes, so it keeps its exact-match predicate unchanged. Each
+  RouteConfig entry owns its own `matches` predicate rather than a single
+  shared comparison, so the two routes' matching semantics can differ
+  without a second module.
 */
 import type { InteractionModule } from './interaction-controller';
 
@@ -28,7 +37,7 @@ const MIN_WIDTH_PX = 900;
 const POINTER_Y_OFFSET_PX = 14;
 
 interface RouteConfig {
-  pathname: string;
+  matches: (pathname: string) => boolean;
   visibleClass: string;
   // Columns' plate text tracks the hovered item's own data-cue label;
   // Reviews' plate keeps its existing static markup text untouched.
@@ -37,12 +46,12 @@ interface RouteConfig {
 
 const ROUTES: RouteConfig[] = [
   {
-    pathname: '/reviews/',
+    matches: (pathname) => pathname === '/reviews/',
     visibleClass: 'reviews-cursor-preview--visible',
     dynamicLabel: false,
   },
   {
-    pathname: '/columns/',
+    matches: (pathname) => pathname.startsWith('/columns/'),
     visibleClass: 'columns-cursor-preview--visible',
     dynamicLabel: true,
   },
@@ -51,7 +60,7 @@ const ROUTES: RouteConfig[] = [
 export const cursorPreview: InteractionModule = {
   name: 'cursor-preview',
   init(context) {
-    const route = ROUTES.find((r) => r.pathname === context.pathname);
+    const route = ROUTES.find((r) => r.matches(context.pathname));
     if (!route) return;
     if (context.reducedMotion.matches) return;
 
