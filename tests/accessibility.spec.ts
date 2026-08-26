@@ -2123,3 +2123,30 @@ test('Resume has no positive tabindex and every link resolves to a real, non-has
     expect(href).not.toBe('#');
   }
 });
+
+test.describe('Post-Sprint-2 fix: Dispatch band dot pulse', () => {
+  test('Dispatch dot pulse settles fully opaque under reduced motion and stays decorative', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+
+    const dot = page.locator('.newsstand-dispatch__dot');
+    await expect(dot).toHaveAttribute('aria-hidden', 'true');
+
+    await page.waitForTimeout(200);
+    const opacity = await dot.evaluate((el) => getComputedStyle(el).opacity);
+    expect(Number(opacity)).toBe(1);
+  });
+
+  test('Dispatch route has no automated WCAG A/AA violations introduced by the pulse or rotation', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+      .include('footer.newsstand-bottom-chrome')
+      .analyze();
+    expect(results.violations).toEqual([]);
+  });
+});

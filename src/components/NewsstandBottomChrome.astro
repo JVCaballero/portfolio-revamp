@@ -6,11 +6,20 @@
   sit outside every page's `sc-if` conditional in the immutable source, so
   they are genuinely site-wide rather than Cover-specific.
 
-  Static only: the source rotates `dispatchNow` through a five-message
-  array on a timer. That rotation, and the underlying interaction module it
-  would require, is explicitly deferred past Sprint 1H. The first dispatch
-  message below is reference/demo shell copy carried over verbatim to
-  preserve composition — it is not verified production content.
+  Post-Sprint-2 fix: the source rotates `dispatchNow` through a five-message
+  array on a 4800ms timer, fading each new message in (`animation:dv-fade
+  .5s ease both`, ~line 928 of the source's runtime). That rotation is now
+  implemented by src/scripts/interactions/dispatch-rotation.ts — the first
+  genuinely site-wide interaction module (every other module pathname-gates
+  to specific routes; this one runs on every page, matching this band's own
+  site-wide placement). The five messages it rotates through are the
+  source's own verbatim array; see that file for the full list. This
+  paragraph's first message (index 0) is what every page's static HTML
+  and visual baseline already show — the module advances from there.
+
+  The dot's continuous slow pulse (`.newsstand-dispatch__dot`) is a
+  project-owner-approved addition beyond the golden master itself — the
+  source's dot is static with no animation. See DESIGN_DEVIATIONS.md.
 */
 ---
 
@@ -19,7 +28,7 @@
     <div class="newsstand-dispatch__inner container">
       <span class="newsstand-dispatch__label">Dispatch</span>
       <span class="newsstand-dispatch__dot" aria-hidden="true"></span>
-      <p class="newsstand-dispatch__message">
+      <p class="newsstand-dispatch__message" data-dispatch-message>
         Case file: teaching a bot to say &ldquo;I don&rsquo;t know&rdquo;
       </p>
     </div>
@@ -72,6 +81,24 @@
     height: 5px;
     border-radius: var(--radius-circle);
     background: var(--color-accent);
+    animation: newsstand-dispatch-dot-pulse 2.4s ease-in-out infinite;
+  }
+
+  /* Slow, continuous "live" pulse — a project-owner-approved addition
+     beyond the golden master's static dot. Symmetric (1 -> 0.25 -> 1) and
+     declares no competing base opacity, so a single reduced-motion
+     iteration (global.css forces animation-iteration-count:1) settles
+     back at the initial value of 1 — fully visible, matching every
+     existing visual baseline. */
+  @keyframes newsstand-dispatch-dot-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.25;
+    }
   }
 
   .newsstand-dispatch__message {
@@ -86,6 +113,30 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  /* The fade only ever applies while dispatch-rotation.ts is actively
+     toggling this class for a message change — deliberately NOT an
+     unconditional animation on the base rule. The very first paint is
+     static server-rendered HTML with no entrance animation: applying one
+     unconditionally here would leave every page's opacity in an
+     indeterminate, timing-dependent state right as an automated
+     screenshot tool disables/freezes animations, which is exactly what
+     broke every existing visual baseline by a handful of antialiased
+     pixels when this was tried. */
+  .newsstand-dispatch__message--rotating {
+    animation: newsstand-dispatch-fade var(--duration-scrawl-fade)
+      var(--ease-standard) both;
+  }
+
+  @keyframes newsstand-dispatch-fade {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
   .newsstand-publication {

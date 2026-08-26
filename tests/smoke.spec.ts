@@ -156,6 +156,67 @@ test('Shared Newsstand bottom chrome (Dispatch strip + publication footer) rende
   await expect(chrome.getByText('© 2026 John Vincent Caballero')).toBeVisible();
 });
 
+test.describe('Post-Sprint-2 fix: Dispatch band rotation', () => {
+  test('The Dispatch message rotates to the second message after the rotation interval, in the source order', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    const message = page.locator('[data-dispatch-message]');
+    await expect(message).toHaveText(
+      'Case file: teaching a bot to say “I don’t know”',
+    );
+
+    await expect(message).toHaveText(
+      'New in the playground — Shelf, a manga backlog tracker',
+      { timeout: 6000 },
+    );
+  });
+
+  test('The Dispatch message keeps rotating after navigating away and back, without leaking a duplicate timer', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const message = page.locator('[data-dispatch-message]');
+
+    await expect(message).not.toHaveText(
+      'Case file: teaching a bot to say “I don’t know”',
+      { timeout: 6000 },
+    );
+
+    await page.getByRole('link', { name: 'Feature', exact: true }).click();
+    await expect(page).toHaveURL(/\/feature\/$/);
+    await page.getByRole('link', { name: 'Cover', exact: true }).click();
+    await expect(page).toHaveURL(/\/$/);
+
+    const restarted = page.locator('[data-dispatch-message]');
+    await expect(restarted).toHaveText(
+      'Case file: teaching a bot to say “I don’t know”',
+    );
+    await expect(restarted).toHaveText(
+      'New in the playground — Shelf, a manga backlog tracker',
+      { timeout: 6000 },
+    );
+  });
+
+  test('Dispatch band renders console-clean and the dot stays decorative/aria-hidden', async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    page.on('pageerror', (error) => errors.push(error.message));
+
+    await page.goto('/');
+    await page.waitForTimeout(200);
+
+    const dot = page.locator('.newsstand-dispatch__dot');
+    await expect(dot).toHaveAttribute('aria-hidden', 'true');
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('Sprint 1H Cover shell', () => {
   test('Cover teaser navigation reaches a real route, and Back/Forward/reload remain correct', async ({
     page,

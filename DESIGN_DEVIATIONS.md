@@ -1137,3 +1137,96 @@ Site.dc.html`, the `isLetters` sc-if block, ~line 581). The source has no
   page and its content together — this is real professional content, not
   a content-review backlog item. No golden-master final-QA re-check
   applies to this route.
+
+## Post-Sprint-2 fixes — shared Dispatch band
+
+### 24. Dispatch band message rotation implemented (closes Sprint 1H's deferred item)
+
+- **Date:** 2026-08-26.
+- **Route / component:** site-wide — `.newsstand-dispatch__message` in
+  `src/components/NewsstandBottomChrome.astro`, driven by the new
+  `src/scripts/interactions/dispatch-rotation.ts`.
+- **Immutable source behavior/design:** The `dispatchNow` node cycles
+  through a five-message array on a 4800ms timer (`beat` state
+  incrementing, `idx = beat % dispatches.length`), fading each new message
+  in with `animation:dv-fade .5s ease both` (`Newsstand - Full
+Site.dc.html`, the message array ~lines 707-712, the timer/render logic
+  ~lines 895-939).
+- **Production behavior/design:** Sprint 1H shipped this band fully
+  static (first message only, no rotation) and explicitly deferred the
+  rotation and its interaction module past that sprint (see the file's own
+  prior comment). This fix implements it: the same five messages,
+  verbatim, rotating on the same 4800ms interval, with the same 0.5s fade
+  on each change (mapped to the existing `--duration-scrawl-fade`/
+  `--ease-standard` tokens). The module is the first genuinely site-wide
+  interaction module — every other module pathname-gates to specific
+  routes; this one runs unconditionally since the Dispatch band itself
+  renders in the shared footer on every page.
+- **Reason for deviation:** Not a deviation — this closes a previously
+  documented, intentional gap rather than introducing a new one. The
+  project owner flagged the missing animation directly after Sprint 2
+  completed.
+- **Classification:** bug fix / deferred-feature completion.
+- **Status:** implemented.
+- **Approval source:** project owner, reported directly post-Sprint-2.
+- **Exact files/nodes affected:** `src/components/NewsstandBottomChrome.astro`
+  (`data-dispatch-message` attribute added, plus a `newsstand-dispatch-fade`
+  keyframe applied only via the `.newsstand-dispatch__message--rotating`
+  modifier class — deliberately NOT applied unconditionally to the static
+  first paint; an earlier version of this fix did that and it left every
+  page's Dispatch message in a timing-dependent opacity state right as
+  Playwright's automated screenshot tooling disables/freezes animations,
+  breaking every existing visual baseline by a handful of antialiased
+  pixels — see that component's own comment on the modifier class);
+  `src/scripts/interactions/dispatch-rotation.ts` (new, toggles that class
+  only for JS-driven rotations);
+  `src/scripts/interactions/interaction-controller.ts` (import + `MODULES`
+  registration).
+- **Testing:** `tests/smoke.spec.ts` verifies the message text changes
+  after the rotation interval elapses, using the same real-time
+  extended-timeout `expect(...).toBeVisible/toHaveText({ timeout })`
+  pattern already established for Letters' copy-confirmation auto-hide
+  test (no clock mocking is used anywhere in this test suite yet) — cycles
+  through all five messages in the source's exact order, keeps rotating
+  across ClientRouter navigation to a different route and back, and stops
+  cleanly (no console errors, no leaked timer) on page teardown.
+- **Final-QA reminder:** if the golden master's dispatch message array or
+  timing ever changes, update `MESSAGES`/`ROTATE_INTERVAL_MS` in
+  `dispatch-rotation.ts` to match.
+
+### 25. Dispatch dot continuous pulse (approved addition beyond the golden master)
+
+- **Date:** 2026-08-26.
+- **Route / component:** site-wide — `.newsstand-dispatch__dot` in
+  `src/components/NewsstandBottomChrome.astro`.
+- **Immutable source behavior/design:** The dot (`Newsstand -
+Full Site.dc.html`, ~line 625) is a plain, static, unanimated 5px red
+  circle — no pulse, blink, or any other motion.
+- **Production behavior/design:** A slow (2.4s), continuous, symmetric
+  opacity pulse (1 → 0.25 → 1), reading as a "live" indicator alongside
+  the rotating Dispatch messages. This is explicitly NOT present in the
+  golden master.
+- **Reason for deviation:** The project owner explicitly requested this
+  addition directly, after Sprint 2 completed, as a deliberate enhancement
+  beyond the immutable source rather than a fidelity requirement — AGENTS.md's
+  "preserve the experience" mandate governs reproducing the golden master,
+  not enhancements the actual project owner asks for on top of it.
+- **Classification:** approved enhancement, not a golden-master deviation
+  in the usual "we had to compromise" sense.
+- **Status:** implemented, pending the project owner's visual confirmation
+  that the pulse reads as intended (a gentle "live" pulse rather than a
+  hard on/off blink — flagged explicitly for their review since "blinking"
+  could reasonably mean either).
+- **Approval source:** project owner, reported directly post-Sprint-2.
+- **Exact files/nodes affected:** `.newsstand-dispatch__dot` and the new
+  `newsstand-dispatch-dot-pulse` keyframes in
+  `src/components/NewsstandBottomChrome.astro`.
+- **Testing:** `tests/accessibility.spec.ts` confirms the pulse still
+  respects `prefers-reduced-motion: reduce` (settles fully opaque, per
+  global.css's existing universal reduced-motion rule) and that the dot
+  remains `aria-hidden` and decorative (no essential information conveyed
+  by the animation alone — the Dispatch label and message text are the
+  actual content).
+- **Final-QA reminder:** if the project owner prefers a harder on/off
+  blink instead of a gentle pulse, adjust the keyframes' opacity floor
+  (e.g. 0 instead of 0.25) and/or switch from `ease-in-out` to `steps(1)`.
