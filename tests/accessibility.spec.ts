@@ -1115,43 +1115,240 @@ test('Columns has no positive tabindex, and the cursor-preview plate is excluded
 });
 
 /*
-  Correction pass — representative Axe scan for the temporary [slug]
-  detail-route shell (src/pages/columns/[slug]/index.astro). All five demo
-  slugs share the exact same template, so one representative route is
-  scanned rather than five redundant Axe runs; tests/smoke.spec.ts already
-  covers all five routes resolving, noindex, and active Columns navigation.
-  This test exists specifically to confirm the correction-pass fix: the
-  shell's kicker and back link now use ink-colored text
-  (`.columns-detail__kicker`, `.columns-detail__back`) instead of reusing
-  the Columns Index's approved red-on-paper exception (DESIGN_DEVIATIONS.md
-  entry 7), so no new, unapproved contrast failure exists on this route and
-  no new accessibility exception is required here.
+  Sprint 2E — Columns article-detail template
+  (src/pages/columns/[slug]/index.astro), replacing the retired temporary
+  [slug] route-integrity shell. All five demo slugs share the exact same
+  template, so one representative route is scanned rather than five
+  redundant Axe runs; tests/smoke.spec.ts already covers all five routes
+  resolving and active Columns navigation.
+
+  The representative route below (`what-conducting-taught-me-about-
+  standups`, the middle of the five, position 2 of 5) is deliberately
+  chosen because it is the only slug with BOTH a Previous and a Next
+  card/link present, giving the fullest exception surface in one scan.
+
+  This template extends (does not duplicate) two exceptions already
+  documented for the Columns Index in DESIGN_DEVIATIONS.md:
+  1. Entry 7 (small Newsstand-red text, `#e2231a` on `#efe9dc`, ~3.87:1):
+     extended to `.columns-detail__kicker`, `.columns-detail__all` (the
+     top "← All columns" link), `.columns-detail__card-kicker` (the
+     prev/next cards' "← Previous column" / "Next column →" labels),
+     `.columns-detail__sidebar-kicker` (the four "More columns" row
+     kickers), and `.columns-detail__back` ("Back to all columns →").
+     Note: the top-bar "← Previous" / "Next →" links
+     (`.columns-detail__prevnext-link`) are NOT part of this exception —
+     they use the same muted-metadata color (`#6f6656`) the Reviews/
+     Interview exceptions already document, which passes AA at rest.
+  2. Entry 8 (More Columns row hover/active opacity, `opacity: .72`):
+     extended to `.columns-detail__sidebar-row`'s own hover/active state.
+  No new exception categories were introduced.
 */
-test('Columns [slug] detail-route shell (representative route) has no automated WCAG A/AA violations and needs no contrast exception', async ({
+const COLUMNS_DETAIL_RED_TEXT_SELECTORS = [
+  '.columns-detail__kicker',
+  '.columns-detail__all',
+  '.columns-detail__card-kicker',
+  '.columns-detail__sidebar-kicker',
+  '.columns-detail__back',
+];
+
+test('Columns detail template (representative middle route) has no automated WCAG A/AA violations beyond the documented, extended golden-master contrast exceptions', async ({
   page,
-}) => {
-  await page.goto('/columns/your-automation-doesnt-need-a-model/');
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/columns/what-conducting-taught-me-about-standups/');
 
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
 
-  expect(results.violations).toEqual([]);
-
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-    'content',
-    'noindex',
+  const colorContrastViolation = results.violations.find(
+    (violation) => violation.id === 'color-contrast',
   );
+  const otherViolations = results.violations.filter(
+    (violation) => violation.id !== 'color-contrast',
+  );
+  expect(otherViolations).toEqual([]);
+
+  const nodes = colorContrastViolation?.nodes ?? [];
+  const targets = nodes.map((node) => node.target.join(' '));
+
+  // Exactly nine flagged nodes at rest on this representative route: one
+  // `.columns-detail__kicker`, one `.columns-detail__all`, two
+  // `.columns-detail__card-kicker` (prev + next card, both present on this
+  // middle route), four `.columns-detail__sidebar-kicker` (one per "More
+  // columns" row), and one `.columns-detail__back`.
+  expect(targets).toHaveLength(9);
+  expect(
+    targets.filter((t) => t.includes('.columns-detail__kicker')),
+  ).toHaveLength(1);
+  expect(
+    targets.filter((t) => t.includes('.columns-detail__all')),
+  ).toHaveLength(1);
+  expect(
+    targets.filter((t) => t.includes('.columns-detail__card-kicker')),
+  ).toHaveLength(2);
+  expect(
+    targets.filter((t) => t.includes('.columns-detail__sidebar-kicker')),
+  ).toHaveLength(4);
+  expect(
+    targets.filter((t) => t.includes('.columns-detail__back')),
+  ).toHaveLength(1);
+
+  for (const selector of COLUMNS_DETAIL_RED_TEXT_SELECTORS) {
+    const locator = page.locator(selector);
+    const count = await locator.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      const node = locator.nth(i);
+      const foreground = await node.evaluate(
+        (el) => getComputedStyle(el).color,
+      );
+      const [r, g, b] = parseRgb(foreground);
+      expect([r, g, b]).toEqual(EXPECTED_FOREGROUND_RGB);
+    }
+    const background = await getEffectiveBackground(page, selector);
+    expect(background).toEqual(EXPECTED_BACKGROUND_RGB);
+    const foreground = await getComputedForeground(page, selector);
+    const ratio = contrastRatio(foreground, background);
+    expect(ratio).toBeGreaterThan(EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE);
+    expect(ratio).toBeLessThan(EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE);
+  }
+
+  // The top-bar Previous/Next links are muted-metadata, not the red
+  // exception — verify identity directly rather than relying on Axe's
+  // absence of a violation for them alone.
+  const prevNextColor = await page
+    .locator('.columns-detail__prevnext-link')
+    .first()
+    .evaluate((el) => getComputedStyle(el).color);
+  const [pr, pg, pb] = parseRgb(prevNextColor);
+  expect([pr, pg, pb]).not.toEqual(EXPECTED_FOREGROUND_RGB);
+
+  testInfo.annotations.push({
+    type: 'known-issue',
+    description:
+      `Sprint 2E extends the Sprint 2D Columns Index exceptions (entries ` +
+      `7 and 8 in DESIGN_DEVIATIONS.md) to the detail template's ` +
+      `equivalent nodes: ${COLUMNS_DETAIL_RED_TEXT_SELECTORS.join(', ')} ` +
+      `reuse the same red-on-paper pairing ` +
+      `(rgb(226, 35, 26) on rgb(239, 233, 220), ~${EXPECTED_CONTRAST_RATIO}:1). ` +
+      `No new exception categories were introduced. The Columns Index's ` +
+      `own exceptions remain a separate, untouched target set.`,
+  });
+});
+
+/*
+  Unlike the Columns Index's "More columns" row (whose secondary-copy
+  excerpt color drops below AA under the row's own .72 hover/active
+  opacity), this detail-page sidebar row has no excerpt line — only a
+  kicker (already covered by the red-on-paper exception, entry 7 extended
+  in entry 11), an ink-colored title (inherited `color: inherit`, exactly
+  as the Index's own `.columns-more__title` inherits ink — high enough
+  contrast at full opacity that it stays above AA even after the .72
+  blend), and the muted-metadata date/read-time line. Only the date line
+  actually crosses below AA under the row's own hover/active opacity,
+  mirroring the Index's own `.columns-more__date` exception (entry 8,
+  extended here). The title is verified to REMAIN passing under hover,
+  not exempted — this test does not silently widen the exception to a
+  node that doesn't need it.
+*/
+test('Columns detail sidebar rows apply their extended hover/active opacity exception to the date/read-time text only, without lowering resting contrast or affecting the ink-colored title', async ({
+  page,
+}) => {
+  await page.goto('/columns/what-conducting-taught-me-about-standups/');
+
+  const firstRow = page.locator('a.columns-detail__sidebar-row').first();
+  const title = firstRow.locator('.columns-detail__sidebar-title');
+  const date = firstRow.locator('.columns-detail__sidebar-date');
+
+  async function blendedContrast(locator: ReturnType<Page['locator']>) {
+    return locator.evaluate((el) => {
+      function relativeLuminanceLocal([r, g, b]: number[]): number {
+        const [rs, gs, bs] = [r, g, b].map((channel) => {
+          const c = channel / 255;
+          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+      }
+      function ratioOf(fg: number[], bg: number[]): number {
+        const l1 = relativeLuminanceLocal(fg);
+        const l2 = relativeLuminanceLocal(bg);
+        const [lighter, darker] = l1 > l2 ? [l1, l2] : [l2, l1];
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+
+      const row = el.closest('.columns-detail__sidebar-row') as HTMLElement;
+      const opacity = parseFloat(getComputedStyle(row).opacity);
+      const parseRgbLocal = (value: string) =>
+        (value.match(/[\d.]+/g) ?? []).map(Number).slice(0, 3);
+      const fg = parseRgbLocal(getComputedStyle(el).color);
+
+      let node: Element | null = el.parentElement;
+      let bg = [239, 233, 220];
+      while (node) {
+        const bgc = getComputedStyle(node).backgroundColor;
+        const match = bgc.match(/rgba?\(([^)]+)\)/);
+        if (match) {
+          const parts = match[1].split(',').map((part) => parseFloat(part));
+          if ((parts[3] ?? 1) > 0) {
+            bg = parts.slice(0, 3);
+            break;
+          }
+        }
+        node = node.parentElement;
+      }
+
+      const blended = fg.map((c, i) => bg[i] + opacity * (c - bg[i]));
+      return { opacity, ratio: ratioOf(blended, bg) };
+    });
+  }
+
+  const AA_NORMAL_TEXT_THRESHOLD = 4.5;
+
+  const titleRest = await blendedContrast(title);
+  expect(titleRest.opacity).toBe(1);
+  expect(titleRest.ratio).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_THRESHOLD);
+
+  const dateRest = await blendedContrast(date);
+  expect(dateRest.opacity).toBe(1);
+  expect(dateRest.ratio).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_THRESHOLD);
+
+  await firstRow.hover();
+  await expect(async () => {
+    // The ink-colored title stays above AA even under the row's own hover
+    // opacity — high starting contrast, not part of this exception.
+    const titleHover = await blendedContrast(title);
+    expect(titleHover.opacity).toBeCloseTo(0.72, 2);
+    expect(titleHover.ratio).toBeGreaterThanOrEqual(AA_NORMAL_TEXT_THRESHOLD);
+
+    const dateHover = await blendedContrast(date);
+    expect(dateHover.opacity).toBeCloseTo(0.72, 2);
+    expect(dateHover.ratio).toBeLessThan(AA_NORMAL_TEXT_THRESHOLD);
+  }).toPass({ timeout: 2000 });
+});
+
+test('Columns detail exposes one h1, the section heading and "More columns" as h2s, a semantic sidebar list, and keyboard-reachable links with no positive tabindex', async ({
+  page,
+}) => {
+  await page.goto('/columns/what-conducting-taught-me-about-standups/');
+
   await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: 'What conducting taught me about standups',
+    }),
+  ).toBeVisible();
+
+  const h2s = await page.getByRole('heading', { level: 2 }).allTextContents();
+  expect(h2s).toEqual(['Tempo over detail', 'More columns']);
 
   await expect(
     page
-      .getByRole('navigation', { name: 'Primary' })
-      .getByRole('link', { name: 'Columns', exact: true }),
-  ).toHaveAttribute('aria-current', 'page');
-
-  const backLink = page.locator('a.columns-detail__back');
-  await expect(backLink).toHaveAttribute('href', '/columns/');
+      .getByRole('list')
+      .filter({ hasText: 'Six months with a mechanical keyboard' }),
+  ).toBeVisible();
+  await expect(page.locator('a.columns-detail__sidebar-row')).toHaveCount(4);
 
   const positiveTabindexCount = await page
     .locator('[tabindex]')
@@ -1162,18 +1359,13 @@ test('Columns [slug] detail-route shell (representative route) has no automated 
     );
   expect(positiveTabindexCount).toBe(0);
 
-  // The detail-shell kicker and back link (resting state) are ink-colored,
-  // not the Columns Index's approved red exception — verify identity
-  // directly from computed style rather than relying on Axe's absence of a
-  // violation alone.
-  const kickerColor = await page
-    .locator('.columns-detail__kicker')
-    .evaluate((el) => getComputedStyle(el).color);
-  const backColor = await page
-    .locator('a.columns-detail__back')
-    .evaluate((el) => getComputedStyle(el).color);
-  const [kr, kg, kb] = parseRgb(kickerColor);
-  const [br, bg, bb] = parseRgb(backColor);
-  expect([kr, kg, kb]).not.toEqual(EXPECTED_FOREGROUND_RGB);
-  expect([br, bg, bb]).not.toEqual(EXPECTED_FOREGROUND_RGB);
+  const plate = page.locator('[data-cursor-preview]');
+  await expect(plate).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.getByRole('button')).toHaveCount(0);
+
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Primary' })
+      .getByRole('link', { name: 'Columns', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
 });
