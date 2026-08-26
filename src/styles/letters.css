@@ -1,0 +1,270 @@
+/*
+  Sprint 2H Letters — static reproduction of the immutable golden master's
+  Letters view (reference/newsstand-original/source/Newsstand - Full
+  Site.dc.html, the `isLetters` sc-if block, ~lines 579-611). Every rule
+  below is derived from that block and mapped onto accepted tokens only
+  where both the value AND the semantic role already match (see
+  tokens.css). One-off source values (the `380px`/`300px` flex-basis
+  minimums, the headline clamp `clamp(36px,8vw,94px)` with its own literal
+  `line-height:.85` (distinct from the `--leading-display-page` token's
+  `.86`, matching interview.css's own literal-`.85` precedent), the
+  red-panel statement clamp `clamp(26px,4vw,34px)`, the "Also accepting"
+  heading clamp `clamp(24px,3.2vw,28px)`, and the confirmation-message
+  clamp `clamp(18px,2.4vw,22px)` with its literal `line-height:1.2`) stay
+  literal at the point of use rather
+  than being forced through a misleading alias — matching the precedent
+  set in b-sides.css/columns.css/interview.css/reviews.css/rotation.css.
+  The contact-row font size DOES have an exact token match
+  (`--font-size-mono-fluid-address`, `clamp(11.5px,2.4vw,14px)`), reused
+  here rather than repeated as a literal, and the contact-row
+  hover/active transition (`.32s ease`) maps exactly to
+  `--duration-hover`/`--ease-standard`.
+
+  No Letters-specific width breakpoints exist here on purpose: the source
+  has none — the two-column split is `flex-wrap:wrap`, fully intrinsic,
+  verified at 1440x900/768x1024/390x844.
+
+  Focus-visible override: the global `:focus-visible` outline
+  (src/styles/global.css) is red — invisible against this page's own red
+  panel background. `.letters-contact__link` gets a narrowly-scoped
+  `:focus-visible` override to an ink outline so all three contact links
+  show a visible focus ring against the red panel. This is a real, new
+  accessibility necessity for this route's own background, not a design
+  deviation — the source has no keyboard-focus concept at all. See
+  DESIGN_DEVIATIONS.md.
+*/
+
+.letters-page {
+  animation: letters-fade-in var(--duration-lift) var(--ease-editorial) both;
+  padding-block: var(--space-fluid-sm) var(--space-fluid-md);
+}
+
+/* ---------------------------------------------------------------------
+   Folio/kicker, headline.
+   --------------------------------------------------------------------- */
+
+/* Approved Sprint 2H design-preservation exception (extends entries 1, 3,
+   5, 7, 13, 15 — small Newsstand-red text): this exact node (source-
+   faithful red-on-paper kicker) fails WCAG AA normal-text contrast
+   (~3.87:1) at rest, the same established pairing already documented for
+   every other page's kicker. See DESIGN_DEVIATIONS.md and
+   tests/accessibility.spec.ts. */
+.letters-kicker {
+  margin: 0 0 var(--space-8);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.letters-headline {
+  margin: 0 0 var(--space-18);
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(36px, 8vw, 94px);
+  line-height: 0.85;
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+/* ---------------------------------------------------------------------
+   Two-column layout.
+   --------------------------------------------------------------------- */
+
+.letters-grid {
+  display: flex;
+  gap: clamp(18px, 3vw, 30px);
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+/* ---------------------------------------------------------------------
+   Red panel — email/GitHub/LinkedIn contact rows and both handwritten
+   notes.
+   --------------------------------------------------------------------- */
+
+.letters-panel {
+  flex: 1 1 min(100%, 380px);
+  min-width: 0;
+  background: var(--color-accent);
+  color: var(--color-white);
+  padding: clamp(18px, 3vw, 26px);
+}
+
+.letters-panel__statement {
+  margin: 0 0 var(--space-16);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: clamp(26px, 4vw, 34px);
+  line-height: var(--leading-normal);
+  text-transform: uppercase;
+}
+
+.letters-panel__intro {
+  margin: 0 0 var(--space-20);
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.8vw, 15px);
+  line-height: var(--leading-body-relaxed);
+}
+
+.letters-contact {
+  margin: 0;
+  padding-top: var(--space-16);
+  border-top: var(--border-width-standard) var(--border-style-solid)
+    var(--color-white);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.letters-contact__link {
+  display: inline-block;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-fluid-address);
+  letter-spacing: var(--tracking-address);
+  color: inherit;
+  word-break: break-all;
+  transition:
+    transform var(--duration-hover) var(--ease-standard),
+    color var(--duration-hover) var(--ease-standard);
+}
+
+.letters-contact__link:hover {
+  transform: translateX(4px);
+  color: var(--color-highlight);
+}
+
+.letters-contact__link:active {
+  transform: translateX(8px) scale(0.98);
+  color: var(--color-ink);
+}
+
+/* Narrow, route-scoped focus-visible override — see file header comment. */
+.letters-contact__link:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+.letters-copied {
+  margin: var(--space-14) 0 0;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-normal);
+  color: var(--color-highlight);
+  font-size: clamp(18px, 2.4vw, 22px);
+  line-height: 1.2;
+  animation: letters-copied-scrawl var(--duration-scrawl-fade)
+    var(--ease-standard) both;
+}
+
+.letters-hand-note {
+  margin: var(--space-14) 0 0;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-normal);
+  color: var(--color-handwriting-on-red);
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: var(--leading-hand);
+  transform: rotate(-1deg);
+}
+
+/* ---------------------------------------------------------------------
+   Right column — "Currently taking" / "Also accepting" cards.
+   --------------------------------------------------------------------- */
+
+.letters-sidebar {
+  flex: 1 1 min(100%, 300px);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-18);
+}
+
+.letters-card {
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding: var(--space-20);
+}
+
+.letters-card--highlight {
+  background: var(--color-highlight);
+}
+
+.letters-card__heading {
+  margin: 0 0 var(--space-12);
+  padding-bottom: var(--space-7);
+  border-bottom: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+}
+
+.letters-card--highlight .letters-card__heading {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: clamp(24px, 3.2vw, 28px);
+  line-height: var(--leading-heading-relaxed);
+  letter-spacing: normal;
+  text-transform: uppercase;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: var(--space-8);
+}
+
+.letters-card p {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--leading-body-relaxed);
+}
+
+.letters-taking {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--leading-body);
+}
+
+.letters-taking__excluded {
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------------------
+   Letters-local animations.
+   --------------------------------------------------------------------- */
+
+@keyframes letters-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes letters-copied-scrawl {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
