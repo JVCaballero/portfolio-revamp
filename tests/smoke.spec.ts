@@ -34,7 +34,11 @@ const routes = [
     activeLabel: 'Columns',
   },
   { href: '/b-sides/', heading: 'The playground', activeLabel: 'B-Sides' },
-  { href: '/rotation/', heading: 'Rotation', activeLabel: 'Rotation' },
+  {
+    href: '/rotation/',
+    heading: "This month's rotation",
+    activeLabel: 'Rotation',
+  },
   { href: '/letters/', heading: 'Letters', activeLabel: 'Letters' },
   { href: '/resume/', heading: 'Resume', activeLabel: null },
 ] as const;
@@ -3508,6 +3512,263 @@ test.describe('Sprint 2F B-Sides interaction lifecycle', () => {
       await expect(page).toHaveURL(/\/b-sides\/$/);
       await expect(
         page.getByRole('heading', { level: 1, name: 'The playground' }),
+      ).toBeVisible();
+
+      await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+      await expect(page).toHaveURL(/\/reviews\/$/);
+    }
+
+    const registrations = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleRegistrations: string[] })
+          .__lifecycleRegistrations,
+    );
+    expect(registrationCount(registrations, 'astro:before-swap')).toBe(1);
+
+    expect(consoleErrors).toEqual([]);
+  });
+});
+
+test.describe('Sprint 2G Rotation page', () => {
+  const games = [
+    { name: 'Wuthering Waves', note: 'main rotation', rating: 5 },
+    { name: 'Arknights: Endfield', note: 'new, dangerous', rating: 4 },
+    { name: 'Zenless Zone Zero', note: 'daily, briefly', rating: 4 },
+    { name: 'Genshin Impact', note: 'logging in out of loyalty', rating: 3 },
+  ] as const;
+
+  test('Rotation renders the golden-master anatomy: kicker, headline, three status cards, and two list cards with verbatim copy', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    const response = await page.goto('/rotation/');
+    expect(response?.ok()).toBeTruthy();
+
+    await expect(page.locator('.rotation-kicker')).toHaveText(
+      'Rotation / p.30 · updated 4 August 2026',
+    );
+    await expect(
+      page.getByRole('heading', { level: 1, name: "This month's rotation" }),
+    ).toBeVisible();
+
+    const statusCards = page.locator('.rotation-status-card');
+    await expect(statusCards).toHaveCount(3);
+
+    await expect(
+      statusCards.nth(0).locator('.rotation-status-card__label'),
+    ).toHaveText('Building');
+    await expect(
+      statusCards.nth(0).locator('.rotation-status-card__title'),
+    ).toHaveText('This site, third attempt');
+    await expect(
+      statusCards.nth(0).locator('.rotation-status-card__description'),
+    ).toHaveText(
+      'Last one was built during the pandemic and it shows. Also: a fresh eval harness I keep meaning to open-source.',
+    );
+
+    await expect(
+      statusCards.nth(1).locator('.rotation-status-card__label'),
+    ).toHaveText('Rehearsing');
+    await expect(
+      statusCards.nth(1).locator('.rotation-status-card__title'),
+    ).toHaveText('Field show, season opens October');
+    await expect(
+      statusCards.nth(1).locator('.rotation-status-card__description'),
+    ).toHaveText('Forty musicians, one baton, Saturdays gone until November.');
+
+    await expect(
+      statusCards.nth(2).locator('.rotation-status-card__label'),
+    ).toHaveText('Gigging');
+    await expect(
+      statusCards.nth(2).locator('.rotation-status-card__title'),
+    ).toHaveText('Acoustic sets, Fri & Sat');
+    await expect(
+      statusCards.nth(2).locator('.rotation-status-card__description'),
+    ).toHaveText('Same four bars, same six requests, no complaints.');
+
+    await expect(
+      page.locator('.rotation-list-card__heading').nth(0),
+    ).toHaveText('On heavy rotation · games');
+    const gameRows = page.locator('.rotation-games__row');
+    await expect(gameRows).toHaveCount(4);
+    for (let i = 0; i < games.length; i++) {
+      const row = gameRows.nth(i);
+      await expect(row).toContainText(games[i].name);
+      await expect(row).toContainText(games[i].note);
+      const rating = row.locator('.rotation-games__rating');
+      await expect(rating).toHaveAttribute('aria-hidden', 'true');
+      await expect(rating).toHaveText(
+        '★'.repeat(games[i].rating) + '☆'.repeat(5 - games[i].rating),
+      );
+      await expect(row.locator('.rotation-visually-hidden')).toHaveText(
+        `${games[i].rating} out of 5 stars`,
+      );
+    }
+
+    await expect(
+      page.locator('.rotation-list-card__heading').nth(1),
+    ).toHaveText('On the shelf · manga & gear');
+    const shelfNotes = page.locator('.rotation-shelf-notes p');
+    await expect(shelfNotes).toHaveCount(3);
+    await expect(shelfNotes.nth(0)).toHaveText(
+      'Three volumes behind on four series. The guilt meter is at 61%.',
+    );
+    await expect(shelfNotes.nth(1)).toHaveText(
+      'Reviewing: a split keyboard I already regret buying, and a very good USB-C dock nobody asked about.',
+    );
+    await expect(shelfNotes.nth(2)).toHaveText(
+      'Open to contract work from November. Say hello before the field show eats October.',
+    );
+    await expect(page.locator('.rotation-hand-note')).toHaveText(
+      'the guilt meter is, regrettably, a real feature',
+    );
+
+    await expect(page.locator('footer.newsstand-bottom-chrome')).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Primary' })
+        .getByRole('link', { name: 'Rotation', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('The "Rehearsing" card is the only status card with an always-on yellow background; Building and Gigging stay paper at rest', async ({
+    page,
+  }) => {
+    await page.goto('/rotation/');
+
+    const statusCards = page.locator('.rotation-status-card');
+    await expect(statusCards.nth(1)).toHaveClass(
+      /rotation-status-card--highlight/,
+    );
+    for (const i of [0, 2]) {
+      await expect(statusCards.nth(i)).not.toHaveClass(
+        /rotation-status-card--highlight/,
+      );
+    }
+
+    const highlightBackground = await statusCards
+      .nth(1)
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(highlightBackground).toBe('rgb(255, 230, 0)');
+
+    for (const i of [0, 2]) {
+      const background = await statusCards
+        .nth(i)
+        .evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(background).toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
+    }
+  });
+
+  test('Rotation cards are non-interactive: no <a> elements, no click handlers, no invented navigation, and no positive tabindex', async ({
+    page,
+  }) => {
+    await page.goto('/rotation/');
+
+    await expect(
+      page.locator('a.rotation-status-card, a.rotation-list-card'),
+    ).toHaveCount(0);
+
+    const onclickCount = await page
+      .locator('.rotation-status-card[onclick], .rotation-list-card[onclick]')
+      .count();
+    expect(onclickCount).toBe(0);
+
+    const positiveTabindexCount = await page
+      .locator('[tabindex]')
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+            .length,
+      );
+    expect(positiveTabindexCount).toBe(0);
+  });
+
+  test('Direct reload of /rotation/ keeps the same URL and re-renders the page', async ({
+    page,
+  }) => {
+    const response = await page.goto('/rotation/');
+    expect(response?.ok()).toBeTruthy();
+    await expect(
+      page.getByRole('heading', { level: 1, name: "This month's rotation" }),
+    ).toBeVisible();
+
+    const reloadResponse = await page.reload();
+    expect(reloadResponse?.ok()).toBeTruthy();
+    expect(new URL(page.url()).pathname).toBe('/rotation/');
+    await expect(
+      page.getByRole('heading', { level: 1, name: "This month's rotation" }),
+    ).toBeVisible();
+  });
+});
+
+test.describe('Sprint 2G Rotation interaction lifecycle', () => {
+  test('Rotation scroll-reveal targets initialize exactly once on direct load and resolve visible content', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/rotation/');
+
+    const reveals = page.locator('[data-reveal]');
+    await expect(reveals).toHaveCount(5);
+    for (const el of await reveals.all()) {
+      await expect(el).toBeVisible();
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Rotation content stays fully visible under reduced motion, with all reveal targets resolved to opacity 1', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/rotation/');
+
+    const reveals = page.locator('[data-reveal]');
+    const count = await reveals.count();
+    expect(count).toBe(5);
+    for (let i = 0; i < count; i++) {
+      await expect(reveals.nth(i)).toBeVisible();
+      const opacity = await reveals
+        .nth(i)
+        .evaluate((node) => getComputedStyle(node).opacity);
+      expect(opacity).toBe('1');
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Repeated ClientRouter navigation into and out of Rotation stays console-clean without accumulating controller listeners', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    for (let visit = 0; visit < 3; visit++) {
+      await nav.getByRole('link', { name: 'Rotation', exact: true }).click();
+      await expect(page).toHaveURL(/\/rotation\/$/);
+      await expect(
+        page.getByRole('heading', { level: 1, name: "This month's rotation" }),
       ).toBeVisible();
 
       await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
