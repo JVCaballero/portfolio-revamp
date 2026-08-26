@@ -2040,3 +2040,86 @@ test('Letters exposes exactly one h1 and two h2 card headings in order, with no 
       .getByRole('link', { name: 'Letters', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
 });
+
+/*
+  Sprint 2I — Resume. This route is original layout work with no
+  golden-master anatomy (see DESIGN_DEVIATIONS.md, Sprint 2I entry 23) and
+  was deliberately built with zero new contrast exceptions: every color
+  pairing on this page (ink-on-paper, ink-on-yellow, highlight-on-ink) was
+  chosen to pass WCAG AA at rest and under hover/focus, since this page has
+  no fidelity constraint forcing a low-contrast color the way every
+  golden-master reproduction does. Unlike every other page's accessibility
+  test above, this test expects EXACTLY ZERO color-contrast violations, not
+  a documented exception set.
+*/
+test('Resume route has zero automated WCAG A/AA violations, including zero color-contrast findings', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/resume/');
+
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+
+  expect(results.violations).toEqual([]);
+});
+
+test('Resume exposes exactly one h1, real section headings in order, and definition-list/list semantics for its content', async ({
+  page,
+}) => {
+  await page.goto('/resume/');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Full Résumé' }),
+  ).toBeVisible();
+
+  const h2s = (
+    await page.getByRole('heading', { level: 2 }).allTextContents()
+  ).map((text) => text.trim());
+  expect(h2s).toEqual([
+    'Core Competencies',
+    'Professional Experience',
+    'Education',
+    'Skills & Tools',
+  ]);
+
+  const h3s = (
+    await page.getByRole('heading', { level: 3 }).allTextContents()
+  ).map((text) => text.trim());
+  expect(h3s).toEqual(['Technical Skills', 'Soft Skills']);
+
+  await expect(page.locator('ol.resume-timeline')).toBeVisible();
+  await expect(page.locator('li.resume-timeline__item')).toHaveCount(3);
+
+  await expect(page.locator('dl.resume-technical-list')).toBeVisible();
+  await expect(page.locator('dl.resume-technical-list dt')).toHaveCount(7);
+  await expect(page.locator('dl.resume-technical-list dd')).toHaveCount(7);
+
+  await expect(page.locator('ul.resume-soft-list li')).toHaveCount(6);
+});
+
+test('Resume has no positive tabindex and every link resolves to a real, non-hash destination', async ({
+  page,
+}) => {
+  await page.goto('/resume/');
+
+  const positiveTabindexCount = await page
+    .locator('[tabindex]')
+    .evaluateAll(
+      (nodes) =>
+        nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+          .length,
+    );
+  expect(positiveTabindexCount).toBe(0);
+
+  const links = page.locator('article.resume-page a');
+  const count = await links.count();
+  expect(count).toBeGreaterThan(0);
+  for (let i = 0; i < count; i++) {
+    const href = await links.nth(i).getAttribute('href');
+    expect(href).toBeTruthy();
+    expect(href).not.toBe('#');
+  }
+});

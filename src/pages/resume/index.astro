@@ -1,13 +1,275 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+/*
+  Sprint 2I — Resume. This route has NO corresponding section in the
+  immutable Newsstand golden master (reference/newsstand-original/) —
+  Resume was never one of the golden master's 8 primaryNavigation sections
+  (src/data/navigation.ts). It is not added to the visible primary nav
+  either; the only entry point into this page is the "View the full
+  résumé →" link on /interview/'s "Tour dates / the résumé" section (see
+  src/pages/interview/index.astro).
 
-const title = 'Resume | CABALLERO!';
-const description = 'Resume route shell for the CABALLERO! portfolio revamp.';
+  Because there is nothing to reproduce here, this page is original
+  layout work, not a golden-master reproduction — there is no pixel-
+  fidelity target to check this against. The project owner authorized
+  this explicitly for Sprint 2I specifically because Resume sits outside
+  the golden master entirely. To keep the page visually consistent with
+  every other page in this codebase, it deliberately reuses the
+  established design tokens and typographic/interaction vocabulary
+  (kicker, Archivo Black display headline, mono labels/kickers, hard-
+  bordered cards, a timeline pattern matching Interview's résumé
+  timeline) rather than inventing a new visual language. See
+  src/styles/resume.css for the token/pattern reuse notes and
+  DESIGN_DEVIATIONS.md for the record of this decision.
+
+  Content is the project owner's real, current résumé (verbatim from the
+  real PDF, lightly rewrapped for page prose where noted) — unlike every
+  other page in this codebase, this is NOT "demo content pending final
+  Sprint 2 review." Per the project owner's explicit privacy decisions:
+  the phone number is omitted from this page's on-page text entirely, and
+  the location is generalized to "Cebu, Philippines" (not the more
+  specific city). The downloadable PDF itself
+  (public/resume/john-vincent-caballero-resume.pdf) is left completely
+  unmodified — these redactions apply only to this page's on-page HTML
+  text, not to the PDF a visitor can choose to download.
+
+  This page is intentionally NOT `noindex` — it is real, final,
+  intended-for-public content, unlike the temporary Sprint 2 shells that
+  used that flag.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/resume.css';
+
+const title = 'Full Résumé | CABALLERO!';
+const description =
+  'Résumé / p.36 — John Vincent Caballero, full-stack product engineer and AI & automation specialist. Full work history, skills, and a downloadable PDF.';
+
+const experience = [
+  {
+    years: '2025 &ndash; Present',
+    title: 'Full-Stack Product Engineer | AI &amp; Automation Specialist',
+    org: 'Simple.biz &middot; Remote',
+    bullets: [
+      'Own end-to-end delivery for two client platforms, Hogan-Smith Law (legal services) and EarlyBird College (EdTech), from requirements through implementation, QA, deployment, and production support.',
+      'Hogan-Smith Law: built and modernized an internal hearings &amp; medical-records operations dashboard (Next.js, React, TypeScript, Neon PostgreSQL, Tailwind CSS, shadcn/ui, TanStack Virtual) with role/field-level permissions, virtualized tables, and audit-history views.',
+      'Hogan-Smith Law: designed an event-driven Postgres/n8n sync (outbox pattern, persistent watermarks) for Google Sheets/Drive, and configured Neon PostgreSQL and Vercel CI/CD pipelines to reduce deployment failures.',
+      'EarlyBird College: provisioned an AWS EC2 Django staging environment with a GitHub Actions CI/CD pipeline, cutting deploy time and eliminating CPU exhaustion on t3.micro, and built a companion WordPress/Lightsail pipeline with Slack deploy alerts.',
+      'EarlyBird College: converted 180+ use cases into a risk-based Playwright test matrix across Student/Parent/Practitioner roles; developed a US high-school autocomplete feature and a versioned essay-content data pipeline seeding prompts across 13+ institutions.',
+      'EarlyBird College: root-caused and resolved production defects in the transcript and GPA-calculation pipeline using an evidence-first workflow (logs, HAR captures, isolation tests).',
+      'EarlyBird College: translated Figma mockups into a responsive, interactive UI for a new gamified coursework dashboard, wiring the full component and user-flow implementation from design handoff to production.',
+      'EarlyBird College: authored comparative technical specs for React Native, Expo, Flutter, and Capacitor/Ionic to plan a desktop-to-mobile port, modeling zero-cost EAS build/OTA paths and sequencing native integrations by risk.',
+    ],
+    status: 'CURRENT',
+    statusClass: 'current',
+  },
+  {
+    years: '2024 &ndash; 2025',
+    title: 'Senior Developer',
+    org: 'TTEC Digital (Client: Cisco) &middot; Remote',
+    bullets: [
+      'Migrated internal frontend applications from Vue 2 to Vue 3, modernizing component architecture for maintainability.',
+      'Monitored and analyzed application performance using Datadog and ScienceLogic to improve reliability and troubleshooting.',
+      'Contributed to Cisco&rsquo;s QTC (Quote-to-Cash) tool configuration with custom Dynamic Apps in ScienceLogic, tailored to monitoring and compliance needs for U.S. Navy, Army, and FedRAMP clients.',
+      'Evaluated and revitalized stale tools and dormant servers across Cisco&rsquo;s ecosystem (CUC/Unity Connection, CUCM/Unified Communications Manager, VMware vSphere/ESXi, UCS/Unified Computing System), running health checks, debugging, and custom Dynamic App revisions in ScienceLogic.',
+    ],
+    status: 'PAST',
+    statusClass: 'muted',
+  },
+  {
+    years: '2021 &ndash; 2024',
+    title: 'Full Stack Developer',
+    org: 'BPOSeats (now HQZen) &middot; Mandaue City, Cebu, Philippines',
+    bullets: [
+      'Led development of a generative AI chatbot (OpenAI API, Python, DynamoDB) assisting users with Kanban card creation, saving roughly 10&ndash;20 minutes of manual effort per task.',
+      'Refactored backend modules and optimized APIs for performance and scalability using Python/Django, Vue.js, and TypeScript; mentored junior developers on clean, maintainable implementation.',
+      'Performed unit/snapshot testing (Jest, Factory Boy) and used New Relic to monitor system health and investigate slow queries.',
+    ],
+    status: 'ARCHIVE',
+    statusClass: 'muted',
+  },
+];
+
+const technicalSkills = [
+  {
+    category: 'Languages',
+    items: 'JavaScript (ES6+), TypeScript, Python, PHP, SQL',
+  },
+  {
+    category: 'Frontend',
+    items: 'React, Next.js, Vue.js, Tailwind CSS, shadcn/ui, Figma',
+  },
+  {
+    category: 'Backend &amp; Data',
+    items: 'Python/Django, Node.js, REST APIs, PostgreSQL, Neon, DynamoDB',
+  },
+  { category: 'AI &amp; Automation', items: 'OpenAI API, n8n, Gemini, Claude' },
+  { category: 'Testing &amp; QA', items: 'Playwright, Jest, Factory Boy' },
+  {
+    category: 'Cloud &amp; DevOps',
+    items: 'Vercel, AWS, GCP, Docker, CI/CD, Datadog, New Relic, ScienceLogic',
+  },
+  {
+    category: 'Integrations &amp; CMS',
+    items: 'WordPress plugins (PHP), Sheets/Drive API, Slack, webhooks',
+  },
+];
+
+const softSkills = [
+  'Cross-Functional Stakeholder Collaboration',
+  'Solo Ownership &amp; Autonomous Delivery',
+  'Mentorship &amp; Code Review',
+  'Technical Documentation &amp; Knowledge Transfer',
+  'Ambiguity-to-Execution Translation',
+  'Evidence-Based Problem Solving',
+];
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="container">
-    <h1>Resume</h1>
-    <p data-route="resume">Resume content is coming in a later sprint.</p>
-  </div>
+  <article class="resume-page container">
+    <header class="resume-header">
+      <p class="resume-kicker">Résumé / p.36</p>
+      <h1 class="resume-headline">Full Résumé</h1>
+      <p class="resume-identity">
+        John Vincent Caballero &middot; Full-Stack Product Engineer &middot; AI
+        &amp; Automation Specialist &middot; Cebu, Philippines
+      </p>
+      <p class="resume-contact">
+        <a href="mailto:jvcaballero@tuta.io">jvcaballero@tuta.io</a>
+        <span aria-hidden="true">&middot;</span>
+        <a
+          href="https://github.com/JVCaballero"
+          target="_blank"
+          rel="noopener noreferrer">github.com/JVCaballero</a
+        >
+        <span aria-hidden="true">&middot;</span>
+        <a
+          href="https://linkedin.com/in/john-vincent-c-06814b111"
+          target="_blank"
+          rel="noopener noreferrer">linkedin.com/in/john-vincent-c-06814b111</a
+        >
+        <span aria-hidden="true">&middot;</span>
+        <a href="/letters/">more on Letters &rarr;</a>
+      </p>
+      <a
+        class="resume-download"
+        href="/resume/john-vincent-caballero-resume.pdf"
+        download
+      >
+        Download PDF <span aria-hidden="true">&darr;</span>
+      </a>
+    </header>
+
+    <p class="resume-standfirst">
+      Full-stack product engineer and AI/automation specialist across
+      legal-services and EdTech platforms. Skilled in React/Next.js,
+      Python/Django, PHP/WordPress, and workflow automation (n8n, OpenAI API),
+      with a track record of shipping reliable systems as a sole engineer for
+      fast-moving teams.
+    </p>
+
+    <section
+      class="resume-section"
+      aria-labelledby="resume-competencies-heading"
+    >
+      <h2 id="resume-competencies-heading" class="resume-section-heading">
+        Core Competencies
+      </h2>
+      <p class="resume-competencies">
+        Full-Stack Engineering &middot; AI &amp; Workflow Automation &middot; QA
+        &amp; Test Automation &middot; Cloud &amp; CI/CD &middot; Database
+        Architecture &middot; WordPress/PHP Integrations
+      </p>
+    </section>
+
+    <section class="resume-section" aria-labelledby="resume-experience-heading">
+      <h2 id="resume-experience-heading" class="resume-section-heading">
+        Professional Experience
+      </h2>
+      <ol class="resume-timeline">
+        {
+          experience.map((role) => (
+            <li class="resume-timeline__item">
+              <div class="resume-timeline__row" data-reveal>
+                <span class="resume-timeline__years" set:html={role.years} />
+                <div class="resume-timeline__body">
+                  <p class="resume-timeline__title" set:html={role.title} />
+                  <p class="resume-timeline__org" set:html={role.org} />
+                  <ul class="resume-timeline__bullets">
+                    {role.bullets.map((bullet) => (
+                      <li set:html={bullet} />
+                    ))}
+                  </ul>
+                </div>
+                <span
+                  class={`resume-timeline__status resume-timeline__status--${role.statusClass}`}
+                >
+                  {role.status}
+                </span>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <p class="resume-muted-note">
+        <strong>Earlier experience:</strong> technical support (TSR) and merchant/desktop
+        support roles at Convergys, Accenture, and 24/7 Intouch (Shopify).
+      </p>
+    </section>
+
+    <section class="resume-section" aria-labelledby="resume-education-heading">
+      <h2 id="resume-education-heading" class="resume-section-heading">
+        Education
+      </h2>
+      <div class="resume-education">
+        <span class="resume-education__years">2017 &ndash; 2020</span>
+        <div class="resume-education__body">
+          <p class="resume-education__title">
+            Associate in Computer Technology
+          </p>
+          <p class="resume-education__org">
+            Cebu Institute of Technology &ndash; University &middot; Cebu,
+            Philippines
+          </p>
+          <ul class="resume-education__bullets">
+            <li>
+              Built foundational skills in programming, web development, and
+              database/system administration through a hands-on curriculum.
+            </li>
+            <li>
+              Balanced coursework with active freelance development work
+              throughout the program.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="resume-section" aria-labelledby="resume-skills-heading">
+      <h2 id="resume-skills-heading" class="resume-section-heading">
+        Skills &amp; Tools
+      </h2>
+      <div class="resume-skills-grid">
+        <div class="resume-card" data-reveal>
+          <h3 class="resume-card__heading">Technical Skills</h3>
+          <dl class="resume-technical-list">
+            {
+              technicalSkills.map((row) => (
+                <>
+                  <dt set:html={row.category} />
+                  <dd set:html={row.items} />
+                </>
+              ))
+            }
+          </dl>
+        </div>
+
+        <div class="resume-card resume-card--highlight" data-reveal>
+          <h3 class="resume-card__heading">Soft Skills</h3>
+          <ul class="resume-soft-list">
+            {softSkills.map((skill) => <li set:html={`&check; ${skill}`} />)}
+          </ul>
+        </div>
+      </div>
+    </section>
+  </article>
 </BaseLayout>

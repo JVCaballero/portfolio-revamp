@@ -10,13 +10,26 @@
     the résumé", "The rider", "Instruments", "Also", status labels) is
     production-final visual language.
   - CLASS 2, everything else below (headline, handwritten notes, the
-    interview subject narrative, Q&A, pull quote, résumé job/date/status
-    text, rider requirements, instruments list, CTA narrative) is
-    source-faithful reference/demo copy carried over verbatim to preserve
-    composition and density. None of it is verified production content —
-    it will be replaced with real copy in a later content checkpoint.
-    Where that copy is ultimately stored (inline, Content Collection, or
-    otherwise) is not decided by this shell and is not implied here.
+    interview subject narrative, Q&A, pull quote, rider requirements,
+    instruments list, CTA narrative) is source-faithful reference/demo copy
+    carried over verbatim to preserve composition and density. None of it
+    is verified production content — it will be replaced with real copy in
+    a later content checkpoint. Where that copy is ultimately stored
+    (inline, Content Collection, or otherwise) is not decided by this shell
+    and is not implied here.
+
+  Sprint 2I update: the "Tour dates / the résumé" timeline's three rows
+  (job/date/status text) are NO LONGER class-2 demo content. Per the
+  project owner's explicit Sprint 2I decision, they now show the project
+  owner's real job history, following the exact same "real content, not
+  demo" precedent DESIGN_DEVIATIONS.md entry 16 established for Letters'
+  contact info — see DESIGN_DEVIATIONS.md, Sprint 2I entry, for the record.
+  A new "View the full résumé →" link below the timeline points to the new
+  `/resume/` page. This does not modify or invalidate entries 5/6 (the
+  timeline's approved contrast exceptions): those are keyed to selectors/
+  node types (`.interview-timeline-heading`,
+  `.interview-timeline__status--muted`), not to specific text, so they
+  still apply correctly to this real content.
 */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import '../../styles/interview.css';
@@ -142,14 +155,15 @@ const description =
         <ol class="interview-timeline">
           <li class="interview-timeline__item">
             <div class="interview-timeline__row" data-reveal>
-              <span class="interview-timeline__years">2024&mdash;26</span>
+              <span class="interview-timeline__years">2025&mdash;Present</span>
               <div class="interview-timeline__body">
                 <p class="interview-timeline__title">
-                  Full-Stack Product Engineer &middot; AI &amp; Automation
+                  Full-Stack Product Engineer &middot; Simple.biz
                 </p>
                 <p class="interview-timeline__desc">
-                  End-to-end web and mobile builds, plus workflow automation for
-                  ops teams.
+                  Sole engineer delivering two production platforms end-to-end
+                  &mdash; legal-services ops tooling and an EdTech coursework
+                  system &mdash; plus AI-driven workflow automation.
                 </p>
               </div>
               <span
@@ -161,14 +175,14 @@ const description =
           </li>
           <li class="interview-timeline__item">
             <div class="interview-timeline__row" data-reveal>
-              <span class="interview-timeline__years">2022&mdash;24</span>
+              <span class="interview-timeline__years">2024&mdash;25</span>
               <div class="interview-timeline__body">
                 <p class="interview-timeline__title">
-                  Software Engineer &middot; Product Team
+                  Senior Developer &middot; TTEC Digital (Cisco)
                 </p>
                 <p class="interview-timeline__desc">
-                  Front to back on a shipping product, plus the deploys nobody
-                  volunteered for.
+                  Modernized Cisco&rsquo;s internal Vue frontends and monitored
+                  FedRAMP-grade production systems for U.S. federal clients.
                 </p>
               </div>
               <span
@@ -180,13 +194,14 @@ const description =
           </li>
           <li class="interview-timeline__item">
             <div class="interview-timeline__row" data-reveal>
-              <span class="interview-timeline__years">2021&mdash;22</span>
+              <span class="interview-timeline__years">2021&mdash;24</span>
               <div class="interview-timeline__body">
                 <p class="interview-timeline__title">
-                  Freelance Developer &middot; Cebu
+                  Full Stack Developer &middot; BPOSeats (now HQZen)
                 </p>
                 <p class="interview-timeline__desc">
-                  Small businesses, smaller budgets, excellent stories.
+                  Led a generative AI Kanban assistant and optimized Django/Vue
+                  backend APIs at scale.
                 </p>
               </div>
               <span
@@ -197,6 +212,20 @@ const description =
             </div>
           </li>
         </ol>
+
+        <!--
+          Sprint 2I: no `data-magnet-target` here on purpose.
+          magnetic-navigation.ts uses a single `document.querySelector`
+          (not `querySelectorAll`) scoped to '/interview/', so a second
+          `[data-magnet-target]` node on this same route would silently
+          steal or split that one-target behavior away from the existing
+          Rotation CTA rather than cleanly extending to both. This link
+          is deliberately a plain, understated bordered link instead of a
+          second magnetic CTA — see DESIGN_DEVIATIONS.md.
+        -->
+        <a class="interview-resume-cta" href="/resume/">
+          View the full résumé <span aria-hidden="true">&rarr;</span>
+        </a>
       </div>
 
       <aside class="interview-sidebar">

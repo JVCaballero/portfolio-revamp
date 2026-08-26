@@ -1,0 +1,420 @@
+/*
+  Sprint 2I — Resume. This is an ORIGINAL layout, not a golden-master
+  reproduction: /resume/ has no corresponding section in
+  reference/newsstand-original/ at all (Resume is not one of
+  primaryNavigation's 8 sections in src/data/navigation.ts). There is
+  therefore no "Immutable source behavior/design" line range to cite here
+  the way every other page's stylesheet does, and this page is NOT
+  pixel-matched against any golden-master screenshot — its own visual
+  baseline (tests/visual.spec.ts) is the only regression target for this
+  route going forward.
+
+  To stay visually consistent with the rest of the site, this file
+  deliberately reuses the same design tokens (tokens.css) and the same
+  typographic/pattern vocabulary already established elsewhere, rather
+  than inventing new ones:
+    - kicker: identical treatment to every other page's folio/kicker line
+      (.interview-kicker, .letters-kicker, etc.) — mono, bold, red,
+      section tracking.
+    - headline: the same Archivo Black display treatment used by every
+      other page's <h1> (.interview-headline, .columns-detail__title).
+    - standfirst: the same italic Source Serif treatment as
+      .columns-detail__standfirst.
+    - timeline: mirrors Interview's own résumé timeline
+      (.interview-timeline and friends) — years / title / description
+      row, muted/current status chip — reused here as page-local classes
+      rather than importing interview.css directly (every page in this
+      codebase owns its own stylesheet).
+    - rider-style checklist: mirrors Interview's handwritten
+      .interview-rider__list checkmark treatment, reused here as a plain
+      (non-handwritten) checklist for the professional Soft Skills list,
+      since a handwritten font would be off-tone for a résumé aimed at
+      recruiters.
+    - hard-bordered/shadow cards: the same `--border-width-standard`
+      ink-bordered card language used by every sidebar card site-wide.
+
+  Kept deliberately ink-on-paper (never the site's red accent) for every
+  interactive/hover state on this page: unlike pages that reproduce a
+  fixed golden-master color choice, this page has no fidelity constraint
+  forcing a low-contrast color, so it ships with zero new contrast
+  exceptions (see DESIGN_DEVIATIONS.md).
+
+  No authored width breakpoints: the two-column Skills grid below uses
+  `grid-template-columns: repeat(auto-fit, minmax(...))`, matching every
+  other page's intrinsic-only layout convention — verified at
+  1440x900/768x1024/390x844.
+*/
+
+.resume-page {
+  animation: resume-fade-in var(--duration-lift) var(--ease-editorial) both;
+  padding-block: var(--space-fluid-sm) var(--space-fluid-md);
+}
+
+/* ---------------------------------------------------------------------
+   Header: kicker, headline, identity line, contact line, download CTA.
+   --------------------------------------------------------------------- */
+
+/* Deliberately ink, not the site's red accent: unlike every other page's
+   kicker, this one has no golden-master fidelity constraint forcing a
+   low-contrast color (see file header comment and DESIGN_DEVIATIONS.md
+   entry 23) — red-on-paper here would need an exception for no reason. */
+.resume-kicker {
+  margin: 0 0 var(--space-8);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+.resume-headline {
+  margin: 0 0 var(--space-14);
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(34px, 7.6vw, 84px);
+  line-height: var(--leading-display-page);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.resume-identity {
+  margin: 0 0 var(--space-10);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: clamp(15px, 1.8vw, 17px);
+  line-height: var(--leading-body-relaxed);
+  text-transform: uppercase;
+  color: var(--color-copy-secondary);
+}
+
+.resume-contact {
+  margin: 0 0 var(--space-18);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono-fluid-tag);
+  letter-spacing: var(--tracking-metadata);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  color: var(--color-text-muted);
+}
+
+.resume-contact a {
+  color: var(--color-ink);
+}
+
+.resume-contact a:hover,
+.resume-contact a:focus-visible {
+  color: var(--color-copy-secondary);
+}
+
+.resume-download {
+  display: inline-block;
+  padding: var(--space-10) var(--space-16);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+  color: var(--color-ink);
+  background: var(--color-highlight);
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  box-shadow: var(--shadow-hard-sm);
+  transition:
+    transform var(--duration-transform) var(--ease-standard),
+    box-shadow var(--duration-transform) var(--ease-standard);
+}
+
+.resume-download:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-md);
+}
+
+.resume-download:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------------------
+   Standfirst / section headings.
+   --------------------------------------------------------------------- */
+
+.resume-standfirst {
+  margin: 0 0 var(--space-30);
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: clamp(15px, 2.1vw, 19px);
+  line-height: var(--leading-copy-loose);
+  max-width: var(--measure-62);
+}
+
+.resume-section {
+  margin: 0 0 var(--space-34);
+}
+
+.resume-section-heading {
+  margin: 0 0 var(--space-14);
+  padding-bottom: var(--space-7);
+  border-bottom: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+}
+
+.resume-competencies {
+  margin: 0;
+  max-width: var(--measure-62);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--leading-copy);
+}
+
+/* ---------------------------------------------------------------------
+   Professional Experience timeline — mirrors Interview's own résumé
+   timeline pattern as page-local classes (see file header comment).
+   --------------------------------------------------------------------- */
+
+.resume-timeline {
+  margin: 0 0 var(--space-18);
+  padding: 0;
+  list-style: none;
+  border-top: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.resume-timeline__row {
+  display: flex;
+  gap: 10px 18px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  padding: var(--space-18) var(--space-6);
+  border-bottom: var(--border-width-hairline) var(--border-style-solid)
+    var(--color-rule-soft);
+}
+
+.resume-timeline__item:last-child .resume-timeline__row {
+  border-bottom: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.resume-timeline__years {
+  flex: 0 0 130px;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-13);
+}
+
+.resume-timeline__body {
+  flex: 1 1 340px;
+  min-width: 0;
+}
+
+.resume-timeline__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-heading-sm);
+  line-height: var(--leading-normal);
+  text-transform: uppercase;
+}
+
+.resume-timeline__org {
+  margin: 3px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono-10-5);
+  letter-spacing: var(--tracking-metadata);
+  color: var(--color-copy-secondary);
+}
+
+.resume-timeline__bullets {
+  margin: var(--space-10) 0 0;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--leading-body-relaxed);
+  color: var(--color-copy-secondary);
+}
+
+.resume-timeline__status {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+}
+
+.resume-timeline__status--current {
+  background: var(--color-ink);
+  color: var(--color-highlight);
+  padding: 4px 6px;
+}
+
+.resume-timeline__status--muted {
+  color: var(--color-text-muted);
+}
+
+.resume-muted-note {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------------------
+   Education — same years/title/org/bullets shape as the timeline, as a
+   single standalone entry (not a list of many).
+   --------------------------------------------------------------------- */
+
+.resume-education {
+  display: flex;
+  gap: 10px 18px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  padding: var(--space-18) var(--space-6);
+  border-top: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+  border-bottom: var(--border-width-heavy) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.resume-education__years {
+  flex: 0 0 130px;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-13);
+}
+
+.resume-education__body {
+  flex: 1 1 340px;
+  min-width: 0;
+}
+
+.resume-education__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-heading-sm);
+  line-height: var(--leading-normal);
+  text-transform: uppercase;
+}
+
+.resume-education__org {
+  margin: 3px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono-10-5);
+  letter-spacing: var(--tracking-metadata);
+  color: var(--color-copy-secondary);
+}
+
+.resume-education__bullets {
+  margin: var(--space-10) 0 0;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--leading-body-relaxed);
+  color: var(--color-copy-secondary);
+}
+
+/* ---------------------------------------------------------------------
+   Skills & Tools — two intrinsic-width cards (no authored breakpoint).
+   --------------------------------------------------------------------- */
+
+.resume-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: clamp(16px, 2.6vw, 28px);
+}
+
+.resume-card {
+  padding: var(--space-16);
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+}
+
+.resume-card--highlight {
+  background: var(--color-highlight);
+}
+
+.resume-card__heading {
+  margin: 0 0 var(--space-12);
+  padding-bottom: var(--space-7);
+  border-bottom: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+}
+
+.resume-card--highlight .resume-card__heading {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: var(--space-10);
+}
+
+.resume-technical-list {
+  margin: 0;
+  display: grid;
+  gap: 3px 12px;
+}
+
+.resume-technical-list dt {
+  margin: var(--space-10) 0 2px;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-9-5);
+  letter-spacing: var(--tracking-tag);
+  text-transform: uppercase;
+  color: var(--color-copy-secondary);
+}
+
+.resume-technical-list dt:first-child {
+  margin-top: 0;
+}
+
+.resume-technical-list dd {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--leading-body);
+}
+
+.resume-soft-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--leading-body-relaxed);
+}
+
+/* ---------------------------------------------------------------------
+   Resume-local animation.
+   --------------------------------------------------------------------- */
+
+@keyframes resume-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
