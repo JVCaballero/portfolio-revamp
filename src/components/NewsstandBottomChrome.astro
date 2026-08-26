@@ -172,10 +172,14 @@
      surrounding uppercase letters at the same font-size (a common
      monospace-font quirk, not a CSS sizing bug) — enlarging just this
      glyph to visually match the rest of the copyright line, per the
-     project owner's request. */
+     project owner's request. Enlarging alone floats the glyph above the
+     line's baseline (a first pass at this shipped with too small an
+     offset and needed a follow-up fix); -0.28em was tuned by eye against
+     real screenshots until the "©" optically sits level with the
+     surrounding cap-height text rather than hovering above it. */
   .newsstand-publication__copyright-mark {
     font-size: 1.4em;
     line-height: 1;
-    vertical-align: -0.05em;
+    vertical-align: -0.28em;
   }
 </style>
