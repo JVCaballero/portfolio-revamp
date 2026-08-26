@@ -20,6 +20,13 @@
   The dot's continuous slow pulse (`.newsstand-dispatch__dot`) is a
   project-owner-approved addition beyond the golden master itself — the
   source's dot is static with no animation. See DESIGN_DEVIATIONS.md.
+
+  Post-Sprint-2 fix: the publication footer's middle "Set in Archivo
+  Black, Barlow Condensed & Source Serif" credit line (source, ~line 643)
+  is removed at the project owner's explicit request. The remaining two
+  spans (issue/printed-in-Cebu line, copyright line) keep the same
+  `justify-content:space-between` treatment, now simply anchored to
+  opposite ends of the row.
 */
 ---
 
@@ -37,7 +44,6 @@
   <div class="newsstand-publication">
     <div class="newsstand-publication__inner container">
       <span>Caballero! Issue 05 &middot; printed in Cebu</span>
-      <span>Set in Archivo Black, Barlow Condensed &amp; Source Serif</span>
       <span>&copy; 2026 John Vincent Caballero</span>
     </div>
   </div>
