@@ -101,7 +101,12 @@ const isCurrentPath = (href: string) =>
   }
 
   .newsstand-issue {
-    color: var(--color-muted-metadata);
+    /* Already font-weight:700 (the boldest face this mono family loads —
+       see the shared rule above), but at 10px the muted, low-contrast
+       metadata color read as visually thin regardless. Ink reads
+       genuinely bold at this size; muted-metadata didn't, even at the
+       same weight. Per the project owner's request. */
+    color: var(--color-ink);
     font-size: var(--font-size-mono-10);
     letter-spacing: var(--tracking-kicker);
   }
@@ -130,6 +135,13 @@ const isCurrentPath = (href: string) =>
 
   .newsstand-primary {
     display: flex;
+    /* "safe center" per the project owner's request to center the nav
+       (was flex-start/left-aligned) — falls back to start-aligned
+       whenever the 8 links overflow the viewport (narrow mobile widths),
+       so the existing horizontal-scroll behavior below still starts from
+       a reachable edge instead of clipping content on both sides, which
+       plain `center` can do when a flex row overflows its container. */
+    justify-content: safe center;
     gap: clamp(16px, 3.4vw, 30px);
     overflow-x: auto;
     scrollbar-width: none;

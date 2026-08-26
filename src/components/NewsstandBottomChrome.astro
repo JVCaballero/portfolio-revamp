@@ -44,7 +44,10 @@
   <div class="newsstand-publication">
     <div class="newsstand-publication__inner container">
       <span>Caballero! Issue 05 &middot; printed in Cebu</span>
-      <span>&copy; 2026 John Vincent Caballero</span>
+      <span
+        ><span class="newsstand-publication__copyright-mark">&copy;</span> 2026 John
+        Vincent Caballero</span
+      >
     </div>
   </div>
 </footer>
@@ -163,5 +166,16 @@
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--color-muted-metadata);
+  }
+
+  /* The "©" glyph in this mono typeface draws visually smaller than the
+     surrounding uppercase letters at the same font-size (a common
+     monospace-font quirk, not a CSS sizing bug) — enlarging just this
+     glyph to visually match the rest of the copyright line, per the
+     project owner's request. */
+  .newsstand-publication__copyright-mark {
+    font-size: 1.4em;
+    line-height: 1;
+    vertical-align: -0.05em;
   }
 </style>
