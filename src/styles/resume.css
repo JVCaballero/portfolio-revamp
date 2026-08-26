@@ -96,11 +96,21 @@
   letter-spacing: var(--tracking-metadata);
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 10px;
+  align-items: center;
+  gap: 4px 10px;
   color: var(--color-text-muted);
 }
 
+/* Vertical padding grows each link's real hit target toward WCAG 2.2's
+   24px target-size/spacing guideline — this row's font is small (10-11px)
+   with no natural room otherwise, and Courier Prime's character widths
+   wrap these links onto tighter multi-line arrangements than Space Mono
+   did at tablet/mobile widths, which is what surfaced this as a genuine
+   Axe target-size/target-offset finding rather than a purely theoretical
+   one. Fixing the target size, not the font choice. */
 .resume-contact a {
+  display: inline-block;
+  padding-block: 7px;
   color: var(--color-ink);
 }
 

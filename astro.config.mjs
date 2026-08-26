@@ -36,12 +36,16 @@ export default defineConfig({
     },
     {
       provider: fontProviders.google(),
-      name: 'Space Mono',
-      cssVariable: '--font-space-mono',
-      // Golden master requests weight 600 in one folio label, but the source's
-      // own Google Fonts request only ever provides 400/700 for this family.
-      // Preserving that available-face behavior rather than manufacturing a
-      // real 600 weight that never existed in the original.
+      // Post-Sprint-2 fix: swapped from the golden master's own Space Mono
+      // to Courier Prime at the project owner's explicit request, for a
+      // more authentic vintage-typewriter look (referencing an actual
+      // Royal Quiet Deluxe). This is a deliberate departure from the
+      // golden master's own typography, not a fidelity bug — see
+      // DESIGN_DEVIATIONS.md. Courier Prime offers real 400/700 weights
+      // (no browser-synthesized faux-bold), matching every existing
+      // font-weight:700 mono label sitewide without any other changes.
+      name: 'Courier Prime',
+      cssVariable: '--font-courier-prime',
       weights: [400, 700],
       styles: ['normal'],
       fallbacks: ['monospace'],
