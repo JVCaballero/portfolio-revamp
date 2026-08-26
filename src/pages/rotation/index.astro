@@ -1,13 +1,185 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+/*
+  Sprint 2G Rotation — static reproduction of the immutable golden master's
+  Rotation view (reference/newsstand-original/source/Newsstand - Full
+  Site.dc.html, the `isRotation` sc-if block, ~lines 543-576). Like Sprint
+  2F B-Sides, this section of the source has NO template placeholders at
+  all (no `{{ }}` anywhere except the outer `sc-if` control flow and the
+  `handNotes`-gated wrapper around the closing handwritten note, whose
+  hint-placeholder default is `true`) — every piece of copy below (kicker,
+  headline, all three status-card texts, both list cards' contents, and
+  the handwritten note) is the golden master's own real, final, hardcoded
+  content, reproduced verbatim rather than authored fresh.
 
-const title = 'Rotation | CABALLERO!';
-const description = 'Rotation route shell for the CABALLERO! portfolio revamp.';
+  Content classification (Sprint 2 content-shell rule — see
+  DESIGN_DEVIATIONS.md and AGENTS.md):
+  - CLASS 1, structural/interface copy: the "Rotation / p.30" kicker
+    pattern, the status-label taxonomy (Building / Rehearsing / Gigging)
+    as a convention, and the "On heavy rotation" / "On the shelf" heading
+    pattern.
+  - CLASS 2: the specific headline, all three status-card texts, the games
+    list, the shelf notes, and the handwritten note describe fictional/
+    demo life details for this portfolio revamp and are not verified
+    production content about the real person's actual life — same
+    "pending final Sprint 2 review" framing as every prior sprint's
+    page-local content. Like B-Sides, none of this required new authorship:
+    it is the golden master's own final copy, transcribed character-for-
+    character rather than invented.
+
+  Content storage: page-local, matching the precedent already set by
+  Feature/Reviews/Interview/Columns (index and detail)/B-Sides — there is
+  no `rotation` Content Collection scaffold in src/content.config.ts, and
+  this sprint does not introduce one. Where this copy is ultimately stored
+  is deferred to a future unified content checkpoint.
+
+  Non-interactive cards: the immutable source has no `onClick`/`data-cue`
+  anywhere in this section — these are static display cards, not links.
+  Production reproduces that faithfully: all five cards (three status
+  cards, two list cards) are plain, non-interactive containers, never an
+  <a>, with no invented click target, href, or "read more" affordance.
+  cursor-preview.ts is deliberately NOT extended to '/rotation/' for the
+  same reason — there is nothing here for it to activate on.
+
+  Heading hierarchy: one <h1> ("This month's rotation"), followed by five
+  <h2>s at one consistent level — the three status-card titles (Row 1) and
+  the two list-card headings ("On heavy rotation · games" / "On the shelf
+  · manga & gear", Row 2). All five play the same structural role (the
+  heading for one card), so they sit at the same heading level rather than
+  nesting Row 2 under Row 1 or vice versa — there is no logical
+  parent/child relationship between a status card and a list card. This
+  mirrors B-Sides' own precedent of using <h2> for card titles.
+
+  Star ratings: the games list mirrors the established Reviews pattern
+  exactly (src/components/ReviewRow.astro, src/styles/reviews.css) — the
+  '★'/'☆' glyph string is rendered `aria-hidden="true"`, with a
+  visually-hidden textual equivalent ("N out of 5 stars") via a page-local
+  `.rotation-visually-hidden` utility (not a new shared global utility,
+  matching Reviews' own page-local scoping).
+
+  Games list markup: a plain <ul> rather than <ol> — the four games are
+  not presented as a strictly ordered ranking in the source (no numbering,
+  no explicit rank language beyond each entry's own descriptive note), so
+  list semantics without an implied ordinal position is the more accurate
+  reproduction.
+
+  scroll-reveal.ts is extended in this sprint to also match the
+  '/rotation/' prefix (see src/scripts/interactions/scroll-reveal.ts). Each
+  of the five cards carries `data-reveal`, matching the golden master's own
+  `data-reveal="1"` on each card div.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/rotation.css';
+
+const title = "This month's rotation | CABALLERO!";
+const description =
+  "Rotation / p.30 — this month's rotation across building, rehearsing, and gigging. Demo content pending final Sprint 2 review.";
+
+interface Game {
+  name: string;
+  note: string;
+  rating: number;
+}
+
+const games: Game[] = [
+  { name: 'Wuthering Waves', note: 'main rotation', rating: 5 },
+  { name: 'Arknights: Endfield', note: 'new, dangerous', rating: 4 },
+  { name: 'Zenless Zone Zero', note: 'daily, briefly', rating: 4 },
+  { name: 'Genshin Impact', note: 'logging in out of loyalty', rating: 3 },
+];
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="container">
-    <h1>Rotation</h1>
-    <p data-route="rotation">Rotation content is coming in a later sprint.</p>
+  <div class="rotation-page container">
+    <p class="rotation-kicker">
+      Rotation / p.30 &middot; updated 4 August 2026
+    </p>
+    <h1 class="rotation-headline">This month's rotation</h1>
+
+    <ul class="rotation-status-grid">
+      <li>
+        <div class="rotation-status-card" data-reveal>
+          <p class="rotation-status-card__label">Building</p>
+          <h2 class="rotation-status-card__title">This site, third attempt</h2>
+          <p class="rotation-status-card__description">
+            Last one was built during the pandemic and it shows. Also: a fresh
+            eval harness I keep meaning to open-source.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div
+          class="rotation-status-card rotation-status-card--highlight"
+          data-reveal
+        >
+          <p class="rotation-status-card__label">Rehearsing</p>
+          <h2 class="rotation-status-card__title">
+            Field show, season opens October
+          </h2>
+          <p class="rotation-status-card__description">
+            Forty musicians, one baton, Saturdays gone until November.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div class="rotation-status-card" data-reveal>
+          <p class="rotation-status-card__label">Gigging</p>
+          <h2 class="rotation-status-card__title">
+            Acoustic sets, Fri &amp; Sat
+          </h2>
+          <p class="rotation-status-card__description">
+            Same four bars, same six requests, no complaints.
+          </p>
+        </div>
+      </li>
+    </ul>
+
+    <div class="rotation-lists">
+      <div class="rotation-list-card" data-reveal>
+        <h2 class="rotation-list-card__heading">
+          On heavy rotation &middot; games
+        </h2>
+        <ul class="rotation-games">
+          {
+            games.map((game) => {
+              const stars =
+                '★'.repeat(game.rating) + '☆'.repeat(5 - game.rating);
+              return (
+                <li class="rotation-games__row">
+                  <span>
+                    <strong>{game.name}</strong> &mdash; {game.note}
+                  </span>
+                  <span class="rotation-games__rating" aria-hidden="true">
+                    {stars}
+                  </span>
+                  <span class="rotation-visually-hidden">
+                    {game.rating} out of 5 stars
+                  </span>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </div>
+
+      <div class="rotation-list-card" data-reveal>
+        <h2 class="rotation-list-card__heading">
+          On the shelf &middot; manga &amp; gear
+        </h2>
+        <div class="rotation-shelf-notes">
+          <p>Three volumes behind on four series. The guilt meter is at 61%.</p>
+          <p>
+            Reviewing: a split keyboard I already regret buying, and a very good
+            USB-C dock nobody asked about.
+          </p>
+          <p>
+            Open to contract work from November. Say hello before the field show
+            eats October.
+          </p>
+        </div>
+        <p class="rotation-hand-note">
+          the guilt meter is, regrettably, a real feature
+        </p>
+      </div>
+    </div>
   </div>
 </BaseLayout>

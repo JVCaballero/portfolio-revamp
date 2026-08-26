@@ -103,3 +103,17 @@ test('B-Sides shell full-page visual regression', async ({ page }) => {
     fullPage: true,
   });
 });
+
+test('Rotation shell full-page visual regression', async ({ page }) => {
+  // Reduced motion settles scroll-reveal to its resting, fully-visible
+  // final state (scroll-reveal.ts) — Rotation has no cursor-preview plate,
+  // no remote images, and no other page-local interaction module, so the
+  // snapshot captures deterministic layout rather than an arbitrary
+  // mid-reveal frame.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/rotation/');
+
+  await expect(page).toHaveScreenshot('rotation-shell.png', {
+    fullPage: true,
+  });
+});

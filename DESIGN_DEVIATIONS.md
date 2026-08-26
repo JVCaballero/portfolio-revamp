@@ -662,3 +662,72 @@ Site.dc.html`, the `isBsides` sc-if block, ~lines 516, 522, 528, 534).
   has explicit `width="800"` `height="500"` and `alt=""`.
 - **Final-QA reminder:** re-verify this remains the correct approach if a
   later pass changes how placeholder-image alt text is handled site-wide.
+
+## Sprint 2G — Rotation
+
+### 15. Rotation kicker, status-card labels, list-card headings, and star-rating red-on-paper contrast (extends entries 1, 3, 5, 7, 13)
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/rotation/` — `.rotation-kicker` ("Rotation /
+  p.30 · updated 4 August 2026"), the "Building" and "Gigging"
+  status-card labels (`.rotation-status-card__label`, on the two status
+  cards that are not the always-yellow "Rehearsing" card), the two
+  list-card headings (`.rotation-list-card__heading`, "On heavy rotation ·
+  games" / "On the shelf · manga & gear"), and the four games star ratings
+  (`.rotation-games__rating`), `src/pages/rotation/index.astro`,
+  `src/styles/rotation.css`.
+- **Immutable source behavior/design:** Small bold Newsstand-red text
+  (`#e2231a`) directly on the paper background (`#efe9dc`) — the kicker
+  and both list-card headings at ~11px/10px bold Space Mono, the two
+  status-card labels at ~10px bold Space Mono, and the star ratings at
+  ~11px bold Space Mono — the same folio/kicker/label treatment already
+  documented for every other page (`Newsstand - Full Site.dc.html`, the
+  `isRotation` sc-if block, ~lines 545, 549, 551, 556, 558-561, 565). The
+  "Rehearsing" status card's own label has no explicit color in the source
+  at all, so it inherits ink instead and never violates — it is
+  deliberately excluded from this exception.
+- **Production behavior/design:** Preserved exactly — same color pairing,
+  sizes, weights, and tracking for every affected node. No color, size,
+  typography, or hierarchy change was made.
+- **Reason for deviation:** Identical to the reasoning already accepted
+  for entries 1, 3, 5, 7, and 13 — this exact color pairing produces
+  ~3.87:1 contrast, which fails the WCAG 2.2 AA normal-text threshold
+  (4.5:1). Changing the red or the paper background would visibly
+  redesign the immutable Newsstand golden master, which is outside this
+  checkpoint's authorized scope. This is a straightforward extension of
+  already-approved reasoning to this route's equivalent nodes, not a new
+  accessibility trade-off requiring separate sign-off.
+- **Classification:** accessibility (exception extension, not a new
+  exception category).
+- **Status:** accepted permanent design-preservation exception, pending
+  final holistic QA. Route scoped and selector scoped. The "Rehearsing"
+  card's ink-on-yellow label/title/description text and the dotted-border
+  list rows all pass WCAG AA at rest and are explicitly NOT part of this
+  exception — verified as passing in the dedicated pass-through test
+  below.
+- **Approval source:** project owner, Sprint 2G implementation task.
+- **Exact files/nodes affected:** `.rotation-kicker`,
+  `.rotation-status-card__label` (only the Building and Gigging cards —
+  the Rehearsing card's label is excluded, as it never violates),
+  `.rotation-list-card__heading`, and `.rotation-games__rating` in
+  `src/styles/rotation.css`; the corresponding nodes in
+  `src/pages/rotation/index.astro`.
+- **Testing:** `tests/accessibility.spec.ts` adds a narrowly-scoped,
+  Rotation-specific contrast expectation for exactly these node types
+  (foreground `rgb(226, 35, 26)` on background `rgb(239, 233, 220)`, ratio
+  ≈3.87:1). `.rotation-games__rating` is `aria-hidden="true"` (its
+  accessible equivalent is a separate visually-hidden "N out of 5 stars"
+  node per row, mirroring Reviews' entry 3 pattern), so Axe's
+  `color-contrast` rule never reports it directly — its color identity is
+  still verified from real computed style. It does not modify, broaden, or
+  otherwise touch the existing Cover, Feature, Reviews, Interview,
+  Columns, or B-Sides exceptions, and does not disable Axe's
+  `color-contrast` rule page-wide — any other Rotation contrast violation
+  still fails the test. A separate pass-through test independently
+  verifies (and requires passing, not just "no Axe flag") the
+  "Rehearsing" card's ink-on-yellow text and the dotted-border list rows —
+  none of these needed a new exception, and the test fails if any of them
+  ever regresses below AA.
+- **Final-QA reminder:** re-verify this exception still matches the golden
+  master exactly (no drift in color/size/weight) during the post-Sprint-2
+  holistic design QA.

@@ -1546,3 +1546,265 @@ test('B-Sides exposes exactly one h1 and four h2 card titles in order, with no p
       .getByRole('link', { name: 'B-Sides', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
 });
+
+/*
+  Sprint 2G — Rotation (src/pages/rotation/index.astro).
+
+  This page's red-on-paper nodes at rest are: the kicker ("Rotation /
+  p.30 · updated 4 August 2026"), the "Building" and "Gigging" status-card
+  labels (the "Rehearsing" card's label deliberately has no explicit color
+  in the golden master and inherits ink instead, since the card itself is
+  always yellow — it never violates), and the two list-card headings ("On
+  heavy rotation · games" / "On the shelf · manga & gear"). The four games
+  star ratings reuse the exact same red-on-paper pairing but are
+  `aria-hidden="true"` (their accessible equivalent is a separate
+  visually-hidden "N out of 5 stars" node per row, mirroring Reviews'
+  established pattern), so Axe's `color-contrast` rule never reports them
+  — their color identity is still verified directly below, since sighted
+  users see them regardless of aria-hidden. No other new contrast
+  exception is required: the "Rehearsing" card's ink-on-yellow text and
+  the dotted-border list rows all pass WCAG AA at rest, verified in the
+  dedicated pass-through test below.
+*/
+const ROTATION_STATUS_LABEL_SELECTOR =
+  '.rotation-status-grid > li:nth-child(1) .rotation-status-card__label, ' +
+  '.rotation-status-grid > li:nth-child(3) .rotation-status-card__label';
+const ROTATION_RED_TEXT_SELECTORS = [
+  '.rotation-kicker',
+  '.rotation-list-card__heading',
+];
+const ROTATION_RED_TEXT_SELECTORS_INCLUDING_ARIA_HIDDEN = [
+  ...ROTATION_RED_TEXT_SELECTORS,
+  '.rotation-games__rating',
+];
+
+test('Rotation route has no automated WCAG A/AA violations beyond the documented golden-master kicker/card-label/list-heading exception (Cover/Feature/Reviews/Interview/Columns/B-Sides exceptions untouched)', async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/rotation/');
+
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+
+  const colorContrastViolation = results.violations.find(
+    (violation) => violation.id === 'color-contrast',
+  );
+  const otherViolations = results.violations.filter(
+    (violation) => violation.id !== 'color-contrast',
+  );
+  expect(otherViolations).toEqual([]);
+
+  const nodes = colorContrastViolation?.nodes ?? [];
+  const targets = nodes.map((node) => node.target.join(' '));
+
+  // Exactly five flagged nodes at rest: one kicker, two status-card labels
+  // (Building, Gigging — Rehearsing's label passes and never appears
+  // here), and two list-card headings. The games star-rating exception is
+  // aria-hidden and never appears in a resting-state Axe scan; it is
+  // verified separately below.
+  expect(targets).toHaveLength(5);
+  expect(targets.filter((t) => t.includes('.rotation-kicker'))).toHaveLength(1);
+  expect(
+    targets.filter((t) => t.includes('.rotation-status-card__label')),
+  ).toHaveLength(2);
+  expect(
+    targets.filter((t) => t.includes('.rotation-list-card__heading')),
+  ).toHaveLength(2);
+
+  for (const selector of ROTATION_RED_TEXT_SELECTORS) {
+    const locator = page.locator(selector);
+    const count = await locator.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      const node = locator.nth(i);
+      const foreground = await node.evaluate(
+        (el) => getComputedStyle(el).color,
+      );
+      const [r, g, b] = parseRgb(foreground);
+      expect([r, g, b]).toEqual(EXPECTED_FOREGROUND_RGB);
+    }
+    const background = await getEffectiveBackground(page, selector);
+    expect(background).toEqual(EXPECTED_BACKGROUND_RGB);
+    const foreground = await getComputedForeground(page, selector);
+    const ratio = contrastRatio(foreground, background);
+    expect(ratio).toBeGreaterThan(EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE);
+    expect(ratio).toBeLessThan(EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE);
+  }
+
+  // Building and Gigging labels, verified individually since the bare
+  // `.rotation-status-card__label` selector would also match the passing
+  // (ink-on-yellow) Rehearsing label.
+  const statusLabelLocator = page.locator(ROTATION_STATUS_LABEL_SELECTOR);
+  await expect(statusLabelLocator).toHaveCount(2);
+  for (let i = 0; i < 2; i++) {
+    const node = statusLabelLocator.nth(i);
+    const foreground = await node.evaluate((el) => getComputedStyle(el).color);
+    const [r, g, b] = parseRgb(foreground);
+    expect([r, g, b]).toEqual(EXPECTED_FOREGROUND_RGB);
+  }
+  const statusLabelBackground = await getEffectiveBackground(
+    page,
+    ROTATION_STATUS_LABEL_SELECTOR,
+  );
+  expect(statusLabelBackground).toEqual(EXPECTED_BACKGROUND_RGB);
+  const statusLabelForeground = await getComputedForeground(
+    page,
+    ROTATION_STATUS_LABEL_SELECTOR,
+  );
+  const statusLabelRatio = contrastRatio(
+    statusLabelForeground,
+    statusLabelBackground,
+  );
+  expect(statusLabelRatio).toBeGreaterThan(
+    EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE,
+  );
+  expect(statusLabelRatio).toBeLessThan(
+    EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE,
+  );
+
+  // Games star ratings, aria-hidden and never flagged by Axe — color
+  // identity verified for all four occurrences directly.
+  const ratingLocator = page.locator('.rotation-games__rating');
+  await expect(ratingLocator).toHaveCount(4);
+  for (let i = 0; i < 4; i++) {
+    const node = ratingLocator.nth(i);
+    await expect(node).toHaveAttribute('aria-hidden', 'true');
+    const foreground = await node.evaluate((el) => getComputedStyle(el).color);
+    const [r, g, b] = parseRgb(foreground);
+    expect([r, g, b]).toEqual(EXPECTED_FOREGROUND_RGB);
+  }
+  const ratingBackground = await getEffectiveBackground(
+    page,
+    '.rotation-games__rating',
+  );
+  expect(ratingBackground).toEqual(EXPECTED_BACKGROUND_RGB);
+  const ratingForeground = await getComputedForeground(
+    page,
+    '.rotation-games__rating',
+  );
+  const ratingRatio = contrastRatio(ratingForeground, ratingBackground);
+  expect(ratingRatio).toBeGreaterThan(
+    EXPECTED_CONTRAST_RATIO - CONTRAST_TOLERANCE,
+  );
+  expect(ratingRatio).toBeLessThan(
+    EXPECTED_CONTRAST_RATIO + CONTRAST_TOLERANCE,
+  );
+
+  testInfo.annotations.push({
+    type: 'known-issue',
+    description:
+      `Sprint 2G extends the already-approved red-on-paper kicker ` +
+      `exception (DESIGN_DEVIATIONS.md entries 1, 3, 5, 7, 13) to ` +
+      `${ROTATION_RED_TEXT_SELECTORS_INCLUDING_ARIA_HIDDEN.join(', ')} and ` +
+      `the "Building"/"Gigging" status-card labels ` +
+      `(rgb(226, 35, 26) on rgb(239, 233, 220), ~${EXPECTED_CONTRAST_RATIO}:1). ` +
+      `The games rating is aria-hidden and not itself flagged by Axe. No ` +
+      `new exception category was introduced. The Cover, Feature, Reviews, ` +
+      `Interview, Columns, and B-Sides exceptions above remain separate, ` +
+      `untouched target sets.`,
+  });
+});
+
+test('Rotation "Rehearsing" card (ink-on-yellow) and the dotted-border list rows all pass WCAG AA contrast at rest, needing no new exception', async ({
+  page,
+}) => {
+  await page.goto('/rotation/');
+
+  async function readContrast(locator: ReturnType<Page['locator']>) {
+    return locator.evaluate((el) => {
+      function relativeLuminanceLocal([r, g, b]: number[]): number {
+        const [rs, gs, bs] = [r, g, b].map((channel) => {
+          const c = channel / 255;
+          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+      }
+      function ratioOf(fg: number[], bg: number[]): number {
+        const l1 = relativeLuminanceLocal(fg);
+        const l2 = relativeLuminanceLocal(bg);
+        const [lighter, darker] = l1 > l2 ? [l1, l2] : [l2, l1];
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+      const parseRgbLocal = (value: string) =>
+        (value.match(/[\d.]+/g) ?? []).map(Number).slice(0, 3);
+
+      const style = getComputedStyle(el);
+      const fg = parseRgbLocal(style.color);
+      let bgEl: Element | null = el;
+      let bg = [239, 233, 220];
+      while (bgEl) {
+        const bgc = getComputedStyle(bgEl).backgroundColor;
+        const match = bgc.match(/rgba?\(([^)]+)\)/);
+        if (match) {
+          const parts = match[1].split(',').map((part) => parseFloat(part));
+          if ((parts[3] ?? 1) > 0) {
+            bg = parts.slice(0, 3);
+            break;
+          }
+        }
+        bgEl = bgEl.parentElement;
+      }
+      return ratioOf(fg, bg);
+    });
+  }
+
+  const highlightCard = page.locator(
+    '.rotation-status-grid > li:nth-child(2) .rotation-status-card',
+  );
+  await expect(highlightCard).toHaveClass(/rotation-status-card--highlight/);
+
+  const highlightLabel = highlightCard.locator('.rotation-status-card__label');
+  expect(await readContrast(highlightLabel)).toBeGreaterThanOrEqual(4.5);
+
+  const highlightTitle = highlightCard.locator('.rotation-status-card__title');
+  expect(await readContrast(highlightTitle)).toBeGreaterThanOrEqual(4.5);
+
+  const highlightDescription = highlightCard.locator(
+    '.rotation-status-card__description',
+  );
+  expect(await readContrast(highlightDescription)).toBeGreaterThanOrEqual(4.5);
+
+  // Shelf notes and the games list entry text are plain ink-on-paper body
+  // copy — no special treatment, and expected to pass trivially.
+  const shelfNote = page.locator('.rotation-shelf-notes p').first();
+  expect(await readContrast(shelfNote)).toBeGreaterThanOrEqual(4.5);
+});
+
+test('Rotation exposes exactly one h1 and five h2 card headings in order, with no positive tabindex anywhere', async ({
+  page,
+}) => {
+  await page.goto('/rotation/');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  await expect(
+    page.getByRole('heading', { level: 1, name: "This month's rotation" }),
+  ).toBeVisible();
+
+  const h2s = (
+    await page.getByRole('heading', { level: 2 }).allTextContents()
+  ).map((text) => text.replace(/\s+/g, ' ').trim());
+  expect(h2s).toEqual([
+    'This site, third attempt',
+    'Field show, season opens October',
+    'Acoustic sets, Fri & Sat',
+    'On heavy rotation · games',
+    'On the shelf · manga & gear',
+  ]);
+
+  const positiveTabindexCount = await page
+    .locator('[tabindex]')
+    .evaluateAll(
+      (nodes) =>
+        nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+          .length,
+    );
+  expect(positiveTabindexCount).toBe(0);
+
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Primary' })
+      .getByRole('link', { name: 'Rotation', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+});

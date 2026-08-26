@@ -1,0 +1,263 @@
+/*
+  Sprint 2G Rotation — static reproduction of the immutable golden master's
+  Rotation view (reference/newsstand-original/source/Newsstand - Full
+  Site.dc.html, the `isRotation` sc-if block, ~lines 543-576). Every rule
+  below is derived from that block and mapped onto accepted tokens only
+  where both the value AND the semantic role already match (see
+  tokens.css). One-off source values (the `250px`/`300px` grid minimums,
+  the `18px` grid/list gaps, the `9px` inner list-row gap, the headline
+  clamp) stay literal at the point of use rather than being forced through
+  a misleading alias — matching the precedent set in b-sides.css/
+  columns.css/interview.css/reviews.css. The one exception is the
+  card-title clamp (`clamp(26px,3.4vw,30px)`), which already has an exact
+  token match (`--font-size-heading-card`) reused here rather than
+  repeated as a literal.
+
+  No Rotation-specific width breakpoints exist here on purpose: the source
+  has none — both grids are `repeat(auto-fit, minmax(...))`, fully
+  intrinsic, verified at 1440x900/768x1024/390x844.
+
+  Card hover/active shadow: this section's cards use a 7px hover shadow
+  (`--shadow-hard-xl`), NOT the 8px `--shadow-hard-2xl` B-Sides' cards use
+  — the two pages' golden-master shadow values differ and are not the same
+  token.
+*/
+
+.rotation-page {
+  animation: rotation-fade-in var(--duration-lift) var(--ease-editorial) both;
+  padding-block: var(--space-fluid-sm) var(--space-fluid-md);
+}
+
+/* ---------------------------------------------------------------------
+   Folio/kicker, headline.
+   --------------------------------------------------------------------- */
+
+/* Approved Sprint 2G design-preservation exception (extends entries 1, 3,
+   5, 7, 13 — small Newsstand-red text): this exact node (source-faithful
+   red-on-paper kicker) fails WCAG AA normal-text contrast (~3.87:1) at
+   rest, the same established pairing already documented for every other
+   page's kicker. See DESIGN_DEVIATIONS.md and tests/accessibility.spec.ts. */
+.rotation-kicker {
+  margin: 0 0 var(--space-8);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.rotation-headline {
+  margin: 0 0 var(--space-24);
+  font-family: var(--font-display);
+  font-weight: var(--weight-normal);
+  font-size: clamp(34px, 7.4vw, 82px);
+  line-height: var(--leading-display-page);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------------
+   Row 1 — three-card status grid.
+   --------------------------------------------------------------------- */
+
+.rotation-status-grid {
+  margin: 0 0 var(--space-20);
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: var(--space-18);
+}
+
+.rotation-status-card {
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding: var(--space-18);
+  transition:
+    transform var(--duration-card) var(--ease-editorial),
+    box-shadow var(--duration-card) var(--ease-standard);
+}
+
+.rotation-status-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-hard-xl);
+}
+
+.rotation-status-card:active {
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+/* The "Rehearsing" card is always yellow — not just on hover, unlike every
+   other card treatment in this codebase. Its label deliberately has no
+   explicit color rule here: the source sets no color on this label at
+   all, so it inherits the ink text color, which reads clearly on yellow. */
+.rotation-status-card--highlight {
+  background: var(--color-highlight);
+}
+
+.rotation-status-card__label {
+  margin: 0 0 var(--space-8);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.rotation-status-card--highlight .rotation-status-card__label {
+  color: inherit;
+}
+
+.rotation-status-card__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-heading-card);
+  line-height: var(--leading-heading);
+  text-transform: uppercase;
+}
+
+.rotation-status-card__description {
+  margin: 7px 0 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-compact);
+  line-height: var(--leading-copy-loose);
+}
+
+/* ---------------------------------------------------------------------
+   Row 2 — games / shelf list cards.
+   --------------------------------------------------------------------- */
+
+.rotation-lists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-18);
+}
+
+.rotation-list-card {
+  border: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  padding: var(--space-18);
+}
+
+/* Approved Sprint 2G design-preservation exception (extends entries 1, 3,
+   5, 7, 13): same source-faithful red-on-paper pairing as the kicker. See
+   DESIGN_DEVIATIONS.md. */
+.rotation-list-card__heading {
+  margin: 0 0 var(--space-10);
+  padding-bottom: 7px;
+  border-bottom: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-10);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.rotation-games {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--leading-copy-compact);
+}
+
+.rotation-games__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-10);
+  border-bottom: var(--border-width-hairline) var(--border-style-dotted)
+    var(--color-rule-muted);
+  padding-bottom: 8px;
+}
+
+.rotation-games__row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Approved Sprint 2G design-preservation exception (extends the Reviews
+   star-rating exception, DESIGN_DEVIATIONS.md entry 3): same
+   source-faithful red-on-paper pairing, at 11px bold, aria-hidden with a
+   visually-hidden textual equivalent — see .rotation-visually-hidden
+   below and tests/accessibility.spec.ts. */
+.rotation-games__rating {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  color: var(--color-accent);
+}
+
+.rotation-shelf-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--leading-body);
+}
+
+.rotation-shelf-notes p {
+  margin: 0;
+  border-bottom: var(--border-width-hairline) var(--border-style-dotted)
+    var(--color-rule-muted);
+  padding-bottom: 8px;
+}
+
+.rotation-shelf-notes p:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rotation-hand-note {
+  margin: var(--space-12) 0 0;
+  font-family: var(--font-hand);
+  font-weight: var(--weight-normal);
+  color: var(--color-handwriting);
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: var(--leading-hand);
+  transform: rotate(-1deg);
+}
+
+/* ---------------------------------------------------------------------
+   Visually-hidden accessible text (star-rating equivalent). Rotation-local
+   rather than a new global utility, matching Reviews' own page-local
+   scoping — no other route needs this yet.
+   --------------------------------------------------------------------- */
+
+.rotation-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------------
+   Rotation-local animation.
+   --------------------------------------------------------------------- */
+
+@keyframes rotation-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
