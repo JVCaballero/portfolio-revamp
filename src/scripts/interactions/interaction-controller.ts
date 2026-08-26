@@ -2,8 +2,11 @@
   Sprint 1F lifecycle plumbing, populated starting Sprint 2A. Owns the Astro
   ClientRouter hookup that Newsstand interaction modules mount into and tear
   down from. Each module below is explicitly imported and pathname-gates
-  itself to the route(s) it applies to (see each module's own file) — this
-  registry performs no route filtering of its own.
+  itself to the route(s) it applies to (see each module's own file), with
+  one exception: dispatch-rotation.ts is intentionally site-wide (it drives
+  the shared footer's Dispatch band, which renders on every page) and
+  performs no pathname gating at all — this registry itself still performs
+  no route filtering of its own.
 
   Independent from ../transition-wipe.ts, which keeps its own narrowly
   scoped astro:before-preparation / astro:after-swap wiring.
@@ -14,6 +17,7 @@ import { countUp } from './count-up';
 import { magneticNavigation } from './magnetic-navigation';
 import { cursorPreview } from './cursor-preview';
 import { clipboardCopy } from './clipboard-copy';
+import { dispatchRotation } from './dispatch-rotation';
 
 export interface InteractionContext {
   signal: AbortSignal;
@@ -27,8 +31,9 @@ export interface InteractionModule {
 }
 
 // Sprint 2A adds the first four Feature interaction modules; Sprint 2B adds
-// Reviews' cursor-preview; Sprint 2H adds Letters' clipboard-copy. Modules
-// are explicitly imported and listed here as they are implemented — no
+// Reviews' cursor-preview; Sprint 2H adds Letters' clipboard-copy; a
+// post-Sprint-2 fix adds the site-wide dispatch-rotation. Modules are
+// explicitly imported and listed here as they are implemented — no
 // automatic discovery.
 const MODULES: InteractionModule[] = [
   scrollReveal,
@@ -37,6 +42,7 @@ const MODULES: InteractionModule[] = [
   magneticNavigation,
   cursorPreview,
   clipboardCopy,
+  dispatchRotation,
 ];
 
 declare global {
