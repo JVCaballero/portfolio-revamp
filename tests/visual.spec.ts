@@ -81,3 +81,25 @@ test('Columns detail (production article template) full-page visual regression',
     fullPage: true,
   });
 });
+
+test('B-Sides shell full-page visual regression', async ({ page }) => {
+  // Reduced motion settles scroll-reveal to its resting, fully-visible
+  // final state (scroll-reveal.ts) — B-Sides has no cursor-preview plate
+  // and no other page-local interaction module, so the snapshot captures
+  // deterministic layout rather than an arbitrary mid-reveal frame.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/b-sides/');
+  // Four picsum.photos images load concurrently here (every other page's
+  // baseline has at most one remote hero image), which can outrun a
+  // screenshot taken immediately on --update-snapshots (no prior baseline
+  // means no retry-until-stable comparison). Wait for all of them to
+  // finish loading so the baseline captures real photos, not a mid-load
+  // blank frame.
+  await page.waitForFunction(() =>
+    Array.from(document.images).every((img) => img.complete),
+  );
+
+  await expect(page).toHaveScreenshot('bsides-shell.png', {
+    fullPage: true,
+  });
+});

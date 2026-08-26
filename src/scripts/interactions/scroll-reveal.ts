@@ -1,8 +1,10 @@
 /*
   Sprint 2A — Feature scroll-reveal, extended in Sprint 2B to Reviews,
-  Sprint 2C to Interview, and Sprint 2D to Columns (including its
-  temporary [slug] route-integrity shell, which shares the '/columns/'
-  prefix but currently has no [data-reveal] targets of its own).
+  Sprint 2C to Interview, Sprint 2D to Columns (including its temporary
+  [slug] route-integrity shell, which shares the '/columns/' prefix but
+  currently has no [data-reveal] targets of its own), and Sprint 2F to
+  B-Sides (its four project cards each carry [data-reveal], matching the
+  golden master's own `data-reveal="1"` on each card div).
   Mirrors the golden master's sweep()/reveal() pair (reference/newsstand-
   original/index.html, the compiled runtime's IntersectionObserver setup
   and stagger logic): elements marked [data-reveal] fade up on entering
@@ -29,6 +31,7 @@ const PATHNAME_PREFIXES = [
   '/reviews/',
   '/interview/',
   '/columns/',
+  '/b-sides/',
 ];
 const SELECTOR = '[data-reveal]';
 const ROOT_MARGIN = '0px 0px -6% 0px';

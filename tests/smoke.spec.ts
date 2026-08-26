@@ -33,7 +33,7 @@ const routes = [
     heading: 'Words, rants and gadget reviews',
     activeLabel: 'Columns',
   },
-  { href: '/b-sides/', heading: 'B-Sides', activeLabel: 'B-Sides' },
+  { href: '/b-sides/', heading: 'The playground', activeLabel: 'B-Sides' },
   { href: '/rotation/', heading: 'Rotation', activeLabel: 'Rotation' },
   { href: '/letters/', heading: 'Letters', activeLabel: 'Letters' },
   { href: '/resume/', heading: 'Resume', activeLabel: null },
@@ -3286,5 +3286,241 @@ test.describe('Sprint 2D Columns lead image hover correction', () => {
       titleBox.y + titleBox.height / 2,
     );
     await expect(plate).toHaveClass(/columns-cursor-preview--visible/);
+  });
+});
+
+test.describe('Sprint 2F B-Sides page', () => {
+  const cardCopy = [
+    {
+      title: 'Bandstand',
+      badge: 'IN USE',
+      description:
+        'Sheet music, parts and call times for forty musicians. Built because I was the one maintaining the group chat, and the group chat was losing.',
+      stack: 'Next.js · Postgres · PDF wrangling',
+    },
+    {
+      title: 'Pity Counter',
+      badge: 'LIVE',
+      description:
+        'Four gacha games, one dashboard that tells the truth about my pull history. Wuthering Waves, Zenless Zone Zero, Genshin, Endfield. The numbers are not kind.',
+      stack: 'React · charts · denial',
+    },
+    {
+      title: 'Setlist',
+      badge: 'LIVE',
+      description:
+        'Keys, capos and audience requests for acoustic bar nights. Written between two sets; its offline sync pattern ended up in a production clinic app.',
+      stack: 'React Native · offline-first',
+    },
+    {
+      title: 'Shelf',
+      badge: 'WIP',
+      description:
+        'Manga backlog tracker with a working guilt meter. Currently telling me I am three volumes behind on four series.',
+      stack: 'Svelte · scraping · shame',
+    },
+  ] as const;
+
+  test('B-Sides renders the golden-master anatomy: kicker, headline, intro, and four project cards with verbatim copy', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    const response = await page.goto('/b-sides/');
+    expect(response?.ok()).toBeTruthy();
+
+    await expect(page.locator('.bsides-kicker')).toHaveText('B-Sides / p.28');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'The playground' }),
+    ).toBeVisible();
+    await expect(page.locator('.bsides-intro')).toHaveText(
+      'Things built for an audience of one — me — which is how most of my best patterns start.',
+    );
+
+    const cards = page.locator('article.bsides-card');
+    await expect(cards).toHaveCount(4);
+    const h2s = page.locator('h2.bsides-card__title');
+    await expect(h2s).toHaveCount(4);
+
+    for (let i = 0; i < cardCopy.length; i++) {
+      const card = cards.nth(i);
+      const expected = cardCopy[i];
+      await expect(card.locator('.bsides-card__title')).toHaveText(
+        expected.title,
+      );
+      await expect(card.locator('.bsides-card__badge')).toHaveText(
+        expected.badge,
+      );
+      await expect(card.locator('.bsides-card__description')).toHaveText(
+        expected.description,
+      );
+      await expect(card.locator('.bsides-card__stack')).toHaveText(
+        expected.stack,
+      );
+    }
+
+    await expect(page.locator('footer.newsstand-bottom-chrome')).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Primary' })
+        .getByRole('link', { name: 'B-Sides', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('The first card (Bandstand) is the only inverted/dark card; the other three share the paper treatment', async ({
+    page,
+  }) => {
+    await page.goto('/b-sides/');
+
+    const cards = page.locator('article.bsides-card');
+    await expect(cards.nth(0)).toHaveClass(/bsides-card--inverted/);
+    for (let i = 1; i < 4; i++) {
+      await expect(cards.nth(i)).not.toHaveClass(/bsides-card--inverted/);
+    }
+  });
+
+  test('B-Sides cards are non-interactive: no <a> elements, no click handlers, no invented navigation', async ({
+    page,
+  }) => {
+    await page.goto('/b-sides/');
+
+    await expect(
+      page.locator('a.bsides-card, a article.bsides-card'),
+    ).toHaveCount(0);
+    const cardTagNames = await page
+      .locator('.bsides-grid > li > *')
+      .evaluateAll((nodes) => nodes.map((node) => node.tagName));
+    expect(cardTagNames).toEqual(['ARTICLE', 'ARTICLE', 'ARTICLE', 'ARTICLE']);
+
+    const onclickCount = await page
+      .locator('article.bsides-card[onclick]')
+      .count();
+    expect(onclickCount).toBe(0);
+
+    const positiveTabindexCount = await page
+      .locator('[tabindex]')
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+            .length,
+      );
+    expect(positiveTabindexCount).toBe(0);
+  });
+
+  test('B-Sides card images have explicit dimensions matching the 16/10 aspect ratio and decorative alt text', async ({
+    page,
+  }) => {
+    await page.goto('/b-sides/');
+
+    const images = page.locator('.bsides-card__image img');
+    await expect(images).toHaveCount(4);
+    const count = await images.count();
+    for (let i = 0; i < count; i++) {
+      const image = images.nth(i);
+      await expect(image).toHaveAttribute('width', '800');
+      await expect(image).toHaveAttribute('height', '500');
+      await expect(image).toHaveAttribute('alt', '');
+    }
+  });
+
+  test('Direct reload of /b-sides/ keeps the same URL and re-renders the page', async ({
+    page,
+  }) => {
+    const response = await page.goto('/b-sides/');
+    expect(response?.ok()).toBeTruthy();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'The playground' }),
+    ).toBeVisible();
+
+    const reloadResponse = await page.reload();
+    expect(reloadResponse?.ok()).toBeTruthy();
+    expect(new URL(page.url()).pathname).toBe('/b-sides/');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'The playground' }),
+    ).toBeVisible();
+  });
+});
+
+test.describe('Sprint 2F B-Sides interaction lifecycle', () => {
+  test('B-Sides scroll-reveal targets initialize exactly once on direct load and resolve visible content', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/b-sides/');
+
+    const reveals = page.locator('[data-reveal]');
+    await expect(reveals).toHaveCount(4);
+    for (const el of await reveals.all()) {
+      await expect(el).toBeVisible();
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('B-Sides content stays fully visible under reduced motion, with all reveal targets resolved to opacity 1', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/b-sides/');
+
+    const reveals = page.locator('[data-reveal]');
+    const count = await reveals.count();
+    expect(count).toBe(4);
+    for (let i = 0; i < count; i++) {
+      await expect(reveals.nth(i)).toBeVisible();
+      const opacity = await reveals
+        .nth(i)
+        .evaluate((node) => getComputedStyle(node).opacity);
+      expect(opacity).toBe('1');
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Repeated ClientRouter navigation into and out of B-Sides stays console-clean without accumulating controller listeners', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await installLifecycleInstrumentation(page);
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    for (let visit = 0; visit < 3; visit++) {
+      await nav.getByRole('link', { name: 'B-Sides', exact: true }).click();
+      await expect(page).toHaveURL(/\/b-sides\/$/);
+      await expect(
+        page.getByRole('heading', { level: 1, name: 'The playground' }),
+      ).toBeVisible();
+
+      await nav.getByRole('link', { name: 'Reviews', exact: true }).click();
+      await expect(page).toHaveURL(/\/reviews\/$/);
+    }
+
+    const registrations = await page.evaluate(
+      () =>
+        (window as unknown as { __lifecycleRegistrations: string[] })
+          .__lifecycleRegistrations,
+    );
+    expect(registrationCount(registrations, 'astro:before-swap')).toBe(1);
+
+    expect(consoleErrors).toEqual([]);
   });
 });
