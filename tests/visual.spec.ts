@@ -43,6 +43,12 @@ test('Interview shell full-page visual regression', async ({ page }) => {
   // their resting, fully-visible final state (scroll-reveal.ts,
   // magnetic-navigation.ts), so the snapshot captures deterministic layout
   // rather than an arbitrary mid-reveal frame.
+  //
+  // Sprint 2I deliberately changed this baseline: the "Tour dates / the
+  // résumé" timeline now shows the project owner's real job history (see
+  // DESIGN_DEVIATIONS.md, Sprint 2I entry 21) and a new "View the full
+  // résumé →" link was added below it (entry 22). This is an intentional,
+  // approved content/layout change, not a regression.
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/interview/');
 
@@ -131,6 +137,20 @@ test('Letters shell full-page visual regression', async ({ page }) => {
   await expect(page.locator('[data-copy-confirmation]')).toBeHidden();
 
   await expect(page).toHaveScreenshot('letters-shell.png', {
+    fullPage: true,
+  });
+});
+
+test('Resume full-page visual regression', async ({ page }) => {
+  // Sprint 2I: an original page with no golden-master equivalent (see
+  // DESIGN_DEVIATIONS.md, Sprint 2I entry 23) — this baseline is the only
+  // regression target for this route, not a golden-master comparison.
+  // Reduced motion settles scroll-reveal (experience-timeline rows, the
+  // two Skills & Tools cards) to its resting, fully-visible final state.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/resume/');
+
+  await expect(page).toHaveScreenshot('resume-shell.png', {
     fullPage: true,
   });
 });

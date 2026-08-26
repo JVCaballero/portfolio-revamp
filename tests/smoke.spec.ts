@@ -44,7 +44,7 @@ const routes = [
     heading: 'Write to the editor',
     activeLabel: 'Letters',
   },
-  { href: '/resume/', heading: 'Resume', activeLabel: null },
+  { href: '/resume/', heading: 'Full Résumé', activeLabel: null },
 ] as const;
 
 test('Cover root route renders the Newsstand Cover shell without console errors', async ({
@@ -4103,5 +4103,153 @@ test.describe('Sprint 2H Letters interaction lifecycle', () => {
     expect(registrationCount(registrations, 'astro:before-swap')).toBe(1);
 
     expect(consoleErrors).toEqual([]);
+  });
+});
+
+test.describe('Sprint 2I Resume', () => {
+  test('Resume loads directly with the real, final résumé content, a working download link, and no console errors', async ({
+    page,
+  }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    const response = await page.goto('/resume/');
+    expect(response?.ok()).toBeTruthy();
+
+    await expect(page.locator('.resume-kicker')).toHaveText('Résumé / p.36');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Full Résumé' }),
+    ).toBeVisible();
+
+    const downloadLink = page.getByRole('link', { name: /download pdf/i });
+    await expect(downloadLink).toHaveAttribute(
+      'href',
+      '/resume/john-vincent-caballero-resume.pdf',
+    );
+    await expect(downloadLink).toHaveAttribute('download', '');
+
+    const h2s = (
+      await page.getByRole('heading', { level: 2 }).allTextContents()
+    ).map((text) => text.trim());
+    expect(h2s).toEqual([
+      'Core Competencies',
+      'Professional Experience',
+      'Education',
+      'Skills & Tools',
+    ]);
+
+    await expect(page.locator('.resume-timeline__item')).toHaveCount(3);
+    await expect(page.locator('.resume-education')).toBeVisible();
+    await expect(page.locator('.resume-card')).toHaveCount(2);
+
+    // Real content, not the Sprint 1 placeholder shell it replaces.
+    await expect(page.locator('[data-route="resume"]')).toHaveCount(0);
+
+    await expect(page.locator('footer.newsstand-bottom-chrome')).toBeVisible();
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('Resume is not in the visible primary navigation and does not carry aria-current there', async ({
+    page,
+  }) => {
+    await page.goto('/resume/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+    await expect(
+      nav.getByRole('link', { name: 'Resume', exact: true }),
+    ).toHaveCount(0);
+  });
+
+  test('The "Download PDF" link resolves to the real static asset with a 200 response', async ({
+    page,
+    request,
+  }) => {
+    await page.goto('/resume/');
+    const downloadLink = page.getByRole('link', { name: /download pdf/i });
+    const href = await downloadLink.getAttribute('href');
+    expect(href).toBe('/resume/john-vincent-caballero-resume.pdf');
+
+    const response = await request.get(href as string);
+    expect(response.status()).toBe(200);
+    const contentType = response.headers()['content-type'] ?? '';
+    expect(contentType).toContain('application/pdf');
+  });
+
+  test('Resume omits any phone number and generalizes location to "Cebu, Philippines" in on-page text', async ({
+    page,
+  }) => {
+    await page.goto('/resume/');
+    const bodyText = (
+      await page.locator('article.resume-page').innerText()
+    ).replace(/\s+/g, ' ');
+
+    // No phone number pattern anywhere in the rendered text.
+    expect(bodyText).not.toMatch(/\+?\d[\d\s().-]{7,}\d/);
+    expect(bodyText).not.toMatch(/Talisay/i);
+    expect(bodyText).toContain('Cebu, Philippines');
+  });
+
+  test('Resume has no positive tabindex and no click-only div controls', async ({
+    page,
+  }) => {
+    await page.goto('/resume/');
+
+    const positiveTabindexCount = await page
+      .locator('[tabindex]')
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter((node) => Number(node.getAttribute('tabindex')) > 0)
+            .length,
+      );
+    expect(positiveTabindexCount).toBe(0);
+
+    const onclickDivCount = await page
+      .locator('div[onclick], div[role="button"]')
+      .count();
+    expect(onclickDivCount).toBe(0);
+
+    const hashHrefCount = await page.locator('a[href="#"]').count();
+    expect(hashHrefCount).toBe(0);
+  });
+
+  test('Resume scroll-reveal targets are visible and settled under reduced motion', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const consoleErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/resume/');
+
+    const reveals = page.locator('[data-reveal]');
+    const count = await reveals.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      await expect(reveals.nth(i)).toBeVisible();
+      const opacity = await reveals
+        .nth(i)
+        .evaluate((node) => getComputedStyle(node).opacity);
+      expect(opacity).toBe('1');
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test("Interview's new résumé link navigates to the real Resume page via the ClientRouter", async ({
+    page,
+  }) => {
+    await page.goto('/interview/');
+    const resumeLink = page.getByRole('link', { name: /full résumé/i });
+    await expect(resumeLink).toHaveAttribute('href', '/resume/');
+
+    await resumeLink.click();
+    await expect(page).toHaveURL(/\/resume\/$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Full Résumé' }),
+    ).toBeVisible();
   });
 });

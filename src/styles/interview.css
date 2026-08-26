@@ -323,6 +323,40 @@
   padding: 4px 6px;
 }
 
+/* Sprint 2I addition — narrow, legitimate exception to "no new Interview
+   CSS": the timeline's new "View the full résumé →" follow-up link is a
+   mid-body link, not the sidebar's magnetic CTA (`.interview-cta` below,
+   left untouched), so it gets its own small underlined-link treatment
+   matching the timeline's own visual weight (mono label size, ink color,
+   a bottom border that thickens on hover) rather than duplicating the
+   sidebar CTA's bordered-box/hard-shadow language. No golden-master
+   equivalent exists for this node — it is original Sprint 2I UI, not a
+   deviation from the immutable source. */
+.interview-resume-cta {
+  display: inline-block;
+  margin: var(--space-16) 0 0;
+  padding: 4px 2px;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-mono-11);
+  letter-spacing: var(--tracking-metadata);
+  text-transform: uppercase;
+  color: var(--color-ink);
+  border-bottom: var(--border-width-standard) var(--border-style-solid)
+    var(--color-ink);
+  transition:
+    background var(--duration-hover) var(--ease-standard),
+    padding-left var(--duration-hover) var(--ease-standard);
+}
+
+/* Deliberately kept ink-on-paper (not the site's red accent) so this new
+   node needs no contrast exception at all — see DESIGN_DEVIATIONS.md. */
+.interview-resume-cta:hover,
+.interview-resume-cta:focus-visible {
+  background: var(--color-paper-hover);
+  padding-left: 8px;
+}
+
 /* Approved Sprint 2C design-preservation exception #2 (muted résumé
    status): resting contrast passes; only the row's own hover/active
    background swap below drags it under AA. See DESIGN_DEVIATIONS.md. */

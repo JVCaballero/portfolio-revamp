@@ -979,3 +979,161 @@ Site.dc.html`, the `isLetters` sc-if block, ~line 581). The source has no
 - **Final-QA reminder:** re-verify this exception still matches the golden
   master exactly (no drift in color/size/weight) during the post-Sprint-2
   holistic design QA.
+
+## Sprint 2I — Resume
+
+### 21. Interview's "Tour dates / the résumé" timeline: real job history (NOT a "pending review" placeholder deviation, extends entry 16's precedent)
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/interview/` — the three `.interview-timeline__item`
+  rows in `.interview-timeline`, `src/pages/interview/index.astro`.
+- **Immutable source behavior/design:** The golden master's "Tour dates /
+  the résumé" list is fictional demo content (three placeholder job
+  entries with tour-themed status labels "ON NOW"/"SOLD OUT"/"ARCHIVE"),
+  same class-2 demo-copy framing as the rest of the Interview shell (see
+  the file-level comment in `src/pages/interview/index.astro`).
+- **Production behavior/design:** The three rows now show the project
+  owner's real job history (Simple.biz 2025&ndash;Present, TTEC Digital/Cisco
+  2024&ndash;25, BPOSeats/HQZen 2021&ndash;24), using the exact condensed
+  title/description text specified in the Sprint 2I implementation task.
+  The markup structure, CSS classes, and status-label visual treatment
+  (`--current`/`--muted`) are unchanged — only text content and status
+  class assignment per row changed. A new "View the full résumé →" link
+  was added below the timeline, pointing to the new `/resume/` page.
+- **Reason for deviation:** This is explicitly NOT the "temporary demo
+  content pending final Sprint 2 review" framing used for every other
+  piece of Interview copy (and every other page in this codebase) —
+  identical reasoning to entry 16 (Letters' real contact info). The
+  project owner explicitly decided, for this sprint only, that this one
+  timeline (and only this timeline — the Q&A, pull quote, rider, and
+  instruments list all stay golden-master demo content, unchanged) shows
+  real, final production content. This does NOT modify or invalidate
+  entries 5 and 6 above (Interview's approved contrast exceptions for
+  `.interview-timeline-heading` and `.interview-timeline__status--muted`):
+  those exceptions are keyed to selectors/node types, not to specific
+  text, so they continue to apply correctly and without modification to
+  this real content.
+- **Classification:** approved real-content substitution, not a "pending
+  review" placeholder and not a visual redesign (markup structure, CSS
+  classes, and status-label treatment are all preserved exactly).
+- **Status:** accepted, real production content — not subject to the
+  post-Sprint-2 holistic "placeholder content" QA sweep the same way the
+  rest of Interview's copy is. Still subject to ordinary visual/behavioral
+  QA.
+- **Approval source:** project owner, Sprint 2I implementation task
+  (explicit instruction, not inferred).
+- **Exact files/nodes affected:** the three `<li class="interview-timeline__item">`
+  rows in `src/pages/interview/index.astro`; the new
+  `<a class="interview-resume-cta" href="/resume/">` link and its
+  narrowly-scoped CSS addition in `src/styles/interview.css` (see entry 22
+  below for why this link is a plain bordered link, not a second magnetic
+  CTA).
+- **Testing:** `tests/smoke.spec.ts` and `tests/accessibility.spec.ts`
+  select the timeline by class/count, not by literal old fictional text,
+  so no test assertions needed updating for the content swap itself; new
+  coverage verifies the new résumé link's `href`/visibility. Regenerated
+  visual baseline: `tests/visual.spec.ts-snapshots/interview-shell-*-linux.png`.
+- **Final-QA reminder:** if the real job history ever changes, update this
+  entry, the page, and any dependent tests together — this timeline is
+  treated as real professional content, not demo copy.
+
+### 22. Interview's new "View the full résumé →" link: plain bordered link, not a second magnetic CTA
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/interview/` — `.interview-resume-cta`,
+  `src/pages/interview/index.astro`, `src/styles/interview.css`.
+- **Immutable source behavior/design:** No golden-master equivalent exists
+  — this link has no source anatomy to preserve or deviate from.
+- **Production behavior/design:** A plain, understated bordered link
+  (mono label sizing, ink-on-paper at rest, a paper-hover background tint
+  on hover/focus) sitting directly below the résumé timeline, deliberately
+  distinct from the sidebar's `.interview-cta` magnetic-CTA treatment.
+- **Reason for deviation:** `src/scripts/interactions/magnetic-navigation.ts`
+  scopes to `/interview/` and uses a single, non-plural
+  `document.querySelector('[data-magnet-target]')` — not
+  `querySelectorAll` — so it only ever binds to the first matching node.
+  Adding `data-magnet-target` to a second node on this same route would
+  not cleanly extend the magnetic behavior to both CTAs; it would make
+  which one actually moves under the pointer dependent on DOM order,
+  silently changing (or breaking) the existing, already-shipped Rotation
+  CTA's behavior. Rather than rewriting `magnetic-navigation.ts` to support
+  multiple targets — an unrelated-refactor outside this sprint's scope —
+  this link is a plain link instead, sized and weighted to match the
+  timeline's own visual density rather than duplicating the sidebar CTA's
+  bordered-box/hard-shadow language (which reads as a heavier, more
+  standalone moment appropriate to the sidebar, not a same-body follow-up
+  link). It deliberately stays ink-on-paper for every state (never the
+  site's red accent), so it needed no new contrast exception either.
+- **Classification:** approved implementation deviation, not a visual
+  redesign (no golden-master visual to redesign).
+- **Status:** accepted, project owner's explicit Sprint 2I decision.
+- **Approval source:** project owner, Sprint 2I implementation task.
+- **Exact files/nodes affected:** the single
+  `<a class="interview-resume-cta">` node in
+  `src/pages/interview/index.astro`; `.interview-resume-cta` in
+  `src/styles/interview.css`.
+- **Testing:** `tests/smoke.spec.ts` verifies the link's `href="/resume/"`
+  and visibility; `tests/accessibility.spec.ts` verifies it introduces no
+  new color-contrast finding (ink-on-paper only, at rest and on
+  hover/focus).
+- **Final-QA reminder:** revisit this decision if `magnetic-navigation.ts`
+  is ever generalized to support multiple targets per route.
+
+### 23. `/resume/` — original page, no golden-master anatomy to preserve
+
+- **Date:** 2026-08-26.
+- **Route / component:** `/resume/` in its entirety,
+  `src/pages/resume/index.astro`, `src/styles/resume.css`.
+- **Immutable source behavior/design:** None. Resume is not one of the
+  golden master's 8 `primaryNavigation` sections
+  (`src/data/navigation.ts`) — it exists only in an extended `navigation`
+  array that is not wired into the visible nav. There is no
+  `reference/newsstand-original/` anatomy for this route at all.
+- **Production behavior/design:** A full, original page built from the
+  project owner's real résumé content, reusing the site's established
+  design tokens and typographic/pattern vocabulary (kicker, Archivo Black
+  display headline, mono labels/kickers, hard-bordered ink cards, a
+  timeline pattern mirroring Interview's own résumé timeline) rather than
+  inventing a new visual language — see the file-level comments in
+  `src/pages/resume/index.astro` and `src/styles/resume.css` for the exact
+  token/pattern reuse. A "Download PDF" link near the top points to the
+  real static asset at `/resume/john-vincent-caballero-resume.pdf`. The
+  phone number is omitted from the on-page HTML text entirely; the
+  location is generalized to "Cebu, Philippines." The PDF itself is left
+  completely unmodified — these two redactions apply only to this page's
+  on-page text.
+- **Reason for deviation:** Not applicable in the usual sense — there is
+  no golden-master design to deviate from. This entry exists to document
+  that this route's entire visual design is original Sprint 2I work,
+  explicitly authorized by the project owner specifically because Resume
+  sits outside the golden master's 8 sections, and that it was built to
+  reuse established tokens/patterns for site-wide visual consistency
+  rather than as a license to freelance a new look.
+- **Classification:** authorized original design (not a golden-master
+  deviation), plus a real-content page (same "not pending review"
+  framing as entry 16 and entry 21 above — this is the project owner's
+  real, current résumé, not demo copy).
+- **Status:** accepted, real production content. Not subject to the
+  post-Sprint-2 holistic golden-master QA sweep (there is nothing to
+  compare it against) or the "placeholder content" sweep (it isn't
+  placeholder content). Its own visual baseline
+  (`tests/visual.spec.ts-snapshots/resume-shell-*-linux.png`) is the
+  regression target for this route going forward.
+- **Approval source:** project owner, Sprint 2I implementation task
+  (explicit architectural decision — see the Sprint 2I task contract).
+- **Exact files/nodes affected:** `src/pages/resume/index.astro`
+  (entirely new content, replacing the Sprint 1 placeholder shell);
+  `src/styles/resume.css` (new file); `/resume/` added to
+  `src/scripts/interactions/scroll-reveal.ts`'s `PATHNAME_PREFIXES`.
+- **Testing:** `tests/smoke.spec.ts` covers direct load, the download
+  link's real 200 response, headline/kicker/section visibility, absence of
+  any positive `tabindex`, and scroll-reveal lifecycle.
+  `tests/accessibility.spec.ts` covers an Axe A/AA scan (expected: zero new
+  exceptions — every color pairing on this page was deliberately chosen to
+  pass AA, since this page has no fidelity constraint forcing a
+  low-contrast color) and heading hierarchy. `tests/visual.spec.ts` adds a
+  new full-page baseline at all three viewports.
+- **Final-QA reminder:** if the real résumé content changes, update this
+  page and its content together — this is real professional content, not
+  a content-review backlog item. No golden-master final-QA re-check
+  applies to this route.

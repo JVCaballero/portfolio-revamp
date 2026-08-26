@@ -30,6 +30,11 @@
   opacity/transform and leaves the already-declared `transition` alone, so
   the browser actually animates through the authored .85s transition
   instead of snapping straight to the resting state.
+
+  Sprint 2I extends this to Resume ('/resume/'), an original page with no
+  golden-master equivalent — its experience-timeline rows and the two
+  Skills & Tools cards carry [data-reveal], matching how every other page
+  applies this module to its own repeating card/row content.
 */
 import type { InteractionModule } from './interaction-controller';
 
@@ -41,6 +46,7 @@ const PATHNAME_PREFIXES = [
   '/b-sides/',
   '/rotation/',
   '/letters/',
+  '/resume/',
 ];
 const SELECTOR = '[data-reveal]';
 const ROOT_MARGIN = '0px 0px -6% 0px';
